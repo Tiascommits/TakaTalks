@@ -42,10 +42,10 @@ server, no dependencies beyond a Google Fonts CDN link.
 ## What's in `web/`
 
 The real app scaffolded from **Prompt 1**: Next.js + TypeScript + Tailwind +
-Prisma/SQLite, covering the tax calculator + rebate optimizer and the
-income/investment tracker. See `web/README.md` for setup. The `tools/`
-HTML demos above remain as the reference logic and design history; `web/`
-is where ongoing development happens.
+Prisma/Postgres, covering the tax calculator + rebate optimizer and the
+income/investment tracker. Deployed on Vercel. See `web/README.md` for setup
+and deployment. The `tools/` HTML demos above remain as the reference logic
+and design history; `web/` is where ongoing development happens.
 
 ## What's in `prompts/`
 

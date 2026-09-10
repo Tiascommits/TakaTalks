@@ -1,23 +1,18 @@
 import { execSync } from "child_process";
-import { existsSync, rmSync } from "fs";
 import path from "path";
+import { TEST_DATABASE_URL } from "./test-db";
 
 /**
- * E2E tests get their own SQLite file so a test run never pollutes (or gets
- * confused by) whatever the developer already has in prisma/dev.db. Playwright's
- * webServer is started with DATABASE_URL pointing at the same file (see
- * playwright.config.ts), so the app under test reads/writes this one.
+ * E2E tests run against their own Postgres database (TEST_DATABASE_URL) so a
+ * test run never pollutes (or gets confused by) whatever the developer's
+ * DATABASE_URL points at. Playwright's webServer is started with the same
+ * URL (see playwright.config.ts), so the app under test reads/writes this
+ * one. `migrate reset` drops and recreates it fresh on every run.
  */
 export default function globalSetup() {
-  const testDbPath = path.resolve(__dirname, "../prisma/test.db");
-  for (const suffix of ["", "-journal", "-wal", "-shm"]) {
-    const p = testDbPath + suffix;
-    if (existsSync(p)) rmSync(p);
-  }
-
-  execSync("npx prisma migrate deploy", {
+  execSync("npx prisma migrate reset --force --skip-generate --skip-seed", {
     cwd: path.resolve(__dirname, ".."),
-    env: { ...process.env, DATABASE_URL: "file:./test.db" },
+    env: { ...process.env, DATABASE_URL: TEST_DATABASE_URL },
     stdio: "inherit",
   });
 }

@@ -1,14 +1,18 @@
 # Takatox web app
 
-Next.js (App Router) + TypeScript + Tailwind + Prisma/SQLite. Built from
+Next.js (App Router) + TypeScript + Tailwind + Prisma/Postgres. Built from
 `prompts/01-tax-calculator-and-tracker.md`: Phase 1-2 MVP covering the tax
 calculator + rebate optimizer, and the income/investment tracker.
 
 ## Getting started
 
+You need a Postgres database — a free [Neon](https://neon.tech) project is
+the easiest option (and what the Vercel deployment below uses).
+
 ```bash
-npm install
-npx prisma migrate dev   # first time only, creates prisma/dev.db
+cp .env.example .env      # fill in DATABASE_URL (and TEST_DATABASE_URL)
+npm install                # also runs `prisma generate`
+npx prisma migrate deploy  # applies migrations to DATABASE_URL
 npm run dev
 ```
 
@@ -16,6 +20,21 @@ Open http://localhost:3000. `/calculator` works with zero setup (no account,
 no server round-trip for the calculation itself). `/tracker` creates a
 lightweight anonymous account (no email/password) the first time you save an
 entry, tracked via an httpOnly cookie — see `src/lib/tracker/session.ts`.
+
+## Deploying (Vercel)
+
+1. Create two free Postgres databases (e.g. two Neon branches/databases) —
+   one for prod, one throwaway one for e2e tests.
+2. In Vercel, import this GitHub repo, set the **Root Directory** to `web`.
+3. Add env vars in the Vercel project: `DATABASE_URL` (prod database).
+4. Deploy. Vercel runs the `vercel-build` script (`prisma migrate deploy &&
+   next build`), which applies any pending migrations to `DATABASE_URL`
+   before building — no separate migration step needed on future pushes.
+
+`vercel-build` intentionally skips the local `build` script's
+prebuild/postbuild test hooks (Playwright needs a browser install and a
+disposable test database that don't belong in a deploy step) — run
+`npm test` / `npm run test:e2e` in CI or locally instead.
 
 ## Structure
 
@@ -45,9 +64,10 @@ the build:
   actual built app — `/calculator` and `/tracker` — through normal flows plus
   weird ones (negative/zero/huge/decimal input, rejected form submissions,
   matured-investment payout confirmation, cross-reload persistence) and
-  asserts the page never shows `NaN`/`Infinity`/`undefined`. Runs against its
-  own `prisma/test.db`, never the developer's `prisma/dev.db` (see
-  `e2e/global-setup.ts`).
+  asserts the page never shows `NaN`/`Infinity`/`undefined`. Runs against
+  `TEST_DATABASE_URL`, a disposable Postgres database that gets wiped via
+  `prisma migrate reset` on every run — never the developer's `DATABASE_URL`
+  (see `e2e/global-setup.ts`, `e2e/test-db.ts`).
 
 Run them individually during development:
 
