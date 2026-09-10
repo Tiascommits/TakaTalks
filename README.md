@@ -39,6 +39,14 @@ server, no dependencies beyond a Google Fonts CDN link.
   roundup), not a live feed. See Prompt 2 for what turns this into a live, maintained
   version.
 
+## What's in `web/`
+
+The real app scaffolded from **Prompt 1**: Next.js + TypeScript + Tailwind +
+Prisma/SQLite, covering the tax calculator + rebate optimizer and the
+income/investment tracker. See `web/README.md` for setup. The `tools/`
+HTML demos above remain as the reference logic and design history; `web/`
+is where ongoing development happens.
+
 ## What's in `prompts/`
 
 Scoped instructions for Claude Code, written so each one is a shippable chunk rather than
@@ -68,8 +76,8 @@ Hand these to Claude Code **in order**. Each one assumes the previous module exi
 
 | Phase | What | Status |
 |---|---|---|
-| 1 | Tax calculator + rebate optimizer | Calculator logic done (`v3`), not yet a real app |
-| 2 | Income/investment tracker, maturity reminders | Not started |
+| 1 | Tax calculator + rebate optimizer | Built in `web/` (Next.js), from Prompt 1 |
+| 2 | Income/investment tracker, maturity reminders | Built in `web/` (Next.js), from Prompt 1 |
 | 3 | Bank rate comparison + scorecard (live) | Demo done (`fdr-dps-comparison.html`), not live |
 | 3 | Annual report extraction pipeline | Not started |
 | 4 | Goal planner (car, retirement) | Not started |

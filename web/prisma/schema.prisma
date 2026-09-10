@@ -1,0 +1,101 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// Created lazily, only when the person first saves something (an income
+// entry, an investment, or a tax profile setting) — never at page load.
+// See docs/feature-spec-tax-calculator.md: account creation is deferred to
+// the moment persistence is actually needed.
+model User {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+
+  incomeEntries      IncomeEntry[]
+  investmentEntries  InvestmentEntry[]
+  taxProfile         TaxProfile?
+}
+
+enum IncomeFrequency {
+  MONTHLY
+  ANNUAL
+  ONE_TIME
+}
+
+model IncomeEntry {
+  id        String          @id @default(cuid())
+  userId    String
+  user      User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  label     String
+  source    String // salary | freelance | business | rental | other
+  amount    Float
+  frequency IncomeFrequency
+  createdAt DateTime        @default(now())
+  updatedAt DateTime        @updatedAt
+
+  @@index([userId])
+}
+
+enum InstrumentType {
+  SANCHAYPATRA
+  GOVT_BOND
+  MUTUAL_FUND
+  DSE_STOCK
+  LIFE_INSURANCE
+  PROVIDENT_FUND
+  DPS
+  DONATION
+  FIXED_DEPOSIT
+  OTHER
+}
+
+model InvestmentEntry {
+  id                String         @id @default(cuid())
+  userId            String
+  user              User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  label             String
+  instrumentType    InstrumentType
+  principalAmount   Float
+  startDate         DateTime
+  termMonths        Int
+  expectedRatePct   Float
+  maturityDate      DateTime
+
+  // Set once the user confirms the payout after maturity. Null until then.
+  payoutConfirmed   Boolean        @default(false)
+  payoutAmount      Float?
+  payoutConfirmedAt DateTime?
+
+  createdAt         DateTime       @default(now())
+  updatedAt         DateTime       @updatedAt
+
+  @@index([userId])
+  @@index([maturityDate])
+}
+
+enum TaxpayerCategory {
+  GENERAL
+  WOMAN_SENIOR
+  THIRD_GENDER
+  DISABLED
+  FREEDOM_FIGHTER
+}
+
+model TaxProfile {
+  id                String           @id @default(cuid())
+  userId            String           @unique
+  user              User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  category          TaxpayerCategory @default(GENERAL)
+  disabledChildren  Int              @default(0)
+  firstTimeFiler    Boolean          @default(false)
+
+  netWealth         Float            @default(0)
+  multiCar          Boolean          @default(false)
+  bigHouse          Boolean          @default(false)
+
+  updatedAt         DateTime         @updatedAt
+}
