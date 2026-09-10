@@ -2,7 +2,15 @@
 
 import { useId, useState } from "react";
 import { fmtTaka } from "@/lib/format";
-import { FREQUENCY_LABELS, INCOME_SOURCE_LABELS, type IncomeEntryDTO, type IncomeFrequency } from "./types";
+import {
+  FREQUENCY_LABELS,
+  FREQUENCY_LABELS_EN,
+  INCOME_SOURCE_LABELS,
+  INCOME_SOURCE_LABELS_EN,
+  type IncomeEntryDTO,
+  type IncomeFrequency,
+} from "./types";
+import { useLanguage } from "@/lib/i18n";
 
 const SOURCES = Object.keys(INCOME_SOURCE_LABELS);
 const FREQUENCIES: IncomeFrequency[] = ["MONTHLY", "ANNUAL", "ONE_TIME"];
@@ -21,6 +29,7 @@ export function IncomeSection({
   }) => Promise<boolean>;
   onDelete: (id: string) => Promise<void>;
 }) {
+  const { t } = useLanguage();
   const [label, setLabel] = useState("");
   const [source, setSource] = useState(SOURCES[0]);
   const [amount, setAmount] = useState("");
@@ -37,18 +46,18 @@ export function IncomeSection({
     setError(null);
     const amt = parseFloat(amount);
     if (!label.trim()) {
-      setError("লেবেল দাও।");
+      setError(t("Give it a label.", "লেবেল দাও।"));
       return;
     }
     if (!Number.isFinite(amt) || amt <= 0) {
-      setError("পরিমাণ অবশ্যই শূন্যের চেয়ে বড় একটা সংখ্যা হতে হবে।");
+      setError(t("Amount must be a number greater than zero.", "পরিমাণ অবশ্যই শূন্যের চেয়ে বড় একটা সংখ্যা হতে হবে।"));
       return;
     }
     setSubmitting(true);
     const ok = await onAdd({ label: label.trim(), source, amount: amt, frequency });
     setSubmitting(false);
     if (!ok) {
-      setError("সেভ করা যায়নি, আবার চেষ্টা করো।");
+      setError(t("Couldn't save, try again.", "সেভ করা যায়নি, আবার চেষ্টা করো।"));
       return;
     }
     setLabel("");
@@ -58,11 +67,11 @@ export function IncomeSection({
   return (
     <section className="bg-card border border-line p-5">
       <h2 className="font-serif font-semibold text-lg text-green-deep mb-3 pb-2 border-b-2 border-green">
-        আয়ের উৎস
+        {t("Income sources", "আয়ের উৎস")}
       </h2>
 
       {entries.length === 0 ? (
-        <p className="text-sm text-muted mb-4">এখনো কোনো আয়ের উৎস যোগ করোনি।</p>
+        <p className="text-sm text-muted mb-4">{t("No income sources added yet.", "এখনো কোনো আয়ের উৎস যোগ করোনি।")}</p>
       ) : (
         <ul className="mb-4 divide-y divide-line">
           {entries.map((e) => (
@@ -70,7 +79,8 @@ export function IncomeSection({
               <div>
                 <span className="font-medium">{e.label}</span>{" "}
                 <span className="text-muted text-xs">
-                  ({INCOME_SOURCE_LABELS[e.source] ?? e.source}, {FREQUENCY_LABELS[e.frequency]})
+                  ({t(INCOME_SOURCE_LABELS_EN[e.source] ?? e.source, INCOME_SOURCE_LABELS[e.source] ?? e.source)},{" "}
+                  {t(FREQUENCY_LABELS_EN[e.frequency], FREQUENCY_LABELS[e.frequency])})
                 </span>
               </div>
               <div className="flex items-center gap-3">
@@ -79,7 +89,7 @@ export function IncomeSection({
                   onClick={() => onDelete(e.id)}
                   className="text-red text-xs hover:underline"
                 >
-                  মুছুন
+                  {t("Delete", "মুছুন")}
                 </button>
               </div>
             </li>
@@ -95,19 +105,19 @@ export function IncomeSection({
       <form onSubmit={submit} className="grid grid-cols-2 sm:grid-cols-4 gap-2 items-end">
         <div className="col-span-2 sm:col-span-1">
           <label htmlFor={labelId} className="block text-xs text-[#555] mb-1">
-            লেবেল
+            {t("Label", "লেবেল")}
           </label>
           <input
             id={labelId}
             value={label}
             onChange={(e) => setLabel(e.target.value)}
             className="w-full px-2.5 py-2 border border-line bg-[#FCFBF8] text-sm"
-            placeholder="যেমন: মূল বেতন"
+            placeholder={t("e.g. Basic salary", "যেমন: মূল বেতন")}
           />
         </div>
         <div>
           <label htmlFor={sourceId} className="block text-xs text-[#555] mb-1">
-            উৎস
+            {t("Source", "উৎস")}
           </label>
           <select
             id={sourceId}
@@ -117,14 +127,14 @@ export function IncomeSection({
           >
             {SOURCES.map((s) => (
               <option key={s} value={s}>
-                {INCOME_SOURCE_LABELS[s]}
+                {t(INCOME_SOURCE_LABELS_EN[s], INCOME_SOURCE_LABELS[s])}
               </option>
             ))}
           </select>
         </div>
         <div>
           <label htmlFor={amountId} className="block text-xs text-[#555] mb-1">
-            পরিমাণ (৳)
+            {t("Amount (৳)", "পরিমাণ (৳)")}
           </label>
           <input
             id={amountId}
@@ -138,7 +148,7 @@ export function IncomeSection({
         <div className="flex gap-2">
           <div className="flex-1">
             <label htmlFor={frequencyId} className="block text-xs text-[#555] mb-1">
-              ফ্রিকোয়েন্সি
+              {t("Frequency", "ফ্রিকোয়েন্সি")}
             </label>
             <select
               id={frequencyId}
@@ -148,7 +158,7 @@ export function IncomeSection({
             >
               {FREQUENCIES.map((f) => (
                 <option key={f} value={f}>
-                  {FREQUENCY_LABELS[f]}
+                  {t(FREQUENCY_LABELS_EN[f], FREQUENCY_LABELS[f])}
                 </option>
               ))}
             </select>
@@ -158,7 +168,7 @@ export function IncomeSection({
             disabled={submitting}
             className="shrink-0 bg-green-deep text-paper px-3 py-2 text-sm font-medium disabled:opacity-50 self-end"
           >
-            যোগ করো
+            {t("Add", "যোগ করো")}
           </button>
         </div>
       </form>

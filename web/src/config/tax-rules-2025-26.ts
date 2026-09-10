@@ -19,15 +19,26 @@ export type InstrumentRule = {
 export type TaxpayerCategory = {
   id: string;
   label: string;
+  labelEn: string;
   taxFreeLimit: number;
 };
 
 export const TAXPAYER_CATEGORIES: TaxpayerCategory[] = [
-  { id: "general", label: "সাধারণ", taxFreeLimit: 400000 },
-  { id: "woman_senior", label: "নারী / সিনিয়র সিটিজেন (৬৫+)", taxFreeLimit: 450000 },
-  { id: "third_gender", label: "তৃতীয় লিঙ্গ", taxFreeLimit: 525000 },
-  { id: "disabled", label: "প্রতিবন্ধী", taxFreeLimit: 525000 },
-  { id: "freedom_fighter", label: "মুক্তিযোদ্ধা / জুলাই যোদ্ধা", taxFreeLimit: 550000 },
+  { id: "general", label: "সাধারণ", labelEn: "General", taxFreeLimit: 400000 },
+  {
+    id: "woman_senior",
+    label: "নারী / সিনিয়র সিটিজেন (৬৫+)",
+    labelEn: "Woman / Senior citizen (65+)",
+    taxFreeLimit: 450000,
+  },
+  { id: "third_gender", label: "তৃতীয় লিঙ্গ", labelEn: "Third gender", taxFreeLimit: 525000 },
+  { id: "disabled", label: "প্রতিবন্ধী", labelEn: "Person with disability", taxFreeLimit: 525000 },
+  {
+    id: "freedom_fighter",
+    label: "মুক্তিযোদ্ধা / জুলাই যোদ্ধা",
+    labelEn: "Freedom fighter / July fighter",
+    taxFreeLimit: 550000,
+  },
 ];
 
 export const TAX_RULES = {

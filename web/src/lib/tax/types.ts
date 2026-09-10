@@ -126,10 +126,10 @@ export interface TaxCalculationResult {
 }
 
 export interface OptimizerSuggestion {
-  instrumentId: string;
-  label: string;
+  instrumentId: "sanchay_group" | "dps" | "uncapped";
   investMore: number;
-  note: string;
+  /** Amount still remaining in the shared sanchay_group cap — only set for that instrument */
+  capRemaining?: number;
   taxSavingFromThis: number;
 }
 

@@ -50,6 +50,8 @@ export interface TaxProfileDTO {
   bigHouse: boolean;
 }
 
+// Default (Bengali) labels — kept as the canonical, language-agnostic values
+// used wherever a single label is needed (e.g. persisted display defaults).
 export const INCOME_SOURCE_LABELS: Record<string, string> = {
   salary: "বেতন",
   freelance: "ফ্রিল্যান্স",
@@ -75,4 +77,32 @@ export const FREQUENCY_LABELS: Record<IncomeFrequency, string> = {
   MONTHLY: "মাসিক",
   ANNUAL: "বাৎসরিক",
   ONE_TIME: "একবার",
+};
+
+// English variants, keyed the same way, for the language toggle.
+export const INCOME_SOURCE_LABELS_EN: Record<string, string> = {
+  salary: "Salary",
+  freelance: "Freelance",
+  business: "Business",
+  rental: "House rent",
+  other: "Other",
+};
+
+export const INSTRUMENT_LABELS_EN: Record<InstrumentType, string> = {
+  SANCHAYPATRA: "Sanchaypatra",
+  GOVT_BOND: "Govt Bond",
+  MUTUAL_FUND: "Mutual Fund",
+  DSE_STOCK: "DSE Stock",
+  LIFE_INSURANCE: "Life Insurance",
+  PROVIDENT_FUND: "Provident Fund",
+  DPS: "DPS",
+  DONATION: "Donation",
+  FIXED_DEPOSIT: "FDR",
+  OTHER: "Other",
+};
+
+export const FREQUENCY_LABELS_EN: Record<IncomeFrequency, string> = {
+  MONTHLY: "Monthly",
+  ANNUAL: "Annual",
+  ONE_TIME: "One-time",
 };

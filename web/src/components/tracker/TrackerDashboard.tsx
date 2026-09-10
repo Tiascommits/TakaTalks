@@ -6,6 +6,7 @@ import { TAXPAYER_CATEGORIES } from "@/config/tax-rules-2025-26";
 import { MaturityPanel } from "./MaturityPanel";
 import { IncomeSection } from "./IncomeSection";
 import { InvestmentSection } from "./InvestmentSection";
+import { useLanguage } from "@/lib/i18n";
 import type {
   IncomeEntryDTO,
   IncomeFrequency,
@@ -42,6 +43,7 @@ export function TrackerDashboard({
   initialInvestments: InvestmentEntryDTO[];
   initialProfile: TaxProfileDTO | null;
 }) {
+  const { t } = useLanguage();
   const [income, setIncome] = useState(initialIncome);
   const [investments, setInvestments] = useState(initialInvestments);
   const [profile, setProfile] = useState<TaxProfileDTO>(
@@ -131,11 +133,14 @@ export function TrackerDashboard({
 
       <section className="bg-card border border-line p-5">
         <h2 className="font-serif font-semibold text-lg text-green-deep mb-3 pb-2 border-b-2 border-green">
-          ট্যাক্স প্রোফাইল
+          {t("Tax profile", "ট্যাক্স প্রোফাইল")}
         </h2>
         <p className="text-xs text-muted mb-3">
-          এখানে সেভ করলে <Link href="/calculator" className="underline">ক্যালকুলেটর</Link> এ আবার
-          টাইপ করতে হবে না।
+          {t("Saving it here means you won't have to type it again in the ", "এখানে সেভ করলে ")}
+          <Link href="/calculator" className="underline">
+            {t("calculator", "ক্যালকুলেটর")}
+          </Link>
+          {t(".", " এ আবার টাইপ করতে হবে না।")}
         </p>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 items-end">
           <div>
@@ -152,14 +157,14 @@ export function TrackerDashboard({
             >
               {TAXPAYER_CATEGORIES.map((c) => (
                 <option key={c.id} value={CATEGORY_TO_CODE[c.id]}>
-                  {c.label}
+                  {t(c.labelEn, c.label)}
                 </option>
               ))}
             </select>
           </div>
           <div>
             <label htmlFor={disabledChildrenId} className="block text-xs text-[#555] mb-1">
-              প্রতিবন্ধী সন্তান সংখ্যা
+              {t("Number of disabled children", "প্রতিবন্ধী সন্তান সংখ্যা")}
             </label>
             <input
               id={disabledChildrenId}
@@ -181,7 +186,7 @@ export function TrackerDashboard({
               className="w-auto"
             />
             <label htmlFor={firstTimeFilerId} className="text-sm">
-              প্রথমবার করদাতা
+              {t("First-time filer", "প্রথমবার করদাতা")}
             </label>
           </div>
         </div>
@@ -190,7 +195,7 @@ export function TrackerDashboard({
           disabled={savingProfile}
           className="mt-3 bg-green-deep text-paper px-4 py-2 text-sm font-medium disabled:opacity-50"
         >
-          প্রোফাইল সেভ করো
+          {t("Save profile", "প্রোফাইল সেভ করো")}
         </button>
       </section>
     </div>

@@ -31,9 +31,8 @@ export function calculateOptimizer(r: TaxCalculationResult): OptimizerResult {
     const fill = Math.min(remaining, sanchayGroupRemaining);
     suggestions.push({
       instrumentId: "sanchay_group",
-      label: "সঞ্চয়পত্র / Govt Bond / Mutual Fund",
       investMore: fill,
-      note: `shared cap থেকে ৳${Math.round(sanchayGroupRemaining).toLocaleString("en-IN")} বাকি`,
+      capRemaining: sanchayGroupRemaining,
       taxSavingFromThis: fill * TAX_RULES.rebateRateOfInvestment,
     });
     remaining -= fill;
@@ -43,9 +42,7 @@ export function calculateOptimizer(r: TaxCalculationResult): OptimizerResult {
     const fill = Math.min(remaining, dpsRemaining);
     suggestions.push({
       instrumentId: "dps",
-      label: "DPS",
       investMore: fill,
-      note: `বছরে ৳${TAX_RULES.dpsCap.toLocaleString("en-IN")} পর্যন্ত eligible`,
       taxSavingFromThis: fill * TAX_RULES.rebateRateOfInvestment,
     });
     remaining -= fill;
@@ -54,9 +51,7 @@ export function calculateOptimizer(r: TaxCalculationResult): OptimizerResult {
   if (remaining > 0) {
     suggestions.push({
       instrumentId: "uncapped",
-      label: "PF / DSE Stock / জীবন বীমা / দাতব্য দান",
       investMore: remaining,
-      note: "এই instruments এ sub-cap নেই",
       taxSavingFromThis: remaining * TAX_RULES.rebateRateOfInvestment,
     });
     remaining = 0;

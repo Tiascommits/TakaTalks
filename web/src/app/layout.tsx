@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import { Newsreader, Noto_Sans_Bengali, IBM_Plex_Mono } from "next/font/google";
-import Link from "next/link";
 import "./globals.css";
+import { LanguageProvider } from "@/lib/i18n";
+import { SiteNav } from "@/components/SiteNav";
 
 const newsreader = Newsreader({
   variable: "--font-newsreader",
@@ -34,20 +35,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       className={`${newsreader.variable} ${notoBengali.variable} ${plexMono.variable} h-full`}
     >
       <body className="min-h-full flex flex-col font-sans">
-        <nav className="bg-green-deep text-paper border-b-4 border-gold">
-          <div className="max-w-[1160px] mx-auto px-5 py-3 flex items-center gap-6">
-            <Link href="/" className="font-serif font-semibold text-lg">
-              Takatox
-            </Link>
-            <Link href="/calculator" className="text-sm hover:text-gold transition-colors">
-              আয়কর ক্যালকুলেটর
-            </Link>
-            <Link href="/tracker" className="text-sm hover:text-gold transition-colors">
-              ট্র্যাকার
-            </Link>
-          </div>
-        </nav>
-        <div className="flex-1 flex flex-col">{children}</div>
+        <LanguageProvider>
+          <SiteNav />
+          <div className="flex-1 flex flex-col">{children}</div>
+        </LanguageProvider>
       </body>
     </html>
   );

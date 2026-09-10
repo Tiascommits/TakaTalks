@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { getCurrentUserId } from "@/lib/tracker/session";
 import { TrackerDashboard } from "@/components/tracker/TrackerDashboard";
+import { TrackerHeader } from "@/components/tracker/TrackerHeader";
 
 export const metadata = {
   title: "ইনকাম / ইনভেস্টমেন্ট ট্র্যাকার — Takatox",
@@ -19,20 +20,7 @@ export default async function TrackerPage() {
 
   return (
     <>
-      <header className="bg-green-deep text-paper px-5 pt-6.5 pb-5 border-b-4 border-gold">
-        <div className="max-w-[1160px] mx-auto">
-          <p className="font-mono text-[11.5px] tracking-wide text-[#C9D9CB] mb-1.5">
-            INCOME &amp; INVESTMENT TRACKER
-          </p>
-          <h1 className="font-serif font-semibold text-2xl sm:text-3xl mb-1.5">
-            তোমার আয় ও বিনিয়োগ, একটা জায়গায়
-          </h1>
-          <p className="max-w-[700px] text-sm text-[#DCE6DD]">
-            যোগ করলেই save হবে, প্রথমবার save করার সময় হালকা একটা account তৈরি হয় — কোনো ইমেইল বা
-            পাসওয়ার্ড লাগবে না।
-          </p>
-        </div>
-      </header>
+      <TrackerHeader />
 
       <TrackerDashboard
         initialIncome={JSON.parse(JSON.stringify(incomeEntries))}
