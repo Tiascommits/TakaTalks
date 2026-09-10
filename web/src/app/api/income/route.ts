@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { IncomeFrequency } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUserId, getOrCreateUserId } from "@/lib/tracker/session";
 
@@ -13,17 +14,31 @@ export async function GET() {
   return NextResponse.json({ entries });
 }
 
+const VALID_FREQUENCIES = Object.values(IncomeFrequency);
+
 export async function POST(request: Request) {
-  const body = await request.json();
+  const body = await request.json().catch(() => null);
   const { label, source, amount, frequency } = body ?? {};
 
-  if (!label || !source || typeof amount !== "number" || !frequency) {
+  const validLabel = typeof label === "string" && label.trim().length > 0;
+  const validSource = typeof source === "string" && source.trim().length > 0;
+  const validAmount = typeof amount === "number" && Number.isFinite(amount) && amount > 0;
+  const validFrequency =
+    typeof frequency === "string" && VALID_FREQUENCIES.includes(frequency as IncomeFrequency);
+
+  if (!validLabel || !validSource || !validAmount || !validFrequency) {
     return NextResponse.json({ error: "Missing or invalid fields" }, { status: 400 });
   }
 
   const userId = await getOrCreateUserId();
   const entry = await prisma.incomeEntry.create({
-    data: { userId, label, source, amount, frequency },
+    data: {
+      userId,
+      label: label.trim(),
+      source: source.trim(),
+      amount,
+      frequency: frequency as IncomeFrequency,
+    },
   });
   return NextResponse.json({ entry }, { status: 201 });
 }

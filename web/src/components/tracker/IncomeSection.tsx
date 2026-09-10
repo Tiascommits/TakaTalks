@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useId, useState } from "react";
 import { fmtTaka } from "@/lib/format";
 import { FREQUENCY_LABELS, INCOME_SOURCE_LABELS, type IncomeEntryDTO, type IncomeFrequency } from "./types";
 
@@ -13,7 +13,12 @@ export function IncomeSection({
   onDelete,
 }: {
   entries: IncomeEntryDTO[];
-  onAdd: (e: { label: string; source: string; amount: number; frequency: IncomeFrequency }) => Promise<void>;
+  onAdd: (e: {
+    label: string;
+    source: string;
+    amount: number;
+    frequency: IncomeFrequency;
+  }) => Promise<boolean>;
   onDelete: (id: string) => Promise<void>;
 }) {
   const [label, setLabel] = useState("");
@@ -21,16 +26,33 @@ export function IncomeSection({
   const [amount, setAmount] = useState("");
   const [frequency, setFrequency] = useState<IncomeFrequency>("MONTHLY");
   const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const labelId = useId();
+  const sourceId = useId();
+  const amountId = useId();
+  const frequencyId = useId();
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
+    setError(null);
     const amt = parseFloat(amount);
-    if (!label || !amt) return;
+    if (!label.trim()) {
+      setError("লেবেল দাও।");
+      return;
+    }
+    if (!Number.isFinite(amt) || amt <= 0) {
+      setError("পরিমাণ অবশ্যই শূন্যের চেয়ে বড় একটা সংখ্যা হতে হবে।");
+      return;
+    }
     setSubmitting(true);
-    await onAdd({ label, source, amount: amt, frequency });
+    const ok = await onAdd({ label: label.trim(), source, amount: amt, frequency });
+    setSubmitting(false);
+    if (!ok) {
+      setError("সেভ করা যায়নি, আবার চেষ্টা করো।");
+      return;
+    }
     setLabel("");
     setAmount("");
-    setSubmitting(false);
   }
 
   return (
@@ -56,7 +78,6 @@ export function IncomeSection({
                 <button
                   onClick={() => onDelete(e.id)}
                   className="text-red text-xs hover:underline"
-                  aria-label="মুছে ফেলো"
                 >
                   মুছুন
                 </button>
@@ -66,10 +87,18 @@ export function IncomeSection({
         </ul>
       )}
 
+      {error && (
+        <p role="alert" className="text-xs text-red mb-2">
+          {error}
+        </p>
+      )}
       <form onSubmit={submit} className="grid grid-cols-2 sm:grid-cols-4 gap-2 items-end">
         <div className="col-span-2 sm:col-span-1">
-          <label className="block text-xs text-[#555] mb-1">লেবেল</label>
+          <label htmlFor={labelId} className="block text-xs text-[#555] mb-1">
+            লেবেল
+          </label>
           <input
+            id={labelId}
             value={label}
             onChange={(e) => setLabel(e.target.value)}
             className="w-full px-2.5 py-2 border border-line bg-[#FCFBF8] text-sm"
@@ -77,8 +106,11 @@ export function IncomeSection({
           />
         </div>
         <div>
-          <label className="block text-xs text-[#555] mb-1">উৎস</label>
+          <label htmlFor={sourceId} className="block text-xs text-[#555] mb-1">
+            উৎস
+          </label>
           <select
+            id={sourceId}
             value={source}
             onChange={(e) => setSource(e.target.value)}
             className="w-full px-2.5 py-2 border border-line bg-[#FCFBF8] text-sm"
@@ -91,8 +123,11 @@ export function IncomeSection({
           </select>
         </div>
         <div>
-          <label className="block text-xs text-[#555] mb-1">পরিমাণ (৳)</label>
+          <label htmlFor={amountId} className="block text-xs text-[#555] mb-1">
+            পরিমাণ (৳)
+          </label>
           <input
+            id={amountId}
             type="number"
             min={0}
             value={amount}
@@ -102,8 +137,11 @@ export function IncomeSection({
         </div>
         <div className="flex gap-2">
           <div className="flex-1">
-            <label className="block text-xs text-[#555] mb-1">ফ্রিকোয়েন্সি</label>
+            <label htmlFor={frequencyId} className="block text-xs text-[#555] mb-1">
+              ফ্রিকোয়েন্সি
+            </label>
             <select
+              id={frequencyId}
               value={frequency}
               onChange={(e) => setFrequency(e.target.value as IncomeFrequency)}
               className="w-full px-2.5 py-2 border border-line bg-[#FCFBF8] text-sm"

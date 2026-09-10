@@ -1,6 +1,52 @@
 import { TAX_RULES, TAXPAYER_CATEGORIES } from "@/config/tax-rules-2025-26";
 import type { SlabRow, TaxCalculationResult, TaxCalculatorInput } from "./types";
 
+const NUMERIC_FIELDS = [
+  "basicMonthly",
+  "allowanceMonthly",
+  "bonusAnnual",
+  "employerPFMonthly",
+  "businessAnnual",
+  "housePropertyAnnual",
+  "otherIncomeAnnual",
+  "cgSharesFund",
+  "cgWithin5Years",
+  "cgAfter5Years",
+  "cgLand",
+  "cgGold",
+  "invSanchayAnnual",
+  "invBondAnnual",
+  "invMFAnnual",
+  "invStockAnnual",
+  "invLifeAnnual",
+  "invPFMonthly",
+  "invDPSMonthly",
+  "invDonationAnnual",
+  "aitPaid",
+  "netWealth",
+] as const satisfies readonly (keyof TaxCalculatorInput)[];
+
+/**
+ * Money can't be negative and a browser number input can still be made to
+ * emit NaN (empty field) or a negative value (pasted, or driven via the
+ * API/tracker path rather than the min=0 UI control). Clamp everything to a
+ * finite, non-negative number before it touches the tax math, so garbage
+ * input degrades to "treated as zero" instead of producing a nonsensical
+ * negative tax or NaN propagating through the whole breakdown.
+ */
+function sanitizeInput(input: TaxCalculatorInput): TaxCalculatorInput {
+  const clean: TaxCalculatorInput = { ...input };
+  for (const key of NUMERIC_FIELDS) {
+    const v = clean[key];
+    clean[key] = Number.isFinite(v) && v > 0 ? v : 0;
+  }
+  clean.disabledChildren =
+    Number.isFinite(input.disabledChildren) && input.disabledChildren > 0
+      ? Math.floor(input.disabledChildren)
+      : 0;
+  return clean;
+}
+
 function slabTax(amount: number): { tax: number; rows: SlabRow[] } {
   let remaining = Math.max(0, amount);
   let tax = 0;
@@ -16,7 +62,8 @@ function slabTax(amount: number): { tax: number; rows: SlabRow[] } {
   return { tax, rows };
 }
 
-export function calculateTax(input: TaxCalculatorInput): TaxCalculationResult {
+export function calculateTax(rawInput: TaxCalculatorInput): TaxCalculationResult {
+  const input = sanitizeInput(rawInput);
   const category = TAXPAYER_CATEGORIES.find((c) => c.id === input.categoryId);
   const taxFree =
     (category?.taxFreeLimit ?? TAXPAYER_CATEGORIES[0].taxFreeLimit) +

@@ -12,8 +12,9 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
 
-  const { payoutAmount } = await request.json();
-  if (typeof payoutAmount !== "number" || payoutAmount < 0) {
+  const body = await request.json().catch(() => null);
+  const payoutAmount = body?.payoutAmount;
+  if (typeof payoutAmount !== "number" || !Number.isFinite(payoutAmount) || payoutAmount < 0) {
     return NextResponse.json({ error: "Invalid payout amount" }, { status: 400 });
   }
 

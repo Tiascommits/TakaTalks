@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useId, useState } from "react";
 import Link from "next/link";
 import { TAXPAYER_CATEGORIES } from "@/config/tax-rules-2025-26";
 import { MaturityPanel } from "./MaturityPanel";
@@ -55,8 +55,11 @@ export function TrackerDashboard({
     }
   );
   const [savingProfile, setSavingProfile] = useState(false);
+  const categoryId = useId();
+  const disabledChildrenId = useId();
+  const firstTimeFilerId = useId();
 
-  async function addIncome(e: NewIncome) {
+  async function addIncome(e: NewIncome): Promise<boolean> {
     const res = await fetch("/api/income", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -65,7 +68,9 @@ export function TrackerDashboard({
     if (res.ok) {
       const { entry } = await res.json();
       setIncome((prev) => [entry, ...prev]);
+      return true;
     }
+    return false;
   }
 
   async function deleteIncome(id: string) {
@@ -73,7 +78,7 @@ export function TrackerDashboard({
     if (res.ok) setIncome((prev) => prev.filter((e) => e.id !== id));
   }
 
-  async function addInvestment(e: NewInvestment) {
+  async function addInvestment(e: NewInvestment): Promise<boolean> {
     const res = await fetch("/api/investments", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -82,7 +87,9 @@ export function TrackerDashboard({
     if (res.ok) {
       const { entry } = await res.json();
       setInvestments((prev) => [...prev, entry].sort((a, b) => a.maturityDate.localeCompare(b.maturityDate)));
+      return true;
     }
+    return false;
   }
 
   async function deleteInvestment(id: string) {
@@ -132,8 +139,11 @@ export function TrackerDashboard({
         </p>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 items-end">
           <div>
-            <label className="block text-xs text-[#555] mb-1">Taxpayer category</label>
+            <label htmlFor={categoryId} className="block text-xs text-[#555] mb-1">
+              Taxpayer category
+            </label>
             <select
+              id={categoryId}
               value={profile.category}
               onChange={(e) =>
                 setProfile({ ...profile, category: e.target.value as TaxpayerCategoryCode })
@@ -148,8 +158,11 @@ export function TrackerDashboard({
             </select>
           </div>
           <div>
-            <label className="block text-xs text-[#555] mb-1">প্রতিবন্ধী সন্তান সংখ্যা</label>
+            <label htmlFor={disabledChildrenId} className="block text-xs text-[#555] mb-1">
+              প্রতিবন্ধী সন্তান সংখ্যা
+            </label>
             <input
+              id={disabledChildrenId}
               type="number"
               min={0}
               value={profile.disabledChildren}
@@ -161,12 +174,15 @@ export function TrackerDashboard({
           </div>
           <div className="flex items-center gap-2">
             <input
+              id={firstTimeFilerId}
               type="checkbox"
               checked={profile.firstTimeFiler}
               onChange={(e) => setProfile({ ...profile, firstTimeFiler: e.target.checked })}
               className="w-auto"
             />
-            <label className="text-sm">প্রথমবার করদাতা</label>
+            <label htmlFor={firstTimeFilerId} className="text-sm">
+              প্রথমবার করদাতা
+            </label>
           </div>
         </div>
         <button

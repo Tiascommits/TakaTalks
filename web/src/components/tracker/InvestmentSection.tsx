@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useId, useState } from "react";
 import { fmtTaka } from "@/lib/format";
 import { INSTRUMENT_LABELS, type InstrumentType, type InvestmentEntryDTO } from "./types";
 
@@ -19,7 +19,7 @@ export function InvestmentSection({
     startDate: string;
     termMonths: number;
     expectedRatePct: number;
-  }) => Promise<void>;
+  }) => Promise<boolean>;
   onDelete: (id: string) => Promise<void>;
 }) {
   const [label, setLabel] = useState("");
@@ -29,26 +29,55 @@ export function InvestmentSection({
   const [termMonths, setTermMonths] = useState("12");
   const [rate, setRate] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const labelId = useId();
+  const instrumentId = useId();
+  const principalId = useId();
+  const startDateId = useId();
+  const termId = useId();
+  const rateId = useId();
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
+    setError(null);
     const p = parseFloat(principal);
     const t = parseInt(termMonths, 10);
     const r = parseFloat(rate) || 0;
-    if (!label || !p || !t) return;
+
+    if (!label.trim()) {
+      setError("লেবেল দাও।");
+      return;
+    }
+    if (!Number.isFinite(p) || p <= 0) {
+      setError("আসল পরিমাণ অবশ্যই শূন্যের চেয়ে বড় হতে হবে।");
+      return;
+    }
+    if (!Number.isInteger(t) || t <= 0) {
+      setError("মেয়াদ অবশ্যই একটা ধনাত্মক পূর্ণসংখ্যা (মাস) হতে হবে।");
+      return;
+    }
+    if (r < 0) {
+      setError("রেট ঋণাত্মক হতে পারে না।");
+      return;
+    }
+
     setSubmitting(true);
-    await onAdd({
-      label,
+    const ok = await onAdd({
+      label: label.trim(),
       instrumentType,
       principalAmount: p,
       startDate,
       termMonths: t,
       expectedRatePct: r,
     });
+    setSubmitting(false);
+    if (!ok) {
+      setError("সেভ করা যায়নি, আবার চেষ্টা করো।");
+      return;
+    }
     setLabel("");
     setPrincipal("");
     setRate("");
-    setSubmitting(false);
   }
 
   return (
@@ -80,7 +109,6 @@ export function InvestmentSection({
                 <button
                   onClick={() => onDelete(e.id)}
                   className="text-red text-xs hover:underline"
-                  aria-label="মুছে ফেলো"
                 >
                   মুছুন
                 </button>
@@ -90,10 +118,18 @@ export function InvestmentSection({
         </ul>
       )}
 
+      {error && (
+        <p role="alert" className="text-xs text-red mb-2">
+          {error}
+        </p>
+      )}
       <form onSubmit={submit} className="grid grid-cols-2 sm:grid-cols-3 gap-2 items-end">
         <div>
-          <label className="block text-xs text-[#555] mb-1">লেবেল</label>
+          <label htmlFor={labelId} className="block text-xs text-[#555] mb-1">
+            লেবেল
+          </label>
           <input
+            id={labelId}
             value={label}
             onChange={(e) => setLabel(e.target.value)}
             className="w-full px-2.5 py-2 border border-line bg-[#FCFBF8] text-sm"
@@ -101,8 +137,11 @@ export function InvestmentSection({
           />
         </div>
         <div>
-          <label className="block text-xs text-[#555] mb-1">ধরন</label>
+          <label htmlFor={instrumentId} className="block text-xs text-[#555] mb-1">
+            ধরন
+          </label>
           <select
+            id={instrumentId}
             value={instrumentType}
             onChange={(e) => setInstrumentType(e.target.value as InstrumentType)}
             className="w-full px-2.5 py-2 border border-line bg-[#FCFBF8] text-sm"
@@ -115,8 +154,11 @@ export function InvestmentSection({
           </select>
         </div>
         <div>
-          <label className="block text-xs text-[#555] mb-1">আসল (৳)</label>
+          <label htmlFor={principalId} className="block text-xs text-[#555] mb-1">
+            আসল (৳)
+          </label>
           <input
+            id={principalId}
             type="number"
             min={0}
             value={principal}
@@ -125,8 +167,11 @@ export function InvestmentSection({
           />
         </div>
         <div>
-          <label className="block text-xs text-[#555] mb-1">শুরুর তারিখ</label>
+          <label htmlFor={startDateId} className="block text-xs text-[#555] mb-1">
+            শুরুর তারিখ
+          </label>
           <input
+            id={startDateId}
             type="date"
             value={startDate}
             onChange={(e) => setStartDate(e.target.value)}
@@ -134,8 +179,11 @@ export function InvestmentSection({
           />
         </div>
         <div>
-          <label className="block text-xs text-[#555] mb-1">মেয়াদ (মাস)</label>
+          <label htmlFor={termId} className="block text-xs text-[#555] mb-1">
+            মেয়াদ (মাস)
+          </label>
           <input
+            id={termId}
             type="number"
             min={1}
             value={termMonths}
@@ -145,8 +193,11 @@ export function InvestmentSection({
         </div>
         <div className="flex gap-2">
           <div className="flex-1">
-            <label className="block text-xs text-[#555] mb-1">প্রত্যাশিত রেট (%)</label>
+            <label htmlFor={rateId} className="block text-xs text-[#555] mb-1">
+              প্রত্যাশিত রেট (%)
+            </label>
             <input
+              id={rateId}
               type="number"
               min={0}
               step={0.1}

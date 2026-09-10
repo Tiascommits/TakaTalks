@@ -36,9 +36,17 @@ yarn-error.log*
 # vercel
 .vercel
 
-# prisma (SQLite dev db)
+# prisma (SQLite dev + test db)
 /prisma/*.db
 /prisma/*.db-journal
+/prisma/*.db-wal
+/prisma/*.db-shm
+
+# playwright
+/test-results/
+/playwright-report/
+/blob-report/
+/playwright/.cache/
 
 # typescript
 *.tsbuildinfo
