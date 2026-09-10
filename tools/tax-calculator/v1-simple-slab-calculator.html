@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>আয়কর হিসাব (ডেমো) — Income Tax Estimator</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@6..72,400;6..72,500;6..72,600;6..72,700&family=Noto+Sans+Bengali:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#F6F3EC;
+    --ink:#1B1B18;
+    --green:#0B4F3F;
+    --green-deep:#07352A;
+    --red:#A62E2E;
+    --gold:#B98A2E;
+    --line:#D8D2C2;
+    --card:#FFFFFF;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--paper);
+    color:var(--ink);
+    font-family:'Noto Sans Bengali','IBM Plex Mono',sans-serif;
+    line-height:1.5;
+    padding:0 0 60px;
+  }
+  header{
+    background:var(--green-deep);
+    color:var(--paper);
+    padding:28px 24px 22px;
+    border-bottom:6px solid var(--gold);
+  }
+  header .eyebrow{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:12px;
+    letter-spacing:0.02em;
+    color:#C9D9CB;
+    margin:0 0 6px;
+  }
+  header h1{
+    font-family:'Newsreader',serif;
+    font-weight:600;
+    font-size:clamp(26px,4vw,36px);
+    margin:0 0 8px;
+  }
+  header p{
+    margin:0;
+    max-width:640px;
+    font-size:14.5px;
+    color:#DCE6DD;
+  }
+  .disclaimer{
+    max-width:900px;
+    margin:18px auto 0;
+    padding:12px 16px;
+    background:#FBEFEF;
+    border:1px solid var(--red);
+    border-radius:2px;
+    color:var(--red);
+    font-size:13px;
+  }
+  main{
+    max-width:900px;
+    margin:28px auto;
+    padding:0 24px;
+    display:grid;
+    grid-template-columns:1fr;
+    gap:24px;
+  }
+  @media(min-width:760px){
+    main{grid-template-columns: 1.05fr 0.95fr;}
+  }
+  .card{
+    background:var(--card);
+    border:1px solid var(--line);
+    padding:22px 22px 26px;
+  }
+  .card h2{
+    font-family:'Newsreader',serif;
+    font-size:19px;
+    font-weight:600;
+    margin:0 0 16px;
+    padding-bottom:10px;
+    border-bottom:2px solid var(--green);
+    color:var(--green-deep);
+  }
+  label{
+    display:block;
+    font-size:13px;
+    color:#555;
+    margin:14px 0 5px;
+  }
+  label.first{margin-top:0;}
+  select, input{
+    width:100%;
+    padding:9px 10px;
+    border:1px solid var(--line);
+    background:#FCFBF8;
+    font-size:15px;
+    font-family:inherit;
+    color:var(--ink);
+  }
+  select:focus, input:focus{
+    outline:none;
+    border-color:var(--green);
+  }
+  .row2{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+  .ledger{font-family:'IBM Plex Mono',monospace; font-size:13.5px;}
+  .ledger .line{
+    display:flex;
+    justify-content:space-between;
+    padding:7px 0;
+    border-bottom:1px dashed var(--line);
+  }
+  .ledger .line.sub{color:#666; padding-left:10px; font-size:12.5px;}
+  .ledger .line.total{
+    border-bottom:none;
+    border-top:2px solid var(--ink);
+    margin-top:6px;
+    padding-top:10px;
+    font-weight:700;
+    font-size:15px;
+  }
+  .ledger .line.payable{
+    background:#EFF6F1;
+    border:1px solid var(--green);
+    margin-top:10px;
+    padding:12px 10px;
+    font-weight:700;
+    font-size:17px;
+    color:var(--green-deep);
+  }
+  .badge{
+    display:inline-block;
+    font-family:'IBM Plex Mono',monospace;
+    font-size:11px;
+    color:var(--gold);
+    border:1px solid var(--gold);
+    padding:2px 7px;
+    margin-bottom:10px;
+  }
+  .note{
+    font-size:12px;
+    color:#777;
+    margin-top:16px;
+    border-top:1px solid var(--line);
+    padding-top:10px;
+  }
+  footer{
+    max-width:900px;
+    margin:0 auto;
+    padding:0 24px;
+    font-size:12px;
+    color:#8a8578;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <p class="eyebrow">DEMO / DUMMY ESTIMATOR — NOT AN OFFICIAL NBR SERVICE</p>
+  <h1>আয়কর হিসাব — Tax Estimator (ডেমো)</h1>
+  <p>এটা একটা practice/demo calculator, NBR এর public tax slab rules অনুসরণ করে বানানো। এটা etaxnbr.gov.bd এর official system না, আর কোনো ভাবেই affiliated না।</p>
+</header>
+
+<div class="disclaimer">
+  এটা একটা dummy/demo tool। Actual return filing এর জন্য <strong>etaxnbr.gov.bd</strong> ব্যবহার করো, official NBR circular verify করো, প্রয়োজনে tax consultant দেখাও। এখানের হিসাব শুধু estimation, legal filing এর জন্য না।
+</div>
+
+<main>
+  <div class="card">
+    <span class="badge">INPUT</span>
+    <h2>তোমার তথ্য দাও</h2>
+
+    <label class="first">Taxpayer category</label>
+    <select id="category">
+      <option value="375000">সাধারণ করদাতা — Tax-free ৳3,75,000</option>
+      <option value="425000">নারী / সিনিয়র সিটিজেন (65+) — ৳4,25,000</option>
+      <option value="500000">প্রতিবন্ধী / তৃতীয় লিঙ্গ — ৳5,00,000</option>
+      <option value="525000">গেজেটেড মুক্তিযোদ্ধা — ৳5,25,000</option>
+    </select>
+
+    <label>বার্ষিক মোট আয় (Total annual taxable income, BDT)</label>
+    <input type="number" id="income" placeholder="যেমন 900000" min="0">
+
+    <div class="row2">
+      <div>
+        <label>বিনিয়োগ (Investment: Sanchayapatra, DPS, insurance ইত্যাদি)</label>
+        <input type="number" id="investment" placeholder="0" min="0" value="0">
+      </div>
+      <div>
+        <label>অগ্রিম কর কর্তন (AIT already paid)</label>
+        <input type="number" id="ait" placeholder="0" min="0" value="0">
+      </div>
+    </div>
+
+    <p class="note">Slab structure (income year 2025-26 / AY 2026-27, general): tax-free সীমার পর পরবর্তী ৳3,00,000-এ 10%, পরবর্তী ৳4,00,000-এ 15%, পরবর্তী ৳5,00,000-এ 20%, পরবর্তী ৳20,00,000-এ 25%, বাকিটায় 30%। Rebate = min(আয়ের 3%, বিনিয়োগের 10%, ৳7,50,000)। Minimum tax ৳5,000 (tax-free সীমা পার হলে)।</p>
+  </div>
+
+  <div class="card">
+    <span class="badge">BREAKDOWN</span>
+    <h2>হিসাবের ধাপ</h2>
+    <div class="ledger" id="output">
+      <div class="line"><span>আয় দাও, হিসাব এখানে দেখাবে</span><span>—</span></div>
+    </div>
+  </div>
+</main>
+
+<footer>
+  Dummy estimator, illustrative purpose only. Slab figures sourced from publicly published NBR/Finance Act 2025 summaries. Rules change every budget, always confirm with etaxnbr.gov.bd or a tax practitioner.
+</footer>
+
+<script>
+function fmt(n){
+  n = Math.round(n);
+  return '৳' + n.toLocaleString('en-IN');
+}
+
+function calc(){
+  const taxFree = parseFloat(document.getElementById('category').value);
+  const income = parseFloat(document.getElementById('income').value) || 0;
+  const investment = parseFloat(document.getElementById('investment').value) || 0;
+  const ait = parseFloat(document.getElementById('ait').value) || 0;
+  const out = document.getElementById('output');
+
+  if(income <= 0){
+    out.innerHTML = '<div class="line"><span>আয় দাও, হিসাব এখানে দেখাবে</span><span>—</span></div>';
+    return;
+  }
+
+  const slabs = [
+    {amt:300000, rate:0.10},
+    {amt:400000, rate:0.15},
+    {amt:500000, rate:0.20},
+    {amt:2000000, rate:0.25},
+    {amt:Infinity, rate:0.30}
+  ];
+
+  let remaining = Math.max(0, income - taxFree);
+  let slabTax = 0;
+  let rows = '';
+  for(const s of slabs){
+    if(remaining <= 0) break;
+    const chunk = Math.min(remaining, s.amt);
+    const tax = chunk * s.rate;
+    slabTax += tax;
+    if(chunk > 0){
+      rows += `<div class="line sub"><span>${(s.rate*100).toFixed(0)}% স্লাব: ${fmt(chunk)} আয়ে</span><span>${fmt(tax)}</span></div>`;
+    }
+    remaining -= chunk;
+  }
+
+  const rebate = Math.min(0.03*income, 0.10*investment, 750000);
+  let liability = Math.max(slabTax - rebate, 0);
+
+  let minTaxApplied = false;
+  if(income > taxFree && liability < 5000){
+    liability = 5000;
+    minTaxApplied = true;
+  }
+
+  const payable = Math.max(0, liability - ait);
+
+  out.innerHTML = `
+    <div class="line"><span>মোট আয়</span><span>${fmt(income)}</span></div>
+    <div class="line"><span>করমুক্ত সীমা (tax-free)</span><span>−${fmt(taxFree)}</span></div>
+    <div class="line"><span>করযোগ্য আয় (taxable)</span><span>${fmt(Math.max(0,income-taxFree))}</span></div>
+    ${rows}
+    <div class="line total"><span>মোট স্লাব ট্যাক্স</span><span>${fmt(slabTax)}</span></div>
+    <div class="line"><span>বিনিয়োগ রিবেট (rebate)</span><span>−${fmt(rebate)}</span></div>
+    <div class="line"><span>${minTaxApplied ? 'ন্যূনতম কর প্রয়োগ (min tax)' : 'কর দায় (after rebate)'}</span><span>${fmt(liability)}</span></div>
+    <div class="line"><span>পূর্বে কর্তিত (AIT)</span><span>−${fmt(ait)}</span></div>
+    <div class="line payable"><span>পরিশোধযোগ্য কর</span><span>${fmt(payable)}</span></div>
+  `;
+}
+
+document.getElementById('category').addEventListener('change', calc);
+document.getElementById('income').addEventListener('input', calc);
+document.getElementById('investment').addEventListener('input', calc);
+document.getElementById('ait').addEventListener('input', calc);
+</script>
+
+</body>
+</html>

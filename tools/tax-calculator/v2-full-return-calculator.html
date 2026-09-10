@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>সম্পূর্ণ আয়কর হিসাব (ডেমো) — Full Return Estimator</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@6..72,500;6..72,600;6..72,700&family=Noto+Sans+Bengali:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#F6F3EC;
+    --ink:#1B1B18;
+    --green:#0B4F3F;
+    --green-deep:#07352A;
+    --red:#A62E2E;
+    --gold:#B98A2E;
+    --line:#D8D2C2;
+    --card:#FFFFFF;
+    --muted:#7A7566;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--paper);
+    color:var(--ink);
+    font-family:'Noto Sans Bengali','IBM Plex Mono',sans-serif;
+    line-height:1.5;
+  }
+  header{
+    background:var(--green-deep);
+    color:var(--paper);
+    padding:26px 20px 20px;
+    border-bottom:6px solid var(--gold);
+  }
+  header .eyebrow{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:11.5px;
+    letter-spacing:0.02em;
+    color:#C9D9CB;
+    margin:0 0 6px;
+  }
+  header h1{
+    font-family:'Newsreader',serif;
+    font-weight:600;
+    font-size:clamp(22px,3.4vw,30px);
+    margin:0 0 6px;
+  }
+  header p{margin:0;max-width:700px;font-size:13.5px;color:#DCE6DD;}
+  .disclaimer{
+    max-width:1160px;
+    margin:16px auto 0;
+    padding:10px 16px;
+    background:#FBEFEF;
+    border:1px solid var(--red);
+    color:var(--red);
+    font-size:12.5px;
+  }
+  .wrap{
+    max-width:1160px;
+    margin:24px auto 60px;
+    padding:0 20px;
+    display:grid;
+    grid-template-columns:1fr;
+    gap:20px;
+    align-items:start;
+  }
+  @media(min-width:900px){
+    .wrap{grid-template-columns: 1.35fr 1fr;}
+  }
+  .form-col{display:flex;flex-direction:column;gap:16px;}
+  fieldset{
+    border:1px solid var(--line);
+    background:var(--card);
+    padding:16px 16px 18px;
+    margin:0;
+  }
+  legend{
+    font-family:'Newsreader',serif;
+    font-weight:600;
+    font-size:15.5px;
+    color:var(--green-deep);
+    padding:0 6px 0 0;
+  }
+  .section-note{font-size:12px;color:var(--muted);margin:2px 0 10px;}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px 12px;}
+  .grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px 12px;}
+  @media(max-width:520px){.grid2,.grid3{grid-template-columns:1fr 1fr;}}
+  label{
+    display:block;
+    font-size:12px;
+    color:#555;
+    margin:0 0 4px;
+  }
+  .field{margin-bottom:4px;}
+  select, input[type=number]{
+    width:100%;
+    padding:8px 9px;
+    border:1px solid var(--line);
+    background:#FCFBF8;
+    font-size:14px;
+    font-family:inherit;
+    color:var(--ink);
+  }
+  select:focus, input:focus{outline:none;border-color:var(--green);}
+  .checkline{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    font-size:13px;
+    color:#444;
+    margin:8px 0 0;
+  }
+  .checkline input{width:auto;}
+  .hint{font-size:11px;color:var(--muted);margin-top:3px;}
+
+  .result-col{position:sticky; top:16px;}
+  .card{background:var(--card);border:1px solid var(--line);padding:18px 18px 20px;}
+  .card h2{
+    font-family:'Newsreader',serif;
+    font-size:17px;
+    font-weight:600;
+    margin:0 0 14px;
+    padding-bottom:8px;
+    border-bottom:2px solid var(--green);
+    color:var(--green-deep);
+  }
+  .badge{
+    display:inline-block;
+    font-family:'IBM Plex Mono',monospace;
+    font-size:10.5px;
+    color:var(--gold);
+    border:1px solid var(--gold);
+    padding:2px 6px;
+    margin-bottom:8px;
+  }
+  .ledger{font-family:'IBM Plex Mono',monospace;font-size:12.5px;}
+  .ledger .grp-title{
+    font-family:'Noto Sans Bengali',sans-serif;
+    font-weight:600;
+    font-size:12px;
+    color:var(--green-deep);
+    margin:14px 0 4px;
+    text-transform:none;
+  }
+  .ledger .grp-title:first-child{margin-top:0;}
+  .ledger .line{
+    display:flex;
+    justify-content:space-between;
+    gap:8px;
+    padding:4.5px 0;
+    border-bottom:1px dashed var(--line);
+  }
+  .ledger .line.sub{color:#777;padding-left:8px;font-size:11.5px;}
+  .ledger .line.total{
+    border-bottom:none;
+    border-top:1.5px solid var(--ink);
+    margin-top:4px;
+    padding-top:7px;
+    font-weight:700;
+  }
+  .ledger .line.payable{
+    background:#EFF6F1;
+    border:1px solid var(--green);
+    margin-top:12px;
+    padding:12px 10px;
+    font-weight:700;
+    font-size:15.5px;
+    color:var(--green-deep);
+  }
+  .ledger .line.refund{
+    background:#FBEFEF;
+    border:1px solid var(--red);
+    color:var(--red);
+  }
+  .foot-note{
+    font-size:11px;
+    color:var(--muted);
+    margin-top:14px;
+    border-top:1px solid var(--line);
+    padding-top:10px;
+  }
+  footer{
+    max-width:1160px;
+    margin:0 auto;
+    padding:0 20px 30px;
+    font-size:11.5px;
+    color:#8a8578;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <p class="eyebrow">DEMO / DUMMY ESTIMATOR — NOT AN OFFICIAL NBR SERVICE</p>
+  <h1>সম্পূর্ণ আয়কর হিসাব — Full Return Estimator (ডেমো)</h1>
+  <p>Salary, business/profession, house property, capital gains, other সব income head + investment rebate + net wealth surcharge + minimum tax, sob ekসাথে হিসাব করা একটা practice tool। NBR এর public rules (Paripatra / Finance Act) অনুসরণ করে বানানো, official portal na।</p>
+</header>
+
+<div class="disclaimer">
+  Dummy/demo tool। Rules ঘনঘন budget e change hoy, ar kichu per-instrument cap ekhane simplified. Actual filing er jonno <strong>etaxnbr.gov.bd</strong> use koro ba tax practitioner dekhao। Ei number legal filing er জন্য na।
+</div>
+
+<div class="wrap">
+  <div class="form-col">
+
+    <fieldset>
+      <legend>১. প্রোফাইল</legend>
+      <p class="section-note">Taxpayer category অনুযায়ী tax-free limit ঠিক হয়।</p>
+      <div class="field">
+        <label>Taxpayer category</label>
+        <select id="category">
+          <option value="400000">সাধারণ — Tax-free ৳4,00,000</option>
+          <option value="450000">নারী / সিনিয়র সিটিজেন (65+) — ৳4,50,000</option>
+          <option value="525000">তৃতীয় লিঙ্গ — ৳5,25,000</option>
+          <option value="525000">প্রতিবন্ধী — ৳5,25,000</option>
+          <option value="550000">মুক্তিযোদ্ধা / জুলাই যোদ্ধা — ৳5,50,000</option>
+        </select>
+      </div>
+      <div class="grid2">
+        <div class="field">
+          <label>প্রতিবন্ধী সন্তান সংখ্যা (each +৳50,000 tax-free)</label>
+          <input type="number" id="disabledChildren" value="0" min="0">
+        </div>
+        <div class="field">
+          <label class="hint" style="margin-top:18px;"></label>
+          <div class="checkline"><input type="checkbox" id="firstTime"><label for="firstTime" style="margin:0;">প্রথমবার করদাতা (first-time, min tax ৳1,000)</label></div>
+        </div>
+      </div>
+    </fieldset>
+
+    <fieldset>
+      <legend>২. বেতন আয় (Salary income)</legend>
+      <p class="section-note">Standard exemption = ⅓ of gross salary income বা ৳5,00,000, যেটা কম।</p>
+      <div class="grid2">
+        <div class="field"><label>মূল বেতন (Basic, monthly)</label><input type="number" id="basic" value="0" min="0"></div>
+        <div class="field"><label>ভাতা (Allowances, monthly)</label><input type="number" id="allowance" value="0" min="0"></div>
+        <div class="field"><label>বোনাস (Bonus, annual total)</label><input type="number" id="bonus" value="0" min="0"></div>
+        <div class="field"><label>Employer PF contribution (monthly)</label><input type="number" id="employerPF" value="0" min="0"></div>
+      </div>
+    </fieldset>
+
+    <fieldset>
+      <legend>৩. ব্যবসা / পেশা ও অন্যান্য আয় (Business, house property, other)</legend>
+      <div class="grid2">
+        <div class="field"><label>ব্যবসা / পেশার নেট মুনাফা (annual)</label><input type="number" id="business" value="0" min="0"></div>
+        <div class="field"><label>বাড়ি ভাড়ার নেট আয় (annual, deduction পরে)</label><input type="number" id="houseProperty" value="0" min="0"></div>
+        <div class="field"><label>সুদ / ডিভিডেন্ড ইত্যাদি (other sources, annual)</label><input type="number" id="otherIncome" value="0" min="0"></div>
+      </div>
+    </fieldset>
+
+    <fieldset>
+      <legend>৪. মূলধনী মুনাফা (Capital gains)</legend>
+      <p class="section-note">Listed shares + fund units মিলে বছরে ৫০ লাখ পর্যন্ত exempt, বাকিটা flat 15%।</p>
+      <div class="grid2">
+        <div class="field"><label>Listed shares/securities gain (annual)</label><input type="number" id="cgShares" value="0" min="0"></div>
+        <div class="field"><label>BSEC fund units gain (annual)</label><input type="number" id="cgFund" value="0" min="0"></div>
+        <div class="field"><label>অন্য সম্পদ, ৫ বছরের মধ্যে বিক্রি (slab rate)</label><input type="number" id="cgWithin5" value="0" min="0"></div>
+        <div class="field"><label>অন্য সম্পদ, ৫ বছর পর বিক্রি (flat 15%)</label><input type="number" id="cgAfter5" value="0" min="0"></div>
+        <div class="field"><label>জমি — দলিল মূল্যের চেয়ে বেশি অংশ (slab rate)</label><input type="number" id="cgLand" value="0" min="0"></div>
+        <div class="field"><label>স্বর্ণ / গহনা / মূল্যবান জিনিস (flat 5%)</label><input type="number" id="cgGold" value="0" min="0"></div>
+      </div>
+    </fieldset>
+
+    <fieldset>
+      <legend>৫. বিনিয়োগ (Investment — rebate eligible)</legend>
+      <p class="section-note">Sanchaypatra + Govt securities + Mutual fund মিলে বছরে ৫ লাখ শেয়ার্ড cap। DPS বছরে ৳1,20,000 পর্যন্ত।</p>
+      <div class="grid3">
+        <div class="field"><label>সঞ্চয়পত্র (annual)</label><input type="number" id="invSanchay" value="0" min="0"></div>
+        <div class="field"><label>Govt securities/bonds (annual)</label><input type="number" id="invBond" value="0" min="0"></div>
+        <div class="field"><label>Mutual fund/ETF (annual)</label><input type="number" id="invMF" value="0" min="0"></div>
+        <div class="field"><label>DSE listed stock, নতুন বিনিয়োগ (annual)</label><input type="number" id="invStock" value="0" min="0"></div>
+        <div class="field"><label>জীবন বীমা প্রিমিয়াম (annual)</label><input type="number" id="invLife" value="0" min="0"></div>
+        <div class="field"><label>PF, নিজের contribution (monthly)</label><input type="number" id="invPF" value="0" min="0"></div>
+        <div class="field"><label>DPS (monthly)</label><input type="number" id="invDPS" value="0" min="0"></div>
+        <div class="field"><label>অনুমোদিত দাতব্য প্রতিষ্ঠানে দান (annual)</label><input type="number" id="invDonation" value="0" min="0"></div>
+      </div>
+    </fieldset>
+
+    <fieldset>
+      <legend>৬. সম্পদ ও AIT (Net wealth, surcharge triggers, AIT)</legend>
+      <p class="section-note">Net wealth ৪ কোটির নিচে হলে blank/0 রাখো।</p>
+      <div class="grid2">
+        <div class="field"><label>মোট নেট সম্পদ (statement of assets, if known)</label><input type="number" id="netWealth" value="0" min="0"></div>
+        <div class="field"><label>আগেই কর্তিত AIT (advance tax / TDS)</label><input type="number" id="ait" value="0" min="0"></div>
+      </div>
+      <div class="checkline"><input type="checkbox" id="multiCar"><label for="multiCar" style="margin:0;">একাধিক গাড়ি আছে</label></div>
+      <div class="checkline"><input type="checkbox" id="bigHouse"><label for="bigHouse" style="margin:0;">সিটি কর্পোরেশনে ৮,০০০ বর্গফুটের বেশি বাড়ি/জমি আছে</label></div>
+    </fieldset>
+
+  </div>
+
+  <div class="result-col">
+    <div class="card">
+      <span class="badge">RETURN SUMMARY</span>
+      <h2>হিসাবের সম্পূর্ণ বিবরণ</h2>
+      <div class="ledger" id="output">
+        <div class="line"><span>তথ্য দিলে হিসাব এখানে আসবে</span><span>—</span></div>
+      </div>
+      <p class="foot-note">Dummy estimator। Per-instrument sub-caps (jemon life insurance er 10%-of-sum-assured rule) simplified rakha hoyeche। Real filing e sob schedule officially verify koro।</p>
+    </div>
+  </div>
+</div>
+
+<footer>
+  Dummy full-return estimator, illustrative purpose only. Structure sourced from publicly published NBR Paripatra 2025-26, Income Tax Act 2023 and Finance Act summaries. Rules change every budget — always confirm with etaxnbr.gov.bd or a tax practitioner before filing.
+</footer>
+
+<script>
+function fmt(n){
+  const sign = n < 0 ? '−' : '';
+  n = Math.round(Math.abs(n));
+  return sign + '৳' + n.toLocaleString('en-IN');
+}
+function num(id){ return parseFloat(document.getElementById(id).value) || 0; }
+
+function slabTax(amount){
+  const slabs = [
+    {amt:300000, rate:0.10},
+    {amt:400000, rate:0.15},
+    {amt:500000, rate:0.20},
+    {amt:2000000, rate:0.25},
+    {amt:Infinity, rate:0.30}
+  ];
+  let remaining = Math.max(0, amount);
+  let tax = 0;
+  let rows = [];
+  for(const s of slabs){
+    if(remaining <= 0) break;
+    const chunk = Math.min(remaining, s.amt);
+    const t = chunk * s.rate;
+    tax += t;
+    if(chunk > 0) rows.push({rate:s.rate, chunk, t});
+    remaining -= chunk;
+  }
+  return {tax, rows};
+}
+
+function calc(){
+  const taxFree = parseFloat(document.getElementById('category').value) + num('disabledChildren')*50000;
+  const firstTime = document.getElementById('firstTime').checked;
+
+  // Salary
+  const grossSalary = (num('basic')+num('allowance'))*12 + num('bonus') + num('employerPF')*12;
+  const salaryExemption = Math.min(grossSalary/3, 500000);
+  const taxableSalary = Math.max(0, grossSalary - salaryExemption);
+
+  const business = num('business');
+  const houseProperty = num('houseProperty');
+  const otherIncome = num('otherIncome');
+
+  // Capital gains
+  const sharesFundGain = num('cgShares') + num('cgFund');
+  const sharesFundExempt = Math.min(sharesFundGain, 5000000);
+  const sharesFundTaxable = Math.max(0, sharesFundGain - 5000000);
+  const cgWithin5 = num('cgWithin5');   // slab
+  const cgAfter5 = num('cgAfter5');     // flat 15%
+  const cgLand = num('cgLand');         // slab
+  const cgGold = num('cgGold');         // flat 5%
+
+  const slabBase = taxableSalary + business + houseProperty + otherIncome + cgWithin5 + cgLand;
+  const incomeAboveTaxFree = Math.max(0, slabBase - taxFree);
+  const {tax: baseSlabTax, rows} = slabTax(incomeAboveTaxFree);
+
+  const flatShareTax = sharesFundTaxable * 0.15;
+  const flatAfter5Tax = cgAfter5 * 0.15;
+  const flatGoldTax = cgGold * 0.05;
+  const flatCGTax = flatShareTax + flatAfter5Tax + flatGoldTax;
+
+  const grossTax = baseSlabTax + flatCGTax;
+
+  // Investments
+  const sharedCapGroup = Math.min(num('invSanchay') + num('invBond') + num('invMF'), 500000);
+  const dpsEligible = Math.min(num('invDPS')*12, 120000);
+  const totalInvestment = sharedCapGroup + num('invStock') + num('invLife') + num('invPF')*12 + dpsEligible + num('invDonation');
+
+  const rebate3pct = 0.03 * slabBase;
+  const rebate10pct = 0.10 * totalInvestment;
+  const rebateCap = 750000;
+  const rebate = Math.min(rebate3pct, rebate10pct, rebateCap);
+
+  let taxAfterRebate = Math.max(0, grossTax - rebate);
+
+  const minFloor = firstTime ? 1000 : 5000;
+  let minApplied = false;
+  const totalIncomeAll = slabBase + sharesFundGain + cgAfter5 + cgGold;
+  if(totalIncomeAll > taxFree && taxAfterRebate < minFloor){
+    taxAfterRebate = minFloor;
+    minApplied = true;
+  }
+
+  // Surcharge
+  const netWealth = num('netWealth');
+  const multiCar = document.getElementById('multiCar').checked;
+  const bigHouse = document.getElementById('bigHouse').checked;
+  let surchargeRate = 0;
+  if(netWealth > 500000000) surchargeRate = 0.35;
+  else if(netWealth > 200000000) surchargeRate = 0.30;
+  else if(netWealth > 100000000) surchargeRate = 0.20;
+  else if(netWealth > 40000000 || multiCar || bigHouse) surchargeRate = 0.10;
+  const surchargeAmt = taxAfterRebate * surchargeRate;
+
+  const totalLiability = taxAfterRebate + surchargeAmt;
+  const ait = num('ait');
+  const netPayable = totalLiability - ait;
+
+  const out = document.getElementById('output');
+  if(grossSalary===0 && business===0 && houseProperty===0 && otherIncome===0 && sharesFundGain===0 && cgWithin5===0 && cgAfter5===0 && cgLand===0 && cgGold===0){
+    out.innerHTML = '<div class="line"><span>তথ্য দিলে হিসাব এখানে আসবে</span><span>—</span></div>';
+    return;
+  }
+
+  let rowsHtml = rows.map(r => `<div class="line sub"><span>${(r.rate*100).toFixed(0)}% স্লাব: ${fmt(r.chunk)}</span><span>${fmt(r.t)}</span></div>`).join('');
+
+  out.innerHTML = `
+    <div class="grp-title">আয়ের খাত</div>
+    <div class="line"><span>মোট বেতন (gross salary)</span><span>${fmt(grossSalary)}</span></div>
+    <div class="line sub"><span>বেতন exemption (⅓ বা ৫ লাখ, যেটা কম)</span><span>−${fmt(salaryExemption)}</span></div>
+    <div class="line"><span>করযোগ্য বেতন</span><span>${fmt(taxableSalary)}</span></div>
+    <div class="line"><span>ব্যবসা/পেশা মুনাফা</span><span>${fmt(business)}</span></div>
+    <div class="line"><span>বাড়ি ভাড়ার আয়</span><span>${fmt(houseProperty)}</span></div>
+    <div class="line"><span>অন্যান্য উৎস</span><span>${fmt(otherIncome)}</span></div>
+    <div class="line"><span>মূলধনী মুনাফা (slab rate অংশ)</span><span>${fmt(cgWithin5+cgLand)}</span></div>
+    <div class="line total"><span>মোট স্লাব-ভিত্তিক আয়</span><span>${fmt(slabBase)}</span></div>
+
+    <div class="grp-title">কর-মুক্ত সীমা ও স্লাব</div>
+    <div class="line"><span>করমুক্ত সীমা (tax-free)</span><span>−${fmt(taxFree)}</span></div>
+    <div class="line"><span>স্লাবের আওতায় আয়</span><span>${fmt(incomeAboveTaxFree)}</span></div>
+    ${rowsHtml}
+    <div class="line total"><span>স্লাব কর</span><span>${fmt(baseSlabTax)}</span></div>
+
+    <div class="grp-title">ফ্ল্যাট রেট মূলধনী মুনাফা কর</div>
+    <div class="line sub"><span>Shares/fund gain (৫০ লাখ exempt পরে, 15%)</span><span>${fmt(flatShareTax)}</span></div>
+    <div class="line sub"><span>৫ বছর পর বিক্রি সম্পদ (flat 15%)</span><span>${fmt(flatAfter5Tax)}</span></div>
+    <div class="line sub"><span>স্বর্ণ/গহনা (flat 5%)</span><span>${fmt(flatGoldTax)}</span></div>
+    <div class="line total"><span>মোট কর (রিবেটের আগে)</span><span>${fmt(grossTax)}</span></div>
+
+    <div class="grp-title">বিনিয়োগ রিবেট</div>
+    <div class="line sub"><span>মোট eligible বিনিয়োগ</span><span>${fmt(totalInvestment)}</span></div>
+    <div class="line sub"><span>আয়ের 3%</span><span>${fmt(rebate3pct)}</span></div>
+    <div class="line sub"><span>বিনিয়োগের 10%</span><span>${fmt(rebate10pct)}</span></div>
+    <div class="line sub"><span>সর্বোচ্চ সীমা</span><span>${fmt(rebateCap)}</span></div>
+    <div class="line total"><span>রিবেট (সবচেয়ে কম মান)</span><span>−${fmt(rebate)}</span></div>
+
+    <div class="grp-title">চূড়ান্ত হিসাব</div>
+    <div class="line"><span>রিবেটের পর কর ${minApplied ? '(minimum tax প্রয়োগ হয়েছে)' : ''}</span><span>${fmt(taxAfterRebate)}</span></div>
+    <div class="line"><span>সারচার্জ (${(surchargeRate*100).toFixed(0)}%)</span><span>${fmt(surchargeAmt)}</span></div>
+    <div class="line total"><span>মোট কর দায়</span><span>${fmt(totalLiability)}</span></div>
+    <div class="line"><span>পূর্বে কর্তিত AIT</span><span>−${fmt(ait)}</span></div>
+    <div class="line payable ${netPayable < 0 ? 'refund' : ''}"><span>${netPayable < 0 ? 'ফেরতযোগ্য (refund)' : 'পরিশোধযোগ্য কর'}</span><span>${fmt(Math.abs(netPayable))}</span></div>
+  `;
+}
+
+document.querySelectorAll('input, select').forEach(el => {
+  el.addEventListener('input', calc);
+  el.addEventListener('change', calc);
+});
+calc();
+</script>
+
+</body>
+</html>

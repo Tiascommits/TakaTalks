@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ব্যাংক রেট তুলনা — Takatox</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@6..72,500;6..72,600;6..72,700&family=Noto+Sans+Bengali:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#F6F3EC;
+    --ink:#1B1B18;
+    --green:#0B4F3F;
+    --green-deep:#07352A;
+    --red:#A62E2E;
+    --gold:#B98A2E;
+    --line:#D8D2C2;
+    --card:#FFFFFF;
+    --muted:#7A7566;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--paper);color:var(--ink);font-family:'Noto Sans Bengali','IBM Plex Mono',sans-serif;line-height:1.5;}
+  header{background:var(--green-deep);color:var(--paper);padding:26px 20px 20px;border-bottom:6px solid var(--gold);}
+  header .eyebrow{font-family:'IBM Plex Mono',monospace;font-size:11.5px;letter-spacing:0.02em;color:#C9D9CB;margin:0 0 6px;}
+  header h1{font-family:'Newsreader',serif;font-weight:600;font-size:clamp(22px,3.4vw,30px);margin:0 0 6px;}
+  header p{margin:0;max-width:700px;font-size:13.5px;color:#DCE6DD;}
+
+  .trust-banner{max-width:1100px;margin:12px auto 0;padding:11px 16px;background:#EFF6F1;border:1px solid var(--green);color:var(--green-deep);font-size:13px;font-weight:600;display:flex;align-items:center;gap:8px;}
+  .trust-banner .dot{width:8px;height:8px;border-radius:50%;background:var(--green);flex-shrink:0;}
+  .stale-banner{max-width:1100px;margin:10px auto 0;padding:10px 16px;background:#FDF6E8;border:1px solid var(--gold);color:#7A5A12;font-size:12.5px;}
+  .disclaimer{max-width:1100px;margin:10px auto 0;padding:10px 16px;background:#FBEFEF;border:1px solid var(--red);color:var(--red);font-size:12.5px;}
+
+  .wrap{max-width:1100px;margin:24px auto 60px;padding:0 20px;}
+  fieldset{border:1px solid var(--line);background:var(--card);padding:16px 16px 18px;margin:0 0 20px;}
+  legend{font-family:'Newsreader',serif;font-weight:600;font-size:15.5px;color:var(--green-deep);padding:0 6px 0 0;}
+  .grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px 12px;}
+  @media(max-width:640px){.grid3{grid-template-columns:1fr;}}
+  label{display:block;font-size:12px;color:#555;margin:0 0 4px;}
+  select, input{width:100%;padding:8px 9px;border:1px solid var(--line);background:#FCFBF8;font-size:14px;font-family:inherit;color:var(--ink);}
+  select:focus, input:focus{outline:none;border-color:var(--green);}
+
+  table{width:100%;border-collapse:collapse;font-size:13.5px;}
+  th, td{padding:9px 8px;border-bottom:1px solid var(--line);text-align:right;}
+  th:first-child, td:first-child{text-align:left;}
+  thead th{font-family:'Noto Sans Bengali',sans-serif;font-weight:600;color:var(--green-deep);border-bottom:2px solid var(--green);font-size:12.5px;}
+  tbody tr:hover{background:#FBFAF6;}
+  .best-row td{background:#EFF6F1;}
+  .instrument-tag{font-family:'IBM Plex Mono',monospace;font-size:10.5px;color:var(--gold);border:1px solid var(--gold);padding:1px 5px;margin-right:6px;}
+  .src-date{font-size:11px;color:var(--muted);}
+
+  .ref-card{background:var(--card);border:1px solid var(--line);padding:16px;margin-top:16px;}
+  .ref-card h3{font-family:'Newsreader',serif;font-size:15px;margin:0 0 8px;color:var(--green-deep);}
+  .ref-card p{font-size:13px;margin:4px 0;color:#444;}
+
+  footer{max-width:1100px;margin:0 auto;padding:0 20px 30px;font-size:11.5px;color:#8a8578;}
+</style>
+</head>
+<body>
+
+<header>
+  <p class="eyebrow">SAMPLE DATASET — NOT A LIVE FEED, NOT INVESTMENT ADVICE</p>
+  <h1>ব্যাংক FDR/DPS রেট তুলনা</h1>
+  <p>Kয়েকটা bank er published FDR rate তুলনা kore after-tax return dekhায়। No signup, calculation তোমার device-e hoy।</p>
+</header>
+
+<div class="trust-banner">
+  <span class="dot"></span>
+  <span>এই হিসাব তোমার device-এ হয়, কোথাও পাঠানো হয় না। No signup, no account।</span>
+</div>
+
+<div class="stale-banner">
+  <strong>Data as of 31 Dec 2025</strong> (source: publicly published bank rate roundups). Ei rate গুলা live scrape na, manually curated sample। Bank er rate ghono ghono change hoy, tai deposit korar age directly bank e verify koro।
+</div>
+
+<div class="disclaimer">
+  Ei tool kono bank ba scheme "best" bole recommend kore na। Just published rate diye after-tax return calculate kore dekhায়, decision tomar।
+</div>
+
+<div class="wrap">
+
+  <fieldset>
+    <legend>তোমার হিসাব</legend>
+    <div class="grid3">
+      <div>
+        <label>জমা রাখার পরিমাণ (BDT)</label>
+        <input type="number" id="amount" value="100000" min="0">
+      </div>
+      <div>
+        <label>মেয়াদ (Tenor)</label>
+        <select id="tenor">
+          <option value="tenor3">৩ মাস</option>
+          <option value="tenor6">৬ মাস</option>
+          <option value="tenor12" selected>১ বছর</option>
+        </select>
+      </div>
+      <div>
+        <label>তোমার marginal tax rate (estimate)</label>
+        <select id="taxRate">
+          <option value="0">0% (tax-free সীমার নিচে)</option>
+          <option value="0.10" selected>10%</option>
+          <option value="0.15">15%</option>
+          <option value="0.20">20%</option>
+          <option value="0.25">25%</option>
+          <option value="0.30">30%</option>
+        </select>
+      </div>
+    </div>
+  </fieldset>
+
+  <fieldset>
+    <legend>FDR তুলনা (sorted by after-tax return)</legend>
+    <table id="fdrTable">
+      <thead>
+        <tr>
+          <th>Bank</th>
+          <th>Gross rate</th>
+          <th>Gross interest</th>
+          <th>Est. tax</th>
+          <th>Net interest</th>
+          <th>Effective after-tax rate</th>
+        </tr>
+      </thead>
+      <tbody id="fdrBody"></tbody>
+    </table>
+    <p class="src-date">Source: publicly published bank rate roundup, dated 31 Dec 2025. Individual bank conditions (minimum deposit, tenure-specific promos) may apply, check with the bank.</p>
+  </fieldset>
+
+  <div class="ref-card">
+    <h3>DPS (Deposit Pension Scheme) — reference only, not tabulated above</h3>
+    <p><strong>One Bank PLC</strong> — PENSAVE/EDUSAVE, up to ~11.00% for 5+ year commitments</p>
+    <p><strong>Midland Bank</strong> — digital DPS, ~10.50% for longer tenors</p>
+    <p><strong>Eastern Bank (EBL)</strong> — Millionaire Schemes / Women Confidence DPS, 3-10 year tenors</p>
+    <p><strong>Prime Bank PLC</strong> — ~9.00-9.50%</p>
+    <p class="src-date">These are multi-year monthly-contribution schemes, not directly comparable to a single-lump-sum FDR, so shown separately rather than in the same table. Rates as published, dated 31 Dec 2025.</p>
+  </div>
+
+  <div class="ref-card">
+    <h3>Deposit protection, keep this in mind</h3>
+    <p>Bangladesh's Deposit Protection Act (2026) covers up to <strong>BDT 2,00,000 per depositor per bank</strong>, and only pays out if a bank is formally liquidated. Anything above that, in any single bank, isn't protected. If you're placing a large amount, spreading it across more than one bank reduces this exposure.</p>
+  </div>
+
+</div>
+
+<footer>
+  Takatox bank rate comparison, sample dataset for illustration. Runs entirely in your browser, nothing is sent to or stored on any server. Rates change frequently and vary by branch/customer segment, always confirm directly with the bank before committing funds. This is not investment advice.
+</footer>
+
+<script>
+// Manually curated sample dataset. Source: publicly published bank rate roundup, dated 31 Dec 2025.
+// This is NOT a live feed. Replace/update this array when rates are re-verified.
+const FDR_DATA = [
+  { bank: "AB Bank PLC",     tenor3: 0.1200, tenor6: 0.1215, tenor12: 0.1200 },
+  { bank: "Midland Bank",    tenor3: 0.1015, tenor6: 0.1025, tenor12: 0.0990 },
+  { bank: "One Bank PLC",    tenor3: 0.1000, tenor6: 0.1025, tenor12: 0.1050 },
+  { bank: "National Bank",   tenor3: 0.0875, tenor6: 0.0900, tenor12: 0.0975 },
+  { bank: "The City Bank",   tenor3: 0.0850, tenor6: 0.0875, tenor12: 0.0925 },
+  { bank: "IFIC Bank PLC",   tenor3: 0.0900, tenor6: 0.0950, tenor12: 0.0950 },
+];
+
+function fmt(n){
+  return '৳' + Math.round(n).toLocaleString('en-IN');
+}
+function pct(n){
+  return (n*100).toFixed(2) + '%';
+}
+
+function tenorMonths(key){
+  return {tenor3:3, tenor6:6, tenor12:12}[key];
+}
+
+function calc(){
+  const amount = parseFloat(document.getElementById('amount').value) || 0;
+  const tenorKey = document.getElementById('tenor').value;
+  const taxRate = parseFloat(document.getElementById('taxRate').value);
+  const months = tenorMonths(tenorKey);
+
+  const rows = FDR_DATA.map(b => {
+    const annualRate = b[tenorKey];
+    const grossInterest = amount * annualRate * (months/12);
+    const taxAmt = grossInterest * taxRate;
+    const netInterest = grossInterest - taxAmt;
+    const effectiveAfterTaxAnnual = amount > 0 ? (netInterest / (months/12)) / amount : 0;
+    return { bank: b.bank, annualRate, grossInterest, taxAmt, netInterest, effectiveAfterTaxAnnual };
+  });
+
+  rows.sort((a,b) => b.netInterest - a.netInterest);
+
+  const tbody = document.getElementById('fdrBody');
+  tbody.innerHTML = rows.map((r, i) => `
+    <tr class="${i===0 ? 'best-row' : ''}">
+      <td>${r.bank}</td>
+      <td>${pct(r.annualRate)}</td>
+      <td>${fmt(r.grossInterest)}</td>
+      <td>−${fmt(r.taxAmt)}</td>
+      <td>${fmt(r.netInterest)}</td>
+      <td>${pct(r.effectiveAfterTaxAnnual)}</td>
+    </tr>
+  `).join('');
+}
+
+document.querySelectorAll('input, select').forEach(el => {
+  el.addEventListener('input', calc);
+  el.addEventListener('change', calc);
+});
+calc();
+</script>
+
+</body>
+</html>
