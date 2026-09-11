@@ -46,3 +46,7 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# local sqlite artifacts (the real dev datastore is Postgres, see .env)
+*.db
+*.db-journal
