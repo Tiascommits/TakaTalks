@@ -32,6 +32,7 @@ export function InvestmentSection({
   const [rate, setRate] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
   const labelId = useId();
   const instrumentId = useId();
   const principalId = useId();
@@ -112,12 +113,33 @@ export function InvestmentSection({
               </div>
               <div className="flex items-center gap-3">
                 <span className="font-mono">{fmtTaka(e.principalAmount)}</span>
-                <button
-                  onClick={() => onDelete(e.id)}
-                  className="text-red text-xs hover:underline"
-                >
-                  {t("Delete", "মুছুন")}
-                </button>
+                {confirmDeleteId === e.id ? (
+                  <span className="flex items-center gap-2">
+                    <span className="text-xs text-muted">{t("Delete?", "মুছে ফেলবে?")}</span>
+                    <button
+                      onClick={() => {
+                        setConfirmDeleteId(null);
+                        onDelete(e.id);
+                      }}
+                      className="text-red text-xs font-semibold hover:underline"
+                    >
+                      {t("Yes", "হ্যাঁ")}
+                    </button>
+                    <button
+                      onClick={() => setConfirmDeleteId(null)}
+                      className="text-xs text-muted hover:underline"
+                    >
+                      {t("Cancel", "বাতিল")}
+                    </button>
+                  </span>
+                ) : (
+                  <button
+                    onClick={() => setConfirmDeleteId(e.id)}
+                    className="text-red text-xs hover:underline"
+                  >
+                    {t("Delete", "মুছুন")}
+                  </button>
+                )}
               </div>
             </li>
           ))}
