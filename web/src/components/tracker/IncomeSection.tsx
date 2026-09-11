@@ -2,6 +2,7 @@
 
 import { useId, useState } from "react";
 import { fmtTaka } from "@/lib/format";
+import { NumberField } from "@/components/ui/fields";
 import {
   FREQUENCY_LABELS,
   FREQUENCY_LABELS_EN,
@@ -32,37 +33,35 @@ export function IncomeSection({
   const { t } = useLanguage();
   const [label, setLabel] = useState("");
   const [source, setSource] = useState(SOURCES[0]);
-  const [amount, setAmount] = useState("");
+  const [amount, setAmount] = useState(0);
   const [frequency, setFrequency] = useState<IncomeFrequency>("MONTHLY");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
   const labelId = useId();
   const sourceId = useId();
-  const amountId = useId();
   const frequencyId = useId();
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
-    const amt = parseFloat(amount);
     if (!label.trim()) {
       setError(t("Give it a label.", "লেবেল দাও।"));
       return;
     }
-    if (!Number.isFinite(amt) || amt <= 0) {
+    if (!Number.isFinite(amount) || amount <= 0) {
       setError(t("Amount must be a number greater than zero.", "পরিমাণ অবশ্যই শূন্যের চেয়ে বড় একটা সংখ্যা হতে হবে।"));
       return;
     }
     setSubmitting(true);
-    const ok = await onAdd({ label: label.trim(), source, amount: amt, frequency });
+    const ok = await onAdd({ label: label.trim(), source, amount, frequency });
     setSubmitting(false);
     if (!ok) {
       setError(t("Couldn't save, try again.", "সেভ করা যায়নি, আবার চেষ্টা করো।"));
       return;
     }
     setLabel("");
-    setAmount("");
+    setAmount(0);
   }
 
   return (
@@ -154,19 +153,7 @@ export function IncomeSection({
             ))}
           </select>
         </div>
-        <div>
-          <label htmlFor={amountId} className="block text-xs text-[#555] mb-1">
-            {t("Amount (৳)", "পরিমাণ (৳)")}
-          </label>
-          <input
-            id={amountId}
-            type="number"
-            min={0}
-            value={amount}
-            onChange={(e) => setAmount(e.target.value)}
-            className="w-full px-2.5 py-2 border border-line bg-[#FCFBF8] text-sm"
-          />
-        </div>
+        <NumberField label={t("Amount (৳)", "পরিমাণ (৳)")} value={amount} onChange={setAmount} />
         <div className="flex gap-2">
           <div className="flex-1">
             <label htmlFor={frequencyId} className="block text-xs text-[#555] mb-1">

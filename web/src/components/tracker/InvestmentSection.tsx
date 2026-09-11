@@ -2,6 +2,7 @@
 
 import { useId, useState } from "react";
 import { fmtTaka } from "@/lib/format";
+import { NumberField } from "@/components/ui/fields";
 import { INSTRUMENT_LABELS, INSTRUMENT_LABELS_EN, type InstrumentType, type InvestmentEntryDTO } from "./types";
 import { useLanguage } from "@/lib/i18n";
 
@@ -26,7 +27,7 @@ export function InvestmentSection({
   const { t } = useLanguage();
   const [label, setLabel] = useState("");
   const [instrumentType, setInstrumentType] = useState<InstrumentType>("SANCHAYPATRA");
-  const [principal, setPrincipal] = useState("");
+  const [principal, setPrincipal] = useState(0);
   const [startDate, setStartDate] = useState(() => new Date().toISOString().slice(0, 10));
   const [termMonths, setTermMonths] = useState("12");
   const [rate, setRate] = useState("");
@@ -35,7 +36,6 @@ export function InvestmentSection({
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
   const labelId = useId();
   const instrumentId = useId();
-  const principalId = useId();
   const startDateId = useId();
   const termId = useId();
   const rateId = useId();
@@ -43,7 +43,6 @@ export function InvestmentSection({
   async function submit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
-    const p = parseFloat(principal);
     const t2 = parseInt(termMonths, 10);
     const r = parseFloat(rate) || 0;
 
@@ -51,7 +50,7 @@ export function InvestmentSection({
       setError(t("Give it a label.", "লেবেল দাও।"));
       return;
     }
-    if (!Number.isFinite(p) || p <= 0) {
+    if (!Number.isFinite(principal) || principal <= 0) {
       setError(t("Principal amount must be greater than zero.", "আসল পরিমাণ অবশ্যই শূন্যের চেয়ে বড় হতে হবে।"));
       return;
     }
@@ -68,7 +67,7 @@ export function InvestmentSection({
     const ok = await onAdd({
       label: label.trim(),
       instrumentType,
-      principalAmount: p,
+      principalAmount: principal,
       startDate,
       termMonths: t2,
       expectedRatePct: r,
@@ -79,7 +78,7 @@ export function InvestmentSection({
       return;
     }
     setLabel("");
-    setPrincipal("");
+    setPrincipal(0);
     setRate("");
   }
 
@@ -181,19 +180,7 @@ export function InvestmentSection({
             ))}
           </select>
         </div>
-        <div>
-          <label htmlFor={principalId} className="block text-xs text-[#555] mb-1">
-            {t("Principal (৳)", "আসল (৳)")}
-          </label>
-          <input
-            id={principalId}
-            type="number"
-            min={0}
-            value={principal}
-            onChange={(e) => setPrincipal(e.target.value)}
-            className="w-full px-2.5 py-2 border border-line bg-[#FCFBF8] text-sm"
-          />
-        </div>
+        <NumberField label={t("Principal (৳)", "আসল (৳)")} value={principal} onChange={setPrincipal} />
         <div>
           <label htmlFor={startDateId} className="block text-xs text-[#555] mb-1">
             {t("Start date", "শুরুর তারিখ")}

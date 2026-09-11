@@ -39,7 +39,7 @@ export function CalculatorForm({ initial }: { initial?: Partial<TaxCalculatorInp
           note={t("The taxpayer category sets your tax-free limit.", "Taxpayer category অনুযায়ী tax-free limit ঠিক হয়।")}
         >
           <SelectField
-            label="Taxpayer category"
+            label={t("Taxpayer category", "Taxpayer category")}
             value={input.categoryId}
             onChange={(v) => setInput({ ...input, categoryId: v })}
             options={TAXPAYER_CATEGORIES.map((c) => ({
@@ -50,6 +50,7 @@ export function CalculatorForm({ initial }: { initial?: Partial<TaxCalculatorInp
           <div className="grid grid-cols-2 gap-2.5 mt-2">
             <NumberField
               label={t("Number of disabled children (each +৳50,000 tax-free)", "প্রতিবন্ধী সন্তান সংখ্যা (each +৳50,000 tax-free)")}
+              currency={false}
               {...n("disabledChildren")}
             />
             <div className="pt-5">
@@ -76,7 +77,10 @@ export function CalculatorForm({ initial }: { initial?: Partial<TaxCalculatorInp
             <NumberField label={t("Basic (monthly)", "মূল বেতন (Basic, monthly)")} {...n("basicMonthly")} />
             <NumberField label={t("Allowances (monthly)", "ভাতা (Allowances, monthly)")} {...n("allowanceMonthly")} />
             <NumberField label={t("Bonus (annual total)", "বোনাস (Bonus, annual total)")} {...n("bonusAnnual")} />
-            <NumberField label="Employer PF contribution (monthly)" {...n("employerPFMonthly")} />
+            <NumberField
+              label={t("Employer PF contribution (monthly)", "নিয়োগকর্তার PF contribution (monthly)")}
+              {...n("employerPFMonthly")}
+            />
           </div>
         </Fieldset>
 
@@ -118,7 +122,10 @@ export function CalculatorForm({ initial }: { initial?: Partial<TaxCalculatorInp
           )}
         >
           <div className="grid grid-cols-2 gap-2.5">
-            <NumberField label="Listed shares/fund units gain (annual)" {...n("cgSharesFund")} />
+            <NumberField
+              label={t("Listed shares/fund units gain (annual)", "Listed shares/fund units থেকে মুনাফা (annual)")}
+              {...n("cgSharesFund")}
+            />
             <NumberField
               label={t("Other assets, sold within 5 years (slab rate)", "অন্য সম্পদ, ৫ বছরের মধ্যে বিক্রি (slab rate)")}
               {...n("cgWithin5Years")}
@@ -147,8 +154,14 @@ export function CalculatorForm({ initial }: { initial?: Partial<TaxCalculatorInp
         >
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
             <NumberField label={t("Sanchaypatra (annual)", "সঞ্চয়পত্র (annual)")} {...n("invSanchayAnnual")} />
-            <NumberField label="Govt securities/bonds (annual)" {...n("invBondAnnual")} />
-            <NumberField label="Mutual fund/ETF (annual)" {...n("invMFAnnual")} />
+            <NumberField
+              label={t("Govt securities/bonds (annual)", "Govt securities/bonds (annual)")}
+              {...n("invBondAnnual")}
+            />
+            <NumberField
+              label={t("Mutual fund/ETF (annual)", "Mutual fund/ETF (annual)")}
+              {...n("invMFAnnual")}
+            />
             <NumberField
               label={t("DSE listed stock, new investment (annual)", "DSE listed stock, নতুন বিনিয়োগ (annual)")}
               {...n("invStockAnnual")}
@@ -158,7 +171,7 @@ export function CalculatorForm({ initial }: { initial?: Partial<TaxCalculatorInp
               {...n("invLifeAnnual")}
             />
             <NumberField label={t("PF, own contribution (monthly)", "PF, নিজের contribution (monthly)")} {...n("invPFMonthly")} />
-            <NumberField label="DPS (monthly)" {...n("invDPSMonthly")} />
+            <NumberField label={t("DPS (monthly)", "DPS (monthly)")} {...n("invDPSMonthly")} />
             <NumberField
               label={t("Donation to approved charities (annual)", "অনুমোদিত দাতব্য প্রতিষ্ঠানে দান (annual)")}
               {...n("invDonationAnnual")}
