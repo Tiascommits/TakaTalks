@@ -99,3 +99,94 @@ model TaxProfile {
 
   updatedAt         DateTime         @updatedAt
 }
+
+// --- Module 3/4: bank rate monitoring + comparison scorecard (Prompt 2) ---
+// See prompts/02-rate-monitoring-and-scorecard.md. Deliberately NOT a
+// recommendation engine: no computed "best bank" field anywhere here, just
+// sourced, dated figures.
+
+enum BankType {
+  STATE_OWNED
+  PRIVATE
+  FOREIGN
+  ISLAMIC
+}
+
+enum RateInstrument {
+  FDR
+  DPS
+  SANCHAYAPATRA
+}
+
+// MANUAL = entered/seeded by a human (or a manual-seed adapter standing in
+// until a real scraper exists for that bank), SCRAPED = pulled by an
+// automated adapter. Kept as a first-class flag rather than parsed out of a
+// text field, since the UI must never present a manual figure as if it were
+// a live, automated read.
+enum RateSourceMethod {
+  MANUAL
+  SCRAPED
+}
+
+model Bank {
+  id           String    @id @default(cuid())
+  name         String
+  shortCode    String    @unique
+  type         BankType
+  websiteUrl   String?
+  rateCardUrl  String?
+  creditRating String?
+  ratingAgency String?
+  ratingDate   DateTime?
+  statementUrl String?
+  active       Boolean   @default(true)
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  rateSnapshots RateSnapshot[]
+  scrapeLogs    ScrapeLog[]
+}
+
+// Append-only history: every successful scrape/manual-entry writes a new
+// row rather than overwriting, so "current rate" is "latest row" and old
+// values stay around for the admin digest's before/after comparison.
+model RateSnapshot {
+  id         String            @id @default(cuid())
+  bankId     String
+  bank       Bank              @relation(fields: [bankId], references: [id], onDelete: Cascade)
+  instrument RateInstrument
+  termMonths Int
+  ratePct    Float
+  method     RateSourceMethod
+  source     String // URL for a real scrape, or a plain-text note for a manual entry
+  scrapedAt  DateTime          @default(now())
+
+  @@index([bankId, instrument, termMonths, scrapedAt])
+}
+
+// One row per scrape attempt per bank, success or failure, so a broken
+// adapter is visible in the admin digest rather than just silently missing.
+model ScrapeLog {
+  id           String   @id @default(cuid())
+  bankId       String
+  bank         Bank     @relation(fields: [bankId], references: [id], onDelete: Cascade)
+  attemptedAt  DateTime @default(now())
+  success      Boolean
+  errorMessage String?
+  ratesFound   Int      @default(0)
+
+  @@index([bankId, attemptedAt])
+}
+
+// Bangladesh Bank's published weighted-average deposit rate, entered
+// manually for now (module 3's "secondary, lower-frequency cross-check").
+// Always labeled in the UI as an official aggregate, never as a specific
+// product rate.
+model BBAggregateRate {
+  id          String   @id @default(cuid())
+  label       String
+  ratePct     Float
+  periodLabel String
+  source      String
+  enteredAt   DateTime @default(now())
+}
