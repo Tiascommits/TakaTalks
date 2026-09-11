@@ -4,8 +4,10 @@ import { useId, useState } from "react";
 import { useRouter } from "next/navigation";
 
 export function AdminLoginForm() {
-  const secretId = useId();
-  const [secret, setSecret] = useState("");
+  const emailId = useId();
+  const passwordId = useId();
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const router = useRouter();
@@ -14,30 +16,40 @@ export function AdminLoginForm() {
     e.preventDefault();
     setLoading(true);
     setError(null);
-    const res = await fetch("/api/admin/login", {
+    const res = await fetch("/api/admin/session", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ secret }),
+      body: JSON.stringify({ email, password }),
     });
     setLoading(false);
     if (res.ok) {
       router.refresh();
     } else {
-      setError("Invalid secret.");
+      setError("Invalid email or password.");
     }
   }
 
   return (
     <form onSubmit={submit} className="bg-card border border-line p-5">
       <h1 className="font-serif font-semibold text-lg text-green-deep mb-3">Admin sign-in</h1>
-      <label htmlFor={secretId} className="block text-xs text-[#555] mb-1">
-        Admin secret
+      <label htmlFor={emailId} className="block text-xs text-[#555] mb-1">
+        Email
       </label>
       <input
-        id={secretId}
+        id={emailId}
+        type="email"
+        value={email}
+        onChange={(e) => setEmail(e.target.value)}
+        className="w-full px-2.5 py-2 border border-line bg-[#FCFBF8] text-sm mb-3"
+      />
+      <label htmlFor={passwordId} className="block text-xs text-[#555] mb-1">
+        Password
+      </label>
+      <input
+        id={passwordId}
         type="password"
-        value={secret}
-        onChange={(e) => setSecret(e.target.value)}
+        value={password}
+        onChange={(e) => setPassword(e.target.value)}
         className="w-full px-2.5 py-2 border border-line bg-[#FCFBF8] text-sm mb-3"
       />
       {error && <p className="text-red text-xs mb-3">{error}</p>}

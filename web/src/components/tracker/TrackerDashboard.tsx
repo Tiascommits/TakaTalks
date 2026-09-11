@@ -6,6 +6,7 @@ import { TAXPAYER_CATEGORIES } from "@/config/tax-rules-2025-26";
 import { MaturityPanel } from "./MaturityPanel";
 import { IncomeSection } from "./IncomeSection";
 import { InvestmentSection } from "./InvestmentSection";
+import { ReminderSignup, type ContactStatus } from "./ReminderSignup";
 import { useLanguage } from "@/lib/i18n";
 import type {
   IncomeEntryDTO,
@@ -38,10 +39,20 @@ export function TrackerDashboard({
   initialIncome,
   initialInvestments,
   initialProfile,
+  contact,
+  emailAvailable,
+  whatsappAvailable,
+  linked,
+  linkError,
 }: {
   initialIncome: IncomeEntryDTO[];
   initialInvestments: InvestmentEntryDTO[];
   initialProfile: TaxProfileDTO | null;
+  contact: ContactStatus;
+  emailAvailable: boolean;
+  whatsappAvailable: boolean;
+  linked: boolean;
+  linkError: string | null;
 }) {
   const { t } = useLanguage();
   const [income, setIncome] = useState(initialIncome);
@@ -127,6 +138,13 @@ export function TrackerDashboard({
 
   return (
     <div className="max-w-[1160px] mx-auto px-5 mt-6 mb-16 flex flex-col gap-5">
+      <ReminderSignup
+        contact={contact}
+        emailAvailable={emailAvailable}
+        whatsappAvailable={whatsappAvailable}
+        linked={linked}
+        linkError={linkError}
+      />
       <MaturityPanel entries={investments} onConfirmPayout={confirmPayout} />
       <IncomeSection entries={income} onAdd={addIncome} onDelete={deleteIncome} />
       <InvestmentSection entries={investments} onAdd={addInvestment} onDelete={deleteInvestment} />

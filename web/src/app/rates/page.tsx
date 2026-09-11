@@ -1,5 +1,11 @@
-import { getCurrentFdrRates, getLatestBBAggregateRate } from "@/lib/rates/current-rates";
+import {
+  getCurrentFdrRates,
+  getLatestBBAggregateRate,
+  getApprovedBankHealthFigures,
+} from "@/lib/rates/current-rates";
 import { RateScorecard } from "@/components/rates/RateScorecard";
+import { BankHealthPanel } from "@/components/rates/BankHealthPanel";
+import { RatesHeader } from "@/components/rates/RatesHeader";
 
 export const metadata = {
   title: "ব্যাংক রেট তুলনা — Takatox",
@@ -11,32 +17,24 @@ export const metadata = {
 export const dynamic = "force-dynamic";
 
 export default async function RatesPage() {
-  const [rows, bbAggregate] = await Promise.all([
+  const [rows, bbAggregate, bankHealthRows] = await Promise.all([
     getCurrentFdrRates(),
     getLatestBBAggregateRate(),
+    getApprovedBankHealthFigures(),
   ]);
 
   return (
     <>
-      <header className="bg-green-deep text-paper px-5 pt-6.5 pb-5 border-b-4 border-gold">
-        <div className="max-w-[1160px] mx-auto">
-          <p className="font-mono text-[11.5px] tracking-wide text-[#C9D9CB] mb-1.5">
-            BANK FDR COMPARISON — SOURCED DATA, NOT A RECOMMENDATION
-          </p>
-          <h1 className="font-serif font-semibold text-2xl sm:text-3xl mb-1.5">
-            ব্যাংক FDR রেট তুলনা
-          </h1>
-          <p className="max-w-[700px] text-sm text-[#DCE6DD]">
-            কয়েকটা bank er published FDR rate পাশাপাশি দেখায়, after-tax return calculate করে
-            দেখায়। কোনো bank ba scheme &quot;best&quot; বলে না — কোনটা নেবে সেটা তোমার সিদ্ধান্ত।
-          </p>
-        </div>
-      </header>
+      <RatesHeader />
 
       <RateScorecard
         rows={JSON.parse(JSON.stringify(rows))}
         bbAggregate={bbAggregate ? JSON.parse(JSON.stringify(bbAggregate)) : null}
       />
+
+      <div className="max-w-[1160px] mx-auto px-5 mb-16">
+        <BankHealthPanel rows={JSON.parse(JSON.stringify(bankHealthRows))} />
+      </div>
     </>
   );
 }

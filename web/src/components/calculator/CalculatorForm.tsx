@@ -94,7 +94,20 @@ export function CalculatorForm({ initial }: { initial?: Partial<TaxCalculatorInp
               label={t("Interest / dividend etc. (annual)", "সুদ / ডিভিডেন্ড ইত্যাদি (annual)")}
               {...n("otherIncomeAnnual")}
             />
+            <NumberField
+              label={t(
+                "Freelance / IT-enabled export service income (annual)",
+                "ফ্রিল্যান্স / IT export service income (annual)"
+              )}
+              {...n("freelanceAnnual")}
+            />
           </div>
+          <p className="text-[11px] text-muted mt-1.5">
+            {t(
+              "Taxed the same as other income for now — a possible concessional rate for freelance/export-service earners is being confirmed, this field just keeps it labeled separately so it's ready when that's added.",
+              "আপাতত অন্যান্য আয়ের মতোই tax হয় — freelance/export-service earner দের জন্য সম্ভাব্য concessional rate confirm করা হচ্ছে, এই field টা শুধু আলাদা label করে রাখছে যাতে যোগ হলে সহজ হয়।"
+            )}
+          </p>
         </Fieldset>
 
         <Fieldset

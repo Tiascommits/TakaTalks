@@ -36,3 +36,19 @@ export async function getOrCreateUserId(): Promise<string> {
   });
   return user.id;
 }
+
+/**
+ * Points this browser's cookie at an explicit user id — used after a
+ * magic-link/OTP verification, which may resolve to a *different* user than
+ * the one currently in the cookie (see lib/notify/verification.ts's merge
+ * behavior when the email/phone already belongs to an existing account).
+ */
+export async function setUserIdCookie(userId: string): Promise<void> {
+  const store = await cookies();
+  store.set(COOKIE_NAME, userId, {
+    httpOnly: true,
+    sameSite: "lax",
+    maxAge: COOKIE_MAX_AGE_SECONDS,
+    path: "/",
+  });
+}

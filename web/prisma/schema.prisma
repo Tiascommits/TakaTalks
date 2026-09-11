@@ -15,9 +15,42 @@ model User {
   id        String   @id @default(cuid())
   createdAt DateTime @default(now())
 
+  // Both optional and both nullable independently — set only once the user
+  // opts in at the one point an account is allowed to appear (setting a
+  // maturity reminder, see docs/feature-spec-tax-calculator.md). Verified
+  // timestamps double as "is this channel actually usable," since an
+  // unverified destination must never receive a real reminder.
+  email           String?   @unique
+  emailVerifiedAt DateTime?
+  phone           String?   @unique
+  phoneVerifiedAt DateTime?
+
   incomeEntries      IncomeEntry[]
   investmentEntries  InvestmentEntry[]
   taxProfile         TaxProfile?
+  verificationTokens VerificationToken[]
+}
+
+enum VerificationChannel {
+  EMAIL
+  PHONE
+}
+
+// One row per magic-link/OTP request. Consumed (verifiedAt set) tokens are
+// never reused, and expired ones are just left to rot rather than cleaned up
+// eagerly, since the volume here is inherently tiny (one per login attempt).
+model VerificationToken {
+  id          String              @id @default(cuid())
+  userId      String
+  user        User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  channel     VerificationChannel
+  destination String // the email or phone number this token was sent to
+  token       String              @unique
+  expiresAt   DateTime
+  consumedAt  DateTime?
+  createdAt   DateTime            @default(now())
+
+  @@index([userId])
 }
 
 enum IncomeFrequency {
@@ -73,8 +106,24 @@ model InvestmentEntry {
   createdAt         DateTime       @default(now())
   updatedAt         DateTime       @updatedAt
 
+  reminderLogs      ReminderLog[]
+
   @@index([userId])
   @@index([maturityDate])
+}
+
+// One row per (investment, reminder window, channel) actually sent, so the
+// daily cron never double-sends a reminder it already delivered for that
+// window even if it runs more than once on the same day.
+model ReminderLog {
+  id                String              @id @default(cuid())
+  investmentEntryId String
+  investmentEntry   InvestmentEntry     @relation(fields: [investmentEntryId], references: [id], onDelete: Cascade)
+  windowDays        Int // e.g. 7 or 1, days-before-maturity this reminder was for
+  channel           VerificationChannel
+  sentAt            DateTime            @default(now())
+
+  @@unique([investmentEntryId, windowDays, channel])
 }
 
 enum TaxpayerCategory {
@@ -140,11 +189,21 @@ model Bank {
   ratingDate   DateTime?
   statementUrl String?
   active       Boolean   @default(true)
+
+  // Module 5 (bank-health disclosure): manually-supplied, never guessed from
+  // a URL pattern, since every bank's investor-relations page is structured
+  // differently. Null until someone verifies and enters it. See
+  // prompts/03-annual-report-extraction.md and todo/needs-us-both/bank-annual-report-urls.md.
+  annualReportPageUrl String?
+  dseCompanyUrl       String?
+
   createdAt    DateTime  @default(now())
   updatedAt    DateTime  @updatedAt
 
-  rateSnapshots RateSnapshot[]
-  scrapeLogs    ScrapeLog[]
+  rateSnapshots         RateSnapshot[]
+  scrapeLogs            ScrapeLog[]
+  annualReportCheckLogs AnnualReportCheckLog[]
+  extractedFigures      ExtractedFigure[]
 }
 
 // Append-only history: every successful scrape/manual-entry writes a new
@@ -189,4 +248,106 @@ model BBAggregateRate {
   periodLabel String
   source      String
   enteredAt   DateTime @default(now())
+}
+
+// --- Module 5: annual audited report extraction pipeline (Prompt 3) ---
+// See prompts/03-annual-report-extraction.md. Runs on a monthly cadence,
+// completely separate from module 3's daily rate scraper. Nothing extracted
+// here reaches the public scorecard without a human approving it first.
+
+// One row per monthly check per bank, so a bank whose page never yields a
+// new PDF (or errors every time) is visible in the admin view rather than
+// just silently having no data.
+model AnnualReportCheckLog {
+  id           String   @id @default(cuid())
+  bankId       String
+  bank         Bank     @relation(fields: [bankId], references: [id], onDelete: Cascade)
+  checkedAt    DateTime @default(now())
+  foundNewDoc  Boolean  @default(false)
+  docUrl       String?
+  errorMessage String?
+
+  @@index([bankId, checkedAt])
+}
+
+enum AnnualReportField {
+  CAR // Capital to Risk-Weighted Assets Ratio (CRAR)
+  NPL
+  ROA
+  ROE
+  TOTAL_DEPOSITS
+  TOTAL_LOANS
+  NET_PROFIT
+  AUDITOR_NAME
+  AUDIT_REPORT_DATE
+}
+
+// {bankId, fiscalYear, field} extracted from a PDF, kept unapproved until an
+// admin checks it against the source document — layout varies enough bank to
+// bank that first-pass extraction isn't trusted on its own. See
+// src/lib/bank-health/extract-figures.ts.
+model ExtractedFigure {
+  id                   String            @id @default(cuid())
+  bankId               String
+  bank                 Bank              @relation(fields: [bankId], references: [id], onDelete: Cascade)
+  fiscalYear           Int
+  field                AnnualReportField
+  rawValue             String // the exact text matched, kept for audit even after numericValue is parsed
+  numericValue         Float?
+  extractionConfidence Float // 0-1, heuristic based on match specificity
+  sourceReportUrl      String
+  sourcePageOrNote     String?
+  extractedAt          DateTime          @default(now())
+
+  approved         Boolean   @default(false)
+  approvedAt       DateTime?
+  approvedByAdmin  AdminUser? @relation(fields: [approvedByAdminId], references: [id])
+  approvedByAdminId String?
+
+  @@index([bankId, fiscalYear, field])
+  @@index([approved])
+}
+
+// --- Admin accounts + audit log ---
+// Replaces the single shared ADMIN_SECRET cookie (src/lib/admin/auth.ts) so
+// more than one person can administer the app with a visible trail of who
+// changed what. ADMIN_SECRET becomes a one-time bootstrap to create the
+// first AdminUser (see /admin/setup) rather than the ongoing auth mechanism.
+model AdminUser {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  passwordHash String
+  createdAt    DateTime @default(now())
+
+  sessions         AdminSession[]
+  auditLogs        AdminAuditLog[]
+  approvedFigures  ExtractedFigure[]
+}
+
+model AdminSession {
+  id          String    @id @default(cuid())
+  adminUserId String
+  adminUser   AdminUser @relation(fields: [adminUserId], references: [id], onDelete: Cascade)
+  createdAt   DateTime  @default(now())
+  expiresAt   DateTime
+
+  @@index([adminUserId])
+}
+
+// Written on every admin action worth attributing: bank field edits,
+// ExtractedFigure approve/reject, manual rate/BB-aggregate entry, scrape
+// trigger. `detail` is a free-form snapshot of what changed, not a strict
+// schema, since the set of admin actions will keep growing.
+model AdminAuditLog {
+  id          String    @id @default(cuid())
+  adminUserId String
+  adminUser   AdminUser @relation(fields: [adminUserId], references: [id], onDelete: Cascade)
+  action      String
+  targetType  String
+  targetId    String
+  detail      Json?
+  createdAt   DateTime  @default(now())
+
+  @@index([adminUserId, createdAt])
+  @@index([targetType, targetId])
 }

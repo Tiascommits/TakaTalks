@@ -9,6 +9,7 @@ const NUMERIC_FIELDS = [
   "businessAnnual",
   "housePropertyAnnual",
   "otherIncomeAnnual",
+  "freelanceAnnual",
   "cgSharesFund",
   "cgWithin5Years",
   "cgAfter5Years",
@@ -82,6 +83,13 @@ export function calculateTax(rawInput: TaxCalculatorInput): TaxCalculationResult
 
   const business = input.businessAnnual;
   const houseProperty = input.housePropertyAnnual;
+  const freelanceIncome = input.freelanceAnnual;
+  // No confirmed concessional rule yet (see todo/needs-us-both/freelance-tax-rule.md) —
+  // freelanceExemptionFraction stays 0 until TAX_RULES.freelanceConcessionalRuleConfirmed
+  // is flipped, so this is currently taxed identically to other income.
+  const freelanceTaxable = TAX_RULES.freelanceConcessionalRuleConfirmed
+    ? freelanceIncome * (1 - TAX_RULES.freelanceExemptionFraction)
+    : freelanceIncome;
   const otherIncome = input.otherIncomeAnnual;
 
   // Capital gains
@@ -93,7 +101,8 @@ export function calculateTax(rawInput: TaxCalculatorInput): TaxCalculationResult
   const cgLand = input.cgLand;
   const cgGold = input.cgGold;
 
-  const slabBase = taxableSalary + business + houseProperty + otherIncome + cgWithin5 + cgLand;
+  const slabBase =
+    taxableSalary + business + houseProperty + otherIncome + freelanceTaxable + cgWithin5 + cgLand;
   const incomeAboveTaxFree = Math.max(0, slabBase - taxFree);
   const { tax: baseSlabTax, rows: slabRows } = slabTax(incomeAboveTaxFree);
 
@@ -151,6 +160,7 @@ export function calculateTax(rawInput: TaxCalculatorInput): TaxCalculationResult
     business !== 0 ||
     houseProperty !== 0 ||
     otherIncome !== 0 ||
+    freelanceIncome !== 0 ||
     sharesFundGain !== 0 ||
     cgWithin5 !== 0 ||
     cgAfter5 !== 0 ||
@@ -165,6 +175,8 @@ export function calculateTax(rawInput: TaxCalculatorInput): TaxCalculationResult
     business,
     houseProperty,
     otherIncome,
+    freelanceIncome,
+    freelanceTaxable,
     sharesFundGain,
     sharesFundExempt,
     sharesFundTaxable,

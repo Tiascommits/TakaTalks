@@ -71,6 +71,16 @@ export const TAX_RULES = {
   minTaxFirstTime: 1000,
   minTaxRegular: 5000,
 
+  // Freelance / IT-enabled export-service income: BD has had various
+  // incentive provisions for this (export-earnings exemptions, reduced
+  // source tax), but the specific, currently-in-force NBR SRO/section for
+  // AY 2025-26 has not been confirmed against a citable source — see
+  // todo/needs-us-both/freelance-tax-rule.md. Until this flag is flipped,
+  // freelance income is taxed identically to other income (no exemption
+  // applied) rather than guessing a number in a financial tool.
+  freelanceConcessionalRuleConfirmed: false,
+  freelanceExemptionFraction: 0,
+
   surchargeThresholds: [
     { above: 500000000, rate: 0.35 },
     { above: 200000000, rate: 0.3 },

@@ -70,3 +70,46 @@ export async function getCurrentFdrRates(): Promise<CurrentRateRow[]> {
 export async function getLatestBBAggregateRate() {
   return prisma.bBAggregateRate.findFirst({ orderBy: { enteredAt: "desc" } });
 }
+
+export type BankHealthRow = {
+  bankShortCode: string;
+  bankName: string;
+  figures: {
+    fiscalYear: number;
+    field: string;
+    numericValue: number | null;
+    rawValue: string;
+    sourceReportUrl: string;
+  }[];
+};
+
+/**
+ * Only approved figures ever reach this — see /admin/bank-health. Every
+ * active bank appears even with an empty figures array, so the UI can show
+ * "not disclosed / not extracted" per prompts/03 rather than omitting the
+ * bank silently.
+ */
+export async function getApprovedBankHealthFigures(): Promise<BankHealthRow[]> {
+  const banks = await prisma.bank.findMany({
+    where: { active: true },
+    orderBy: { name: "asc" },
+    include: {
+      extractedFigures: {
+        where: { approved: true },
+        orderBy: { fiscalYear: "desc" },
+      },
+    },
+  });
+
+  return banks.map((bank) => ({
+    bankShortCode: bank.shortCode,
+    bankName: bank.name,
+    figures: bank.extractedFigures.map((f) => ({
+      fiscalYear: f.fiscalYear,
+      field: f.field,
+      numericValue: f.numericValue,
+      rawValue: f.rawValue,
+      sourceReportUrl: f.sourceReportUrl,
+    })),
+  }));
+}

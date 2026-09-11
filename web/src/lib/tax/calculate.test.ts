@@ -51,6 +51,18 @@ describe("calculateTax — empty / normal cases", () => {
   });
 });
 
+describe("calculateTax — freelance income (no confirmed concessional rule yet)", () => {
+  it("taxes freelanceAnnual identically to otherIncomeAnnual while the rule is unconfirmed", () => {
+    expect(TAX_RULES.freelanceConcessionalRuleConfirmed).toBe(false);
+    const viaFreelance = calculateTax(input({ freelanceAnnual: 500000 }));
+    const viaOther = calculateTax(input({ otherIncomeAnnual: 500000 }));
+    expect(viaFreelance.netPayable).toBeCloseTo(viaOther.netPayable, 6);
+    expect(viaFreelance.freelanceIncome).toBe(500000);
+    expect(viaFreelance.freelanceTaxable).toBe(500000);
+    expect(viaFreelance.hasAnyIncome).toBe(true);
+  });
+});
+
 describe("calculateTax — taxpayer categories", () => {
   it.each([
     ["general", 400000],

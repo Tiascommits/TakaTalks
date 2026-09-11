@@ -165,6 +165,8 @@ function BankProfileEditor({
   const agencyId = useId();
   const ratingDateId = useId();
   const statementId = useId();
+  const annualReportId = useId();
+  const dseId = useId();
 
   const [bankId, setBankId] = useState(banks[0]?.id ?? "");
   const selected = banks.find((b) => b.id === bankId) ?? null;
@@ -173,6 +175,10 @@ function BankProfileEditor({
   const [ratingAgency, setRatingAgency] = useState(selected?.ratingAgency ?? "");
   const [ratingDate, setRatingDate] = useState(selected?.ratingDate?.slice(0, 10) ?? "");
   const [statementUrl, setStatementUrl] = useState(selected?.statementUrl ?? "");
+  const [annualReportPageUrl, setAnnualReportPageUrl] = useState(
+    selected?.annualReportPageUrl ?? ""
+  );
+  const [dseCompanyUrl, setDseCompanyUrl] = useState(selected?.dseCompanyUrl ?? "");
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
 
@@ -183,6 +189,8 @@ function BankProfileEditor({
     setRatingAgency(b?.ratingAgency ?? "");
     setRatingDate(b?.ratingDate?.slice(0, 10) ?? "");
     setStatementUrl(b?.statementUrl ?? "");
+    setAnnualReportPageUrl(b?.annualReportPageUrl ?? "");
+    setDseCompanyUrl(b?.dseCompanyUrl ?? "");
     setSaved(false);
   }
 
@@ -198,6 +206,8 @@ function BankProfileEditor({
         ratingAgency: ratingAgency || null,
         ratingDate: ratingDate || null,
         statementUrl: statementUrl || null,
+        annualReportPageUrl: annualReportPageUrl || null,
+        dseCompanyUrl: dseCompanyUrl || null,
       }),
     });
     setSaving(false);
@@ -276,6 +286,30 @@ function BankProfileEditor({
             id={statementId}
             value={statementUrl}
             onChange={(e) => setStatementUrl(e.target.value)}
+            className="w-full px-2.5 py-2 border border-line bg-[#FCFBF8] text-sm"
+          />
+        </div>
+        <div className="sm:col-span-2">
+          <label htmlFor={annualReportId} className="block text-xs text-[#555] mb-1">
+            Annual report page URL (Module 5 — bank-health extraction source)
+          </label>
+          <input
+            id={annualReportId}
+            value={annualReportPageUrl}
+            onChange={(e) => setAnnualReportPageUrl(e.target.value)}
+            placeholder="https://bank-site.example/investor-relations/annual-reports"
+            className="w-full px-2.5 py-2 border border-line bg-[#FCFBF8] text-sm"
+          />
+        </div>
+        <div className="sm:col-span-2">
+          <label htmlFor={dseId} className="block text-xs text-[#555] mb-1">
+            DSE company page URL (optional, more consistent format across banks)
+          </label>
+          <input
+            id={dseId}
+            value={dseCompanyUrl}
+            onChange={(e) => setDseCompanyUrl(e.target.value)}
+            placeholder="https://dsebd.org/displayCompany.php?name=..."
             className="w-full px-2.5 py-2 border border-line bg-[#FCFBF8] text-sm"
           />
         </div>

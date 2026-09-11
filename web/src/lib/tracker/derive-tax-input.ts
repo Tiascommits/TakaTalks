@@ -32,6 +32,7 @@ export function deriveTaxInputFromTracker(
   let businessAnnual = 0;
   let housePropertyAnnual = 0;
   let otherIncomeAnnual = 0;
+  let freelanceAnnual = 0;
 
   for (const e of income) {
     const annual = annualize(e.amount, e.frequency);
@@ -45,6 +46,9 @@ export function deriveTaxInputFromTracker(
       case "rental":
         housePropertyAnnual += annual;
         break;
+      case "freelance":
+        freelanceAnnual += annual;
+        break;
       default:
         otherIncomeAnnual += annual;
     }
@@ -54,6 +58,7 @@ export function deriveTaxInputFromTracker(
   input.businessAnnual = businessAnnual;
   input.housePropertyAnnual = housePropertyAnnual;
   input.otherIncomeAnnual = otherIncomeAnnual;
+  input.freelanceAnnual = freelanceAnnual;
 
   for (const inv of investments) {
     const amount = inv.principalAmount;

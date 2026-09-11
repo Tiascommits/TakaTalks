@@ -11,8 +11,24 @@ export type AdminBankDTO = {
   statementUrl: string | null;
   websiteUrl: string | null;
   rateCardUrl: string | null;
+  annualReportPageUrl: string | null;
+  dseCompanyUrl: string | null;
   lastLog: { success: boolean; attemptedAt: string } | null;
   lastSnapshotAt: string | null;
+};
+
+export type AdminExtractedFigureDTO = {
+  id: string;
+  bankId: string;
+  bankName: string;
+  fiscalYear: number;
+  field: string;
+  rawValue: string;
+  numericValue: number | null;
+  extractionConfidence: number;
+  sourceReportUrl: string;
+  sourcePageOrNote: string | null;
+  extractedAt: string;
 };
 
 export type AdminDigestDTO = {

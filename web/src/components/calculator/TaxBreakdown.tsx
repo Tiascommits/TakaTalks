@@ -60,6 +60,12 @@ export function TaxBreakdown({ r, ait }: { r: TaxCalculationResult; ait: number 
       <Line label={t("Business / profession profit", "ব্যবসা/পেশা মুনাফা")} value={fmtTaka(r.business)} />
       <Line label={t("House rent income", "বাড়ি ভাড়ার আয়")} value={fmtTaka(r.houseProperty)} />
       <Line label={t("Other sources", "অন্যান্য উৎস")} value={fmtTaka(r.otherIncome)} />
+      {r.freelanceIncome > 0 && (
+        <Line
+          label={t("Freelance / export service income (taxable)", "ফ্রিল্যান্স / export service income (taxable)")}
+          value={fmtTaka(r.freelanceTaxable)}
+        />
+      )}
       <Line
         label={t("Capital gains (slab-rate portion)", "মূলধনী মুনাফা (slab rate অংশ)")}
         value={fmtTaka(r.cgWithin5 + r.cgLand)}

@@ -1,8 +1,9 @@
-import { isAdmin } from "@/lib/admin/auth";
+import { adminUserCount, isAdmin } from "@/lib/admin/auth";
 import { prisma } from "@/lib/prisma";
 import { getDigest } from "@/lib/rates/digest";
 import { RATE_ADAPTERS } from "@/lib/rates/adapters/registry";
 import { AdminLoginForm } from "@/components/admin/AdminLoginForm";
+import { AdminSetupForm } from "@/components/admin/AdminSetupForm";
 import { AdminRatesDashboard } from "@/components/admin/AdminRatesDashboard";
 
 export const metadata = { title: "Admin: Rate monitoring — Takatox" };
@@ -12,9 +13,10 @@ export default async function AdminRatesPage() {
   const authed = await isAdmin();
 
   if (!authed) {
+    const setupNeeded = (await adminUserCount()) === 0;
     return (
       <div className="max-w-[420px] mx-auto mt-16 px-5">
-        <AdminLoginForm />
+        {setupNeeded ? <AdminSetupForm /> : <AdminLoginForm />}
       </div>
     );
   }
@@ -44,6 +46,8 @@ export default async function AdminRatesPage() {
     statementUrl: b.statementUrl,
     websiteUrl: b.websiteUrl,
     rateCardUrl: b.rateCardUrl,
+    annualReportPageUrl: b.annualReportPageUrl,
+    dseCompanyUrl: b.dseCompanyUrl,
     lastLog: b.scrapeLogs[0]
       ? { success: b.scrapeLogs[0].success, attemptedAt: b.scrapeLogs[0].attemptedAt }
       : null,

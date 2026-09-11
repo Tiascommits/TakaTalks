@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { isAdmin } from "@/lib/admin/auth";
+import { logAdminAction } from "@/lib/admin/audit";
 import { prisma } from "@/lib/prisma";
 
 export async function POST(request: Request) {
@@ -26,5 +27,6 @@ export async function POST(request: Request) {
     },
   });
 
+  await logAdminAction("bb-aggregate.create", "BBAggregateRate", entry.id, entry);
   return NextResponse.json({ entry }, { status: 201 });
 }

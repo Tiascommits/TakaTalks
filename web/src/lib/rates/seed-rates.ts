@@ -13,12 +13,10 @@
 export const SEED_SOURCE_LABEL =
   "Manually curated, publicly published bank rate roundup, dated 31 Dec 2025 (not a live scrape)";
 
+// AB and NATIONAL removed from here — both got real, verified adapters on
+// 2026-09-11 (see adapters/ab-bank.ts, adapters/national-bank.ts) which
+// override any manual-seed entry for the same shortCode in registry.ts.
 export const SEED_FDR_RATES: Record<string, { termMonths: number; ratePct: number }[]> = {
-  AB: [
-    { termMonths: 3, ratePct: 12.0 },
-    { termMonths: 6, ratePct: 12.15 },
-    { termMonths: 12, ratePct: 12.0 },
-  ],
   MIDLAND: [
     { termMonths: 3, ratePct: 10.15 },
     { termMonths: 6, ratePct: 10.25 },
@@ -28,11 +26,6 @@ export const SEED_FDR_RATES: Record<string, { termMonths: number; ratePct: numbe
     { termMonths: 3, ratePct: 10.0 },
     { termMonths: 6, ratePct: 10.25 },
     { termMonths: 12, ratePct: 10.5 },
-  ],
-  NATIONAL: [
-    { termMonths: 3, ratePct: 8.75 },
-    { termMonths: 6, ratePct: 9.0 },
-    { termMonths: 12, ratePct: 9.75 },
   ],
   CITY: [
     { termMonths: 3, ratePct: 8.5 },

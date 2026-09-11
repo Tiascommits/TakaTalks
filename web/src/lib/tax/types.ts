@@ -12,6 +12,12 @@ export interface TaxCalculatorInput {
   businessAnnual: number;
   housePropertyAnnual: number;
   otherIncomeAnnual: number;
+  // Freelance / IT-enabled export service income — kept separate from
+  // otherIncomeAnnual so a concessional NBR provision can apply to it once
+  // confirmed (see TAX_RULES.freelanceConcessionalRuleConfirmed and
+  // todo/needs-us-both/freelance-tax-rule.md). Until then it's taxed
+  // identically to other income.
+  freelanceAnnual: number;
 
   // Capital gains (annual)
   cgSharesFund: number;
@@ -49,6 +55,7 @@ export const EMPTY_TAX_INPUT: TaxCalculatorInput = {
   businessAnnual: 0,
   housePropertyAnnual: 0,
   otherIncomeAnnual: 0,
+  freelanceAnnual: 0,
   cgSharesFund: 0,
   cgWithin5Years: 0,
   cgAfter5Years: 0,
@@ -84,6 +91,9 @@ export interface TaxCalculationResult {
   business: number;
   houseProperty: number;
   otherIncome: number;
+  freelanceIncome: number;
+  /** Portion of freelanceIncome actually taxed after any confirmed concessional rule (== freelanceIncome until one is confirmed) */
+  freelanceTaxable: number;
 
   sharesFundGain: number;
   sharesFundExempt: number;
