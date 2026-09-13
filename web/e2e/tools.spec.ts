@@ -86,12 +86,59 @@ test.describe("Freelance & IT Remittance Hub (/freelance)", () => {
   });
 });
 
+test.describe("Loan & Home EMI Accelerator (/loans)", () => {
+  test("loads cleanly, calculates EMI, toggles presets, and computes prepayment savings", async ({ page }) => {
+    await page.goto("/loans");
+    await expect(page.getByText(/লোন ও গৃহঋণ ইএমআই ক্যালকুলেটর|Loan & Home EMI Calculator/)).toBeVisible();
+    await noGarbageOnPage(page);
+
+    // Verify monthly EMI is shown
+    await expect(page.getByText(/নিয়মিত মাসিক কিস্তি|Standard Monthly Commitment/)).toBeVisible();
+    await expect(page.getByText(/মাসিক ইএমআই:|Monthly EMI:/)).toBeVisible();
+
+    // Verify prepayment savings banner
+    await expect(page.getByText(/বিশাল সুদ ও সময়ের সাশ্রয়!|Massive Interest & Time Savings!/)).toBeVisible();
+
+    // Click Auto loan preset
+    await page.getByText(/অটো \/ গাড়ি লোন|Auto \/ Car Loan/).first().click();
+    await noGarbageOnPage(page);
+
+    // Verify Bangladesh statutory upfront costs card
+    await expect(page.getByText(/বাংলাদেশে ঋণ গ্রহণের প্রাথমিক আইনি খরচ|Bangladesh Statutory Upfront Costs/)).toBeVisible();
+
+    // Switch to Monthly View in Amortization table
+    await page.getByRole("button", { name: /মাসিক|Monthly View/ }).click();
+    await noGarbageOnPage(page);
+  });
+});
+
+test.describe("Zakat Calculator (/zakat)", () => {
+  test("loads cleanly, switches Nisab between Silver and Gold, and shows purification guidance", async ({ page }) => {
+    await page.goto("/zakat");
+    await expect(page.getByText(/যাকাত ক্যালকুলেটর বাংলাদেশ|Zakat Calculator for Bangladesh/)).toBeVisible();
+    await noGarbageOnPage(page);
+
+    // Verify Nisab threshold banner
+    await expect(page.getByText(/প্রযোজ্য নিসাব সীমা:|Active Nisab Threshold:/)).toBeVisible();
+    await expect(page.getByText(/বাৎসরিক সম্পদ পরিশুদ্ধি|ANNUAL PURIFICATION/).first()).toBeVisible();
+
+    // Switch to Gold Nisab
+    await page.getByRole("button", { name: /স্বর্ণ নিসাব|Gold Nisab/ }).click();
+    await noGarbageOnPage(page);
+
+    // Check guidance note
+    await expect(page.getByText(/শরিয়ত নির্দেশিকা:|Islamic Jurisprudence Notes:/)).toBeVisible();
+  });
+});
+
 test.describe("Homepage Showcase Grid (/)", () => {
-  test("displays all 7 tools and navigates successfully", async ({ page }) => {
+  test("displays all 9 tools and navigates successfully", async ({ page }) => {
     await page.goto("/");
     await expect(page.getByText(/আয়কর ও রিবেট অপটিমাইজার|Tax Calculator/)).toBeVisible();
     await expect(page.getByText(/স্যালারি অফার ও ইন-হ্যান্ড পে|Salary Offer/)).toBeVisible();
     await expect(page.getByText(/ফ্রিল্যান্স ও আইটি রেমিট্যান্স হাব|Freelance & IT Remittance/)).toBeVisible();
+    await expect(page.getByText(/লোন ও গৃহঋণ ইএমআই প্ল্যানার|Loan & Home EMI/)).toBeVisible();
+    await expect(page.getByText(/যাকাত ক্যালকুলেটর বাংলাদেশ|Bangladesh Zakat Calculator/)).toBeVisible();
     await expect(page.getByText(/ভবিষ্যৎ লক্ষ্য ও অবসর প্ল্যানার|Life Goal/)).toBeVisible();
     await expect(page.getByText(/সঞ্চয় স্কিম তুলনামূলক ম্যাট্রিক্স|Real Yield Matrix/)).toBeVisible();
     await expect(page.getByText(/ব্যাংক রেট ও স্বাস্থ্য স্কোরকার্ড|Bank Rates/)).toBeVisible();

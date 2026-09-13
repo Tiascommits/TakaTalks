@@ -35,6 +35,26 @@ const TOOLS = [
     },
   },
   {
+    href: "/loans",
+    icon: "🏠",
+    tag: { en: "PREPAYMENT SAVER", bn: "সুদ সাশ্রয়" },
+    title: { en: "Loan & Home EMI Accelerator", bn: "লোন ও গৃহঋণ ইএমআই প্ল্যানার" },
+    desc: {
+      en: "Calculate reducing balance EMI for DBH home loans, car loans, and see how prepayments save lakhs.",
+      bn: "হোম ও কার লোনের কিস্তি হিসাব করুন এবং অতিরিক্ত প্রি-পেমেন্ট করে লাখ লাখ টাকা সুদ বাঁচান।",
+    },
+  },
+  {
+    href: "/zakat",
+    icon: "🌙",
+    tag: { en: "2.5% PURIFICATION", bn: "২.৫% যাকাত" },
+    title: { en: "Bangladesh Zakat Calculator", bn: "যাকাত ক্যালকুলেটর বাংলাদেশ" },
+    desc: {
+      en: "Gold & Silver Nisab, Sanchayapatra, DSE stocks, and bank interest purification under Hanafi fiqh.",
+      bn: "স্বর্ণ-রৌপ্য নিসাব, সঞ্চয়পত্র, শেয়ার ও ব্যাংক সুদের পরিশুদ্ধির শরিয়তসম্মত নির্ভুল হিসাব।",
+    },
+  },
+  {
     href: "/goals",
     icon: "🎯",
     tag: { en: "BEAT INFLATION", bn: "মূল্যস্ফীতি জয়" },
