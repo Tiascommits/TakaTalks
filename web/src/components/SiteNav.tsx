@@ -41,9 +41,12 @@ export function SiteNav() {
   const [menuOpen, setMenuOpen] = useState(false);
 
   const links = [
-    { href: "/calculator", label: t("Tax Calculator", "আয়কর ক্যালকুলেটর") },
-    { href: "/tracker", label: t("Tracker", "ট্র্যাকার") },
+    { href: "/calculator", label: t("Tax Calculator", "আয়কর") },
+    { href: "/salary", label: t("Salary Analyzer", "স্যালারি তুলনাকারী") },
+    { href: "/goals", label: t("Goal Planner", "লক্ষ্য ও অবসর") },
+    { href: "/instruments", label: t("Real Yields", "সঞ্চয় স্কিম") },
     { href: "/rates", label: t("Bank Rates", "ব্যাংক রেট") },
+    { href: "/tracker", label: t("Tracker", "ট্র্যাকার") },
   ];
 
   return (

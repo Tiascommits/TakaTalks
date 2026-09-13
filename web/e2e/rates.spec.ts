@@ -41,10 +41,24 @@ test.describe("Bank rate scorecard — with seeded rates", () => {
   test("shows a real bank's rate and an unconfigured bank as not available, after an admin scrape run", async ({
     page,
   }) => {
-    const login = await page.request.post("/api/admin/login", {
-      data: { secret: process.env.ADMIN_SECRET },
+    const setup = await page.request.post("/api/admin/setup", {
+      data: {
+        secret: process.env.ADMIN_SECRET,
+        email: "e2e-admin@takatalks.com",
+        password: "password12345",
+      },
     });
-    expect(login.ok()).toBeTruthy();
+    if (!setup.ok() && setup.status() === 409) {
+      const login = await page.request.post("/api/admin/session", {
+        data: {
+          email: "e2e-admin@takatalks.com",
+          password: "password12345",
+        },
+      });
+      expect(login.ok()).toBeTruthy();
+    } else {
+      expect(setup.ok()).toBeTruthy();
+    }
 
     const scrape = await page.request.post("/api/admin/rates/run-scrape");
     expect(scrape.ok()).toBeTruthy();

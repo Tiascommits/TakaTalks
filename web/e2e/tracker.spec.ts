@@ -33,6 +33,7 @@ test.describe("Tracker — normal cases", () => {
     await expect(page.getByText("ফ্রিল্যান্স ইনকাম")).toBeVisible();
 
     await page.getByRole("button", { name: "মুছুন" }).first().click();
+    await page.getByRole("button", { name: "হ্যাঁ" }).click();
     await expect(page.getByText("ফ্রিল্যান্স ইনকাম")).toHaveCount(0);
   });
 
@@ -120,7 +121,7 @@ test.describe("Tracker — weird / adversarial input", () => {
     await page.getByRole("button", { name: "যোগ করো" }).first().click();
 
     await expect(page.getByRole("alert").first()).toBeVisible();
-    await expect(page.getByText("ঋণাত্মক আয়")).toHaveCount(0);
+    await expect(page.locator("ul").getByText("ঋণাত্মক আয়")).toHaveCount(0);
   });
 
   test("rejects an income entry with no label", async ({ page }) => {
@@ -138,7 +139,7 @@ test.describe("Tracker — weird / adversarial input", () => {
     await investmentForm.getByRole("button", { name: "যোগ করো" }).click();
 
     await expect(page.getByRole("alert").first()).toBeVisible();
-    await expect(page.getByText("খারাপ বিনিয়োগ")).toHaveCount(0);
+    await expect(page.locator("ul").getByText("খারাপ বিনিয়োগ")).toHaveCount(0);
   });
 
   test("rejects a zero-month term investment", async ({ page }) => {

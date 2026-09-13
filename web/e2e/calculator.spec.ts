@@ -92,10 +92,10 @@ test.describe("Calculator — weird / adversarial input", () => {
     await page.goto("/calculator");
     const huge = "999999999999";
     for (const label of [
-      "মূল বেতন (Basic, monthly)",
-      "ব্যবসা / পেশার নেট মুনাফা (annual)",
-      "Listed shares/fund units gain (annual)",
-      "স্বর্ণ / গহনা / মূল্যবান জিনিস (flat 5%)",
+      /মূল বেতন|Basic, monthly/,
+      /ব্যবসা \/ পেশার নেট মুনাফা|business/,
+      /Listed shares\/fund units/,
+      /স্বর্ণ \/ গহনা \/ মূল্যবান জিনিস|Gold/,
     ]) {
       await page.getByLabel(label).fill(huge);
     }

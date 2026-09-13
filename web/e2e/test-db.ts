@@ -4,6 +4,14 @@
  * real dev data. Point this at a throwaway database (a free Neon branch
  * works well) via the environment, never reuse a dev or prod URL here.
  */
+if (!process.env.TEST_DATABASE_URL) {
+  try {
+    process.loadEnvFile?.();
+  } catch {
+    // ignore missing .env
+  }
+}
+
 const url = process.env.TEST_DATABASE_URL;
 
 if (!url) {

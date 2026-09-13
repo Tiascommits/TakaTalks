@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { TAXPAYER_CATEGORIES } from "@/config/tax-rules-2025-26";
 import { calculateTax } from "@/lib/tax/calculate";
 import { calculateOptimizer } from "@/lib/tax/optimizer";
@@ -8,6 +8,7 @@ import { EMPTY_TAX_INPUT, type TaxCalculatorInput } from "@/lib/tax/types";
 import { CheckField, Fieldset, NumberField, SelectField } from "@/components/ui/fields";
 import { TaxBreakdown } from "./TaxBreakdown";
 import { RebateOptimizer } from "./RebateOptimizer";
+import { TaxSlipModal } from "./TaxSlipModal";
 import { useLanguage } from "@/lib/i18n";
 
 function field<K extends keyof TaxCalculatorInput>(
@@ -25,6 +26,53 @@ export function CalculatorForm({ initial }: { initial?: Partial<TaxCalculatorInp
   const { t } = useLanguage();
   const [input, setInput] = useState<TaxCalculatorInput>({ ...EMPTY_TAX_INPUT, ...initial });
   const [wealthOpen, setWealthOpen] = useState(false);
+  const [showSlipModal, setShowSlipModal] = useState(false);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const params = new URLSearchParams(window.location.search);
+    if (!params.toString()) return;
+
+    const patch: Partial<TaxCalculatorInput> = {};
+    const parseNum = (k: string) => {
+      const v = params.get(k);
+      if (v) {
+        const n = parseFloat(v);
+        if (Number.isFinite(n) && n > 0) return n;
+      }
+      return undefined;
+    };
+
+    const b = parseNum("basic"); if (b !== undefined) patch.basicMonthly = b;
+    const a = parseNum("allowance"); if (a !== undefined) patch.allowanceMonthly = a;
+    const bn = parseNum("bonus"); if (bn !== undefined) patch.bonusAnnual = bn;
+    const bz = parseNum("biz"); if (bz !== undefined) patch.businessAnnual = bz;
+    const hp = parseNum("houseProperty"); if (hp !== undefined) patch.housePropertyAnnual = hp;
+    const ot = parseNum("other"); if (ot !== undefined) patch.otherIncomeAnnual = ot;
+    const fl = parseNum("freelance"); if (fl !== undefined) patch.freelanceAnnual = fl;
+    const ait = parseNum("ait"); if (ait !== undefined) patch.aitPaid = ait;
+    const cat = params.get("cat"); if (cat) patch.categoryId = cat;
+
+    if (Object.keys(patch).length > 0) {
+      setInput((prev) => ({ ...prev, ...patch }));
+    }
+  }, []);
+
+  const shareUrl = useMemo(() => {
+    if (typeof window === "undefined") return "";
+    const params = new URLSearchParams();
+    if (input.basicMonthly) params.set("basic", String(input.basicMonthly));
+    if (input.allowanceMonthly) params.set("allowance", String(input.allowanceMonthly));
+    if (input.bonusAnnual) params.set("bonus", String(input.bonusAnnual));
+    if (input.businessAnnual) params.set("biz", String(input.businessAnnual));
+    if (input.housePropertyAnnual) params.set("houseProperty", String(input.housePropertyAnnual));
+    if (input.otherIncomeAnnual) params.set("other", String(input.otherIncomeAnnual));
+    if (input.freelanceAnnual) params.set("freelance", String(input.freelanceAnnual));
+    if (input.aitPaid) params.set("ait", String(input.aitPaid));
+    if (input.categoryId && input.categoryId !== "general") params.set("cat", input.categoryId);
+    const qs = params.toString();
+    return `${window.location.origin}/calculator${qs ? `?${qs}` : ""}`;
+  }, [input]);
 
   const result = useMemo(() => calculateTax(input), [input]);
   const optimizer = useMemo(() => calculateOptimizer(result), [result]);
@@ -240,6 +288,15 @@ export function CalculatorForm({ initial }: { initial?: Partial<TaxCalculatorInp
             {t("Your estimate, step by step", "তোমার এস্টিমেট, ধাপে ধাপে")}
           </h2>
           <TaxBreakdown r={result} ait={input.aitPaid} />
+
+          <button
+            type="button"
+            onClick={() => setShowSlipModal(true)}
+            className="w-full mt-3.5 py-2.5 px-3 bg-green-deep text-paper text-xs font-semibold rounded-xs hover:bg-green-deep/90 transition-colors flex items-center justify-center gap-1.5 shadow-xs"
+          >
+            <span>📄</span> {t("Generate & Print Tax Slip", "আয়কর স্লিপ তৈরি ও প্রিন্ট")}
+          </button>
+
           <p className="text-[11px] text-muted mt-3.5 pt-2.5 border-t border-line">
             {t(
               "This is a rough estimate, not an official record, and nothing is saved anywhere. Per-instrument sub-caps are simplified. Verify everything officially before actually filing.",
@@ -250,6 +307,15 @@ export function CalculatorForm({ initial }: { initial?: Partial<TaxCalculatorInp
 
         <RebateOptimizer opt={optimizer} />
       </div>
+
+      {showSlipModal && (
+        <TaxSlipModal
+          result={result}
+          ait={input.aitPaid}
+          onClose={() => setShowSlipModal(false)}
+          shareUrl={shareUrl}
+        />
+      )}
     </div>
   );
 }

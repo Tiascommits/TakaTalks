@@ -32,7 +32,9 @@ export function NumberField({
   const displayValue = focused ? text : currency ? formatDisplay(value) : value ? String(value) : "";
 
   function handleChange(raw: string) {
-    const cleaned = raw.replace(/[^\d.]/g, "");
+    const isNegative = raw.trim().startsWith("-");
+    const digitsOnly = raw.replace(/[^\d.]/g, "");
+    const cleaned = isNegative ? `-${digitsOnly}` : digitsOnly;
     setText(cleaned);
     const n = parseFloat(cleaned);
     onChange(Number.isFinite(n) ? n : 0);

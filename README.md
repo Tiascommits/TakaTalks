@@ -76,11 +76,13 @@ Hand these to Claude Code **in order**. Each one assumes the previous module exi
 
 | Phase | What | Status |
 |---|---|---|
-| 1 | Tax calculator + rebate optimizer | Built in `web/` (Next.js), from Prompt 1 |
-| 2 | Income/investment tracker, maturity reminders | Built in `web/` (Next.js), from Prompt 1 |
-| 3 | Bank rate comparison + scorecard (live) | Demo done (`fdr-dps-comparison.html`), not live |
-| 3 | Annual report extraction pipeline | Not started |
-| 4 | Goal planner (car, retirement) | Not started |
+| 1 | Tax calculator + rebate optimizer + printable tax slip | Built in `web/` (`/calculator`) |
+| 2 | Income/investment tracker, maturity reminders | Built in `web/` (`/tracker`) |
+| 3 | Bank rate comparison + scorecard (live daily monitoring) | Built in `web/` (`/rates`) |
+| 3 | Audited bank health disclosures (CAR, NPL, ROA, ROE) | Built & seeded in `web/` (`/rates`, `/admin/bank-health`) |
+| 4 | Life goal planner (car, flat, education, retirement) | Built in `web/` (`/goals`) |
+| 4 | Salary offer analyzer & net take-home benchmark | Built in `web/` (`/salary`) |
+| 4 | Real yield matrix (Sanchayapatra vs FDR vs Sukuk) | Built in `web/` (`/instruments`) |
 | 5 | AI reinvestment suggestions | Deliberately deferred, needs real usage data first |
 
 ## A few things to keep true as this grows
