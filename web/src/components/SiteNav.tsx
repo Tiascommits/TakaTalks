@@ -43,6 +43,7 @@ export function SiteNav() {
   const links = [
     { href: "/calculator", label: t("Tax Calculator", "আয়কর") },
     { href: "/salary", label: t("Salary Analyzer", "স্যালারি তুলনাকারী") },
+    { href: "/freelance", label: t("Freelance & IT", "ফ্রিল্যান্স ও IT") },
     { href: "/goals", label: t("Goal Planner", "লক্ষ্য ও অবসর") },
     { href: "/instruments", label: t("Real Yields", "সঞ্চয় স্কিম") },
     { href: "/rates", label: t("Bank Rates", "ব্যাংক রেট") },

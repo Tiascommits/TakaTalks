@@ -67,11 +67,31 @@ test.describe("Real Yield Instrument Matrix (/instruments)", () => {
   });
 });
 
+test.describe("Freelance & IT Remittance Hub (/freelance)", () => {
+  test("loads cleanly, calculates 0% ITES tax exemption and cash incentive, and switches currencies", async ({ page }) => {
+    await page.goto("/freelance");
+    await expect(page.getByText(/ফ্রিল্যান্স ট্যাক্স ও রেমিট্যান্স ক্যালকুলেটর|Freelance Tax & Remittance Calculator/)).toBeVisible();
+    await noGarbageOnPage(page);
+
+    // Check 0% ITES tax exemption badge
+    await expect(page.getByText(/১০০% করমুক্ত|100% Tax-Exempt/).first()).toBeVisible();
+    await expect(page.getByText(/সরকারি রেমিট্যান্স প্রণোদনা|Government Inward Cash Incentive/).first()).toBeVisible();
+
+    // Switch currency to EUR
+    await page.getByRole("button", { name: /EUR/ }).click();
+    await noGarbageOnPage(page);
+
+    // Verify compliance checklist is visible
+    await expect(page.getByText(/বৈধ সাদা টাকা হিসেবে প্রদর্শনের চেকলিস্ট|White Money Compliance Checklist/)).toBeVisible();
+  });
+});
+
 test.describe("Homepage Showcase Grid (/)", () => {
-  test("displays all 6 tools and navigates successfully", async ({ page }) => {
+  test("displays all 7 tools and navigates successfully", async ({ page }) => {
     await page.goto("/");
     await expect(page.getByText(/আয়কর ও রিবেট অপটিমাইজার|Tax Calculator/)).toBeVisible();
     await expect(page.getByText(/স্যালারি অফার ও ইন-হ্যান্ড পে|Salary Offer/)).toBeVisible();
+    await expect(page.getByText(/ফ্রিল্যান্স ও আইটি রেমিট্যান্স হাব|Freelance & IT Remittance/)).toBeVisible();
     await expect(page.getByText(/ভবিষ্যৎ লক্ষ্য ও অবসর প্ল্যানার|Life Goal/)).toBeVisible();
     await expect(page.getByText(/সঞ্চয় স্কিম তুলনামূলক ম্যাট্রিক্স|Real Yield Matrix/)).toBeVisible();
     await expect(page.getByText(/ব্যাংক রেট ও স্বাস্থ্য স্কোরকার্ড|Bank Rates/)).toBeVisible();

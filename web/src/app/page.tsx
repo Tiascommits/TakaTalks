@@ -25,6 +25,16 @@ const TOOLS = [
     },
   },
   {
+    href: "/freelance",
+    icon: "🌐",
+    tag: { en: "0% TAX + 2.5% CASH", bn: "০% ট্যাক্স + ২.৫% বোনাস" },
+    title: { en: "Freelance & IT Remittance Hub", bn: "ফ্রিল্যান্স ও আইটি রেমিট্যান্স হাব" },
+    desc: {
+      en: "Calculate 2.5% inward remittance incentive, verify 0% ITES tax exemption, and track compliance.",
+      bn: "২.৫% রেমিট্যান্স প্রণোদনা হিসাব করুন, ০% আইটিইএস কর অব্যাহতি ও আইনি কমপ্লায়েন্স যাচাই করুন।",
+    },
+  },
+  {
     href: "/goals",
     icon: "🎯",
     tag: { en: "BEAT INFLATION", bn: "মূল্যস্ফীতি জয়" },

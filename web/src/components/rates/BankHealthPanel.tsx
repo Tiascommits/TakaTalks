@@ -1,5 +1,6 @@
 "use client";
 
+import { useMemo, useState } from "react";
 import { CRAR_REGULATORY_MINIMUM_PCT } from "@/config/rate-monitoring";
 import { useLanguage } from "@/lib/i18n";
 import type { BankHealthRow } from "@/lib/rates/current-rates";
@@ -23,15 +24,74 @@ function latestByField(row: BankHealthRow) {
  */
 export function BankHealthPanel({ rows }: { rows: BankHealthRow[] }) {
   const { t } = useLanguage();
+  const [filter, setFilter] = useState<"ALL" | "CAR_COMPLIANT" | "LOW_NPL">("ALL");
   const notAvailable = t("not disclosed / not extracted", "প্রকাশিত/extract করা হয়নি");
   const hasAnyData = rows.some((r) => r.figures.length > 0);
 
+  const filteredRows = useMemo(() => {
+    if (filter === "ALL") return rows;
+    return rows.filter((r) => {
+      const byField = latestByField(r);
+      if (filter === "CAR_COMPLIANT") {
+        const car = byField["CAR"]?.numericValue;
+        return car !== undefined && car !== null && car >= CRAR_REGULATORY_MINIMUM_PCT;
+      }
+      if (filter === "LOW_NPL") {
+        const npl = byField["NPL"]?.numericValue;
+        return npl !== undefined && npl !== null && npl < 5.0;
+      }
+      return true;
+    });
+  }, [rows, filter]);
+
   return (
     <fieldset className="border border-line bg-card px-4 pt-4 pb-4.5">
-      <legend className="font-serif font-semibold text-[15.5px] text-green-deep px-1.5">
-        {t("Bank health (from audited annual reports)", "Bank health (audited annual report থেকে)")}
-      </legend>
-      <p className="text-xs text-muted mb-2.5">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-2.5">
+        <legend className="font-serif font-semibold text-[15.5px] text-green-deep px-1.5">
+          {t("Bank health (from audited annual reports)", "Bank health (audited annual report থেকে)")}
+        </legend>
+
+        {hasAnyData && (
+          <div className="flex items-center gap-1.5 self-start sm:self-auto">
+            <span className="text-[11px] text-muted mr-1 font-mono uppercase">{t("Filter:", "ফিল্টার:")}</span>
+            <button
+              type="button"
+              onClick={() => setFilter("ALL")}
+              className={`px-2 py-0.5 text-xs rounded-xs font-medium transition-colors ${
+                filter === "ALL"
+                  ? "bg-green-deep text-paper font-semibold"
+                  : "bg-[#FAF9F5] border border-line text-muted hover:text-foreground"
+              }`}
+            >
+              {t("All Banks", "সকল ব্যাংক")}
+            </button>
+            <button
+              type="button"
+              onClick={() => setFilter("CAR_COMPLIANT")}
+              className={`px-2 py-0.5 text-xs rounded-xs font-medium transition-colors ${
+                filter === "CAR_COMPLIANT"
+                  ? "bg-green text-paper font-semibold"
+                  : "bg-[#FAF9F5] border border-line text-muted hover:text-foreground"
+              }`}
+            >
+              {t("CAR ≥ 12.5%", "CAR ≥ ১২.৫%")}
+            </button>
+            <button
+              type="button"
+              onClick={() => setFilter("LOW_NPL")}
+              className={`px-2 py-0.5 text-xs rounded-xs font-medium transition-colors ${
+                filter === "LOW_NPL"
+                  ? "bg-gold text-green-deep font-semibold"
+                  : "bg-[#FAF9F5] border border-line text-muted hover:text-foreground"
+              }`}
+            >
+              {t("NPL < 5%", "NPL < ৫%")}
+            </button>
+          </div>
+        )}
+      </div>
+
+      <p className="text-xs text-muted mb-3">
         {t(
           `These figures come from each bank's own audited annual report, dated by fiscal year — they can be a year or more old, and are not the same as the live rates above. Bangladesh Bank's minimum CRAR requirement is ${CRAR_REGULATORY_MINIMUM_PCT}%. No composite score or ranking is computed here — just the disclosed numbers, side by side.`,
           `এই figures গুলো bank er নিজের audited annual report থেকে, fiscal year অনুযায়ী dated — এক বছর বা তার বেশি পুরনো হতে পারে, উপরের live rate এর মতো না। Bangladesh Bank er minimum CRAR requirement ${CRAR_REGULATORY_MINIMUM_PCT}%. এখানে কোনো composite score বা ranking নেই — শুধু disclosed number গুলো পাশাপাশি।`
@@ -66,7 +126,7 @@ export function BankHealthPanel({ rows }: { rows: BankHealthRow[] }) {
               </tr>
             </thead>
             <tbody>
-              {rows.map((row) => {
+              {filteredRows.map((row) => {
                 const byField = latestByField(row);
                 return (
                   <tr key={row.bankShortCode} className="border-b border-line hover:bg-[#FBFAF6]">
