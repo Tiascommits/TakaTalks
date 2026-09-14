@@ -1,0 +1,23 @@
+{
+  "brand": "TakaTalks",
+  "colors": {
+    "paper":       { "hex": "#f6f3ec", "role": "Primary background" },
+    "ink":         { "hex": "#1b1b18", "role": "Primary text" },
+    "green":       { "hex": "#0b4f3f", "role": "Primary brand green (links, active states)" },
+    "green-deep":  { "hex": "#07352a", "role": "Logo mark, headers, highest-emphasis fills" },
+    "gold":        { "hex": "#b98a2e", "role": "Accent — logo tail/ring, callouts, the 'Talks' half of the wordmark" },
+    "teal":        { "hex": "#0a6e5b", "role": "Secondary accent" },
+    "red":         { "hex": "#a62e2e", "role": "Tax due / alerts / negative amounts" },
+    "line":        { "hex": "#d8d2c2", "role": "Hairline borders, dividers" },
+    "card":        { "hex": "#ffffff", "role": "Card / surface background" },
+    "muted":       { "hex": "#7a7566", "role": "Secondary text, captions" },
+    "amber-bg":    { "hex": "#fdf8ec", "role": "Callout background" },
+    "amber-border":{ "hex": "#d4a832", "role": "Callout border" }
+  },
+  "fonts": {
+    "serif":  { "family": "Newsreader", "weights": [500, 600, 700], "use": "Headings, wordmark, display numbers" },
+    "sans":   { "family": "Noto Sans Bengali", "weights": [400, 500, 600, 700], "use": "Body copy, Bengali text, logo glyph" },
+    "mono":   { "family": "IBM Plex Mono", "weights": [400, 500], "use": "Currency figures, tabular data" }
+  },
+  "source": "Matches web/src/app/globals.css — reuse these tokens, don't fork new ones."
+}
