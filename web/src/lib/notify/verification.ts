@@ -76,7 +76,7 @@ export async function requestEmailLink(
   const link = `${appUrl}/account/verify?token=${token}`;
   const { sent, reason } = await sendEmail({
     to: email,
-    subject: "Your Takatox login link",
+    subject: "Your TakaTalks login link",
     text: `Click to confirm this email and turn on reminders: ${link}\n\nThis link expires in 15 minutes. If you didn't request this, ignore it.`,
   });
   return sent ? { ok: true } : { ok: false, reason };

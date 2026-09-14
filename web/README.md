@@ -1,4 +1,4 @@
-# Takatox web app
+# TakaTalks web app
 
 Next.js (App Router) + TypeScript + Tailwind + Prisma/Postgres. Built from
 `prompts/01-tax-calculator-and-tracker.md`: Phase 1-2 MVP covering the tax

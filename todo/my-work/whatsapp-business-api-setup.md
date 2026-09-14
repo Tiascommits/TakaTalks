@@ -10,7 +10,7 @@ unlocks two features at once (maturity reminders over WhatsApp, and phone-number
 ## Steps
 
 1. **Meta Business Manager account** — https://business.facebook.com if you don't already have
-   one for Takatox/Inovace.
+   one for TakaTalks/Inovace.
 2. **Verify the business** — Meta will ask for business documents (trade license / registration,
    address proof). This step has the longest lead time (can take days), start it first.
 3. **Create a WhatsApp Business app** inside Meta for Developers
@@ -23,7 +23,7 @@ unlocks two features at once (maturity reminders over WhatsApp, and phone-number
    message sent outside a 24h user-initiated window (which reminders and OTPs always are). You'll
    need at minimum:
    - A maturity-reminder template (e.g. "Your {{investment_label}} matures on {{date}}.")
-   - An OTP template (e.g. "Your Takatox verification code is {{code}}.")
+   - An OTP template (e.g. "Your TakaTalks verification code is {{code}}.")
    - Optionally an admin-digest template if you want the daily rate-scrape digest on WhatsApp too.
    Template approval can take a day or two and Meta sometimes rejects wording on the first pass.
 7. **Set these env vars** once you have them (also add to Vercel project settings):

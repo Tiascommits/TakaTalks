@@ -56,7 +56,7 @@ export function SiteNav() {
     <nav className="bg-green-deep text-paper border-b-4 border-gold">
       <div className="max-w-[1160px] mx-auto px-5 py-3 flex items-center gap-6">
         <Link href="/" className="font-serif font-semibold text-lg">
-          Takatox
+          TakaTalks
         </Link>
 
         <div className="hidden md:flex items-center gap-6">

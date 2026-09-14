@@ -7,7 +7,7 @@ Hand this to Claude Code when ready to scaffold the actual Next.js app.
 
 ---
 
-I'm building "Takatox," a personal finance web app for a Bangladesh audience, paired with
+I'm building "TakaTalks," a personal finance web app for a Bangladesh audience, paired with
 educational YouTube/Facebook content about money management. Build the MVP covering two
 modules only: (1) a tax calculator + rebate optimizer, (2) a multi-source income and
 investment tracker. Do not build the AI advisor, wishlist/goal planner, or retirement

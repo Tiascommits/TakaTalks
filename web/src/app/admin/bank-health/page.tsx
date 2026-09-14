@@ -4,7 +4,7 @@ import { AdminLoginForm } from "@/components/admin/AdminLoginForm";
 import { AdminSetupForm } from "@/components/admin/AdminSetupForm";
 import { AdminBankHealthDashboard } from "@/components/admin/AdminBankHealthDashboard";
 
-export const metadata = { title: "Admin: Bank health review — Takatox" };
+export const metadata = { title: "Admin: Bank health review — TakaTalks" };
 export const dynamic = "force-dynamic";
 
 export default async function AdminBankHealthPage() {

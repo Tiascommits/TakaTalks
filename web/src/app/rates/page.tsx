@@ -8,7 +8,7 @@ import { BankHealthPanel } from "@/components/rates/BankHealthPanel";
 import { RatesHeader } from "@/components/rates/RatesHeader";
 
 export const metadata = {
-  title: "ব্যাংক রেট তুলনা — Takatox",
+  title: "ব্যাংক রেট তুলনা — TakaTalks",
 };
 
 // Rates change (and staleness flags depend on the latest scrape attempt),

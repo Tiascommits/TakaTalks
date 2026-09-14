@@ -1,7 +1,7 @@
 import { adminUserCount } from "@/lib/admin/auth";
 import { AdminSetupForm } from "@/components/admin/AdminSetupForm";
 
-export const metadata = { title: "Admin setup — Takatox" };
+export const metadata = { title: "Admin setup — TakaTalks" };
 export const dynamic = "force-dynamic";
 
 export default async function AdminSetupPage() {

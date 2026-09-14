@@ -1,6 +1,6 @@
 # TakaTalks
 
-Personal finance tools for a Bangladesh audience, built alongside the **Takatox** money
+Personal finance tools for a Bangladesh audience, built alongside the **TakaTalks** money
 management video content. The idea: someone watches a video about tax rebates or FDR
 returns, then immediately runs their own numbers in a tool that sits right next to it.
 

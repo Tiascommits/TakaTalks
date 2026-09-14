@@ -3,7 +3,7 @@ import { SalaryComparator } from "@/components/salary/SalaryComparator";
 import { TrustBanner } from "@/components/calculator/TrustBanner";
 
 export const metadata = {
-  title: "স্যালারি অফার তুলনাকারী ও ইন-হ্যান্ড পে — Takatox",
+  title: "স্যালারি অফার তুলনাকারী ও ইন-হ্যান্ড পে — TakaTalks",
   description: "Bangladesh Salary Offer Comparison and Net Take-Home Pay Calculator under Income Tax Act 2023",
 };
 

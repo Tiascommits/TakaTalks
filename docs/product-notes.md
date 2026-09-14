@@ -5,7 +5,7 @@ once it drops out of chat history.
 
 ## Original vision (as first described)
 
-One app under the Takatox brand, tied to money-management video content, covering:
+One app under the TakaTalks brand, tied to money-management video content, covering:
 multi-source income input, multi-investment tracking with maturity notifications, an AI
 layer suggesting where to reinvest matured funds, a tax calculator with rebate guidance,
 a wishlist/goal planner (e.g. "buy a car in 5 years"), and a retirement calculator.
@@ -51,7 +51,7 @@ least trustworthy. See prompts 02 and 03 for how this constraint shaped the buil
 ## Trust and adoption reasoning
 
 People in Bangladesh are reasonably wary of financial apps (MLM apps, e-commerce Ponzi
-collapses like Evaly). The realistic path to adoption is the existing Takatox
+collapses like Evaly). The realistic path to adoption is the existing TakaTalks
 content-audience relationship, not the app's own security claims. Concrete implications,
 already applied in `tools/tax-calculator/v3-trust-first-estimator.html`:
 
@@ -81,8 +81,8 @@ already applied in `tools/tax-calculator/v3-trust-first-estimator.html`:
 
 ## Known overlap to resolve later
 
-Takatox's investment tracker (maturity detection, "did the interest arrive") and
+TakaTalks's investment tracker (maturity detection, "did the interest arrive") and
 KhorochPati.ai's passive SMS-based expense tracking are solving adjacent problems (reading
-transaction data automatically). Worth deciding whether Takatox's tracker sits on top of
+transaction data automatically). Worth deciding whether TakaTalks's tracker sits on top of
 whatever pipe KhorochPati.ai builds, rather than building bank-SMS parsing twice under two
 brands.

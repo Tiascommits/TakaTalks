@@ -42,10 +42,10 @@ export async function notifyMaturityReminder(
   if (channels.includes("EMAIL") && user.email) {
     const { sent, reason } = await sendEmail({
       to: user.email,
-      subject: `Takatox: "${investment.label}" matures ${dateLabel}`,
+      subject: `TakaTalks: "${investment.label}" matures ${dateLabel}`,
       text: `Your investment "${investment.label}" (${fmtTaka(
         investment.principalAmount
-      )}) matures on ${dateLabel}. Log in to Takatox to confirm the payout once it arrives.`,
+      )}) matures on ${dateLabel}. Log in to TakaTalks to confirm the payout once it arrives.`,
     });
     results.push({ channel: "EMAIL", sent, reason });
   }

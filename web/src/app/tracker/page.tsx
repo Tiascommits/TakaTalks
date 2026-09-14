@@ -6,7 +6,7 @@ import { TrackerDashboard } from "@/components/tracker/TrackerDashboard";
 import { TrackerHeader } from "@/components/tracker/TrackerHeader";
 
 export const metadata = {
-  title: "ইনকাম / ইনভেস্টমেন্ট ট্র্যাকার — Takatox",
+  title: "ইনকাম / ইনভেস্টমেন্ট ট্র্যাকার — TakaTalks",
 };
 
 export default async function TrackerPage({

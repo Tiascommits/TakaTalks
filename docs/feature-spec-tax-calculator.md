@@ -1,7 +1,7 @@
-# Takatox Tax Calculator — Trust-First Feature Spec
+# TakaTalks Tax Calculator — Trust-First Feature Spec
 
 Scope: the tax calculator module only (module 1 from earlier planning). This is the
-highest-traffic, most shareable entry point into Takatox, so it gets built to the
+highest-traffic, most shareable entry point into TakaTalks, so it gets built to the
 lowest-friction, lowest-trust-barrier standard before anything else.
 
 ## Core principle
@@ -44,7 +44,7 @@ list below serves this one rule.
    or "file your taxes here." Lower stakes wording makes people more willing to enter
    real-ish numbers, and it's also just accurate, since this isn't an official record.
 
-7. **Consistent trust posture across Takatox and KhorochPati.ai.**
+7. **Consistent trust posture across TakaTalks and KhorochPati.ai.**
    Whatever data-handling language and mechanism we use here should be reused for
    KhorochPati.ai rather than reinvented, since that app's SMS-based tracking is an even
    heavier trust ask. Don't solve "convince a Bangladeshi user to trust you with money data"

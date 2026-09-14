@@ -6,7 +6,7 @@ import { getCurrentUserId } from "@/lib/tracker/session";
 import { deriveTaxInputFromTracker } from "@/lib/tracker/derive-tax-input";
 
 export const metadata = {
-  title: "আয়কর এস্টিমেটর + রিবেট অপটিমাইজার — Takatox",
+  title: "আয়কর এস্টিমেটর + রিবেট অপটিমাইজার — TakaTalks",
 };
 
 export default async function CalculatorPage() {

@@ -4,7 +4,7 @@ Status: not built. Depends on prompts 01 and 02 being in place first.
 
 ---
 
-Extend the Takatox app with a fifth module: annual report data extraction for the bank
+Extend the TakaTalks app with a fifth module: annual report data extraction for the bank
 comparison scorecard. This runs on a completely different cadence than the daily rate
 scraper (module 3), annual reports are published once a year with a lag, so treat this as
 a batch job, not a live crawl.

@@ -55,6 +55,6 @@ $$\text{Effective Net Annual Yield } (r_{net}) = \left(\frac{A_{net}}{P}\right)^
 2. **Side-by-Side Context**:
    - Always show the **Bangladesh Bank Weighted Average Rate** as a horizontal reference line or comparative stat.
    - Display a persistent disclaimer banner:
-     > *"These rates are compiled from publicly available bank circulars and updated daily. After-tax return is an estimate based on statutory TDS rules. Takatox does not endorse or recommend any bank."*
+     > *"These rates are compiled from publicly available bank circulars and updated daily. After-tax return is an estimate based on statutory TDS rules. TakaTalks does not endorse or recommend any bank."*
 3. **No Surcharges or Commission Links**:
    - There are zero affiliate or commission links to open bank accounts. Every bank link goes directly to the public institutional website of that bank.

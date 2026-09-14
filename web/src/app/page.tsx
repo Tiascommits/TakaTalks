@@ -104,7 +104,7 @@ export default function Home() {
       <div className="flex-1 flex items-center justify-center px-5 py-14 bg-gradient-to-b from-[#FAF9F5] to-paper">
         <div className="max-w-2xl text-center">
           <span className="inline-block font-mono text-xs tracking-wider text-gold border border-gold/40 px-2.5 py-0.5 rounded-xs mb-3">
-            TAKATOX • PERSONAL FINANCE FOR BANGLADESH
+            TAKATALKS • PERSONAL FINANCE FOR BANGLADESH
           </span>
           <h1 className="font-serif font-bold text-3xl sm:text-4xl text-green-deep mb-4 leading-tight">
             {t(

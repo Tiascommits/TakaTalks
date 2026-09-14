@@ -70,7 +70,7 @@ export function TaxSlipModal({
         <div id="printable-tax-slip" className="p-6 text-foreground bg-card space-y-4">
           <div className="text-center pb-3 border-b-2 border-green-deep">
             <h2 className="font-serif font-bold text-xl text-green-deep">
-              Takatox — {t("Income Tax Estimation Slip", "আয়কর হিসাব বিবরণী")}
+              TakaTalks — {t("Income Tax Estimation Slip", "আয়কর হিসাব বিবরণী")}
             </h2>
             <p className="text-xs text-muted font-mono mt-0.5">
               {t("Assessment Year 2025–2026", "করবর্ষ ২০২৫–২০২৬")} • {t("Client-Side Calculation", "ডিভাইসে প্রস্তুতকৃত")}
@@ -188,8 +188,8 @@ export function TaxSlipModal({
 
           <div className="text-[10.5px] text-muted leading-relaxed pt-2 border-t border-line/60">
             {t(
-              "Note: This document is an estimate generated on-device by Takatox (takatalks.com) and does not replace the official NBR Return Submission Acknowledgement (PSR).",
-              "বিশেষ দ্রষ্টব্য: এটি Takatox এর মাধ্যমে ব্যবহারকারীর ডিভাইসে প্রস্তুতকৃত একটি আনঅফিসিয়াল হিসাব, যা জাতীয় রাজস্ব বোর্ডের (NBR) আনুষ্ঠানিক প্রত্যয়নপত্রের বিকল্প নয়।"
+              "Note: This document is an estimate generated on-device by TakaTalks (takatalks.com) and does not replace the official NBR Return Submission Acknowledgement (PSR).",
+              "বিশেষ দ্রষ্টব্য: এটি TakaTalks এর মাধ্যমে ব্যবহারকারীর ডিভাইসে প্রস্তুতকৃত একটি আনঅফিসিয়াল হিসাব, যা জাতীয় রাজস্ব বোর্ডের (NBR) আনুষ্ঠানিক প্রত্যয়নপত্রের বিকল্প নয়।"
             )}
           </div>
         </div>

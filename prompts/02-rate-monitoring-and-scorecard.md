@@ -11,7 +11,7 @@ below deliberately avoids issuing a "best bank" verdict.
 
 ---
 
-Extend the Takatox app with two new modules: (1) an automated rate-monitoring pipeline for
+Extend the TakaTalks app with two new modules: (1) an automated rate-monitoring pipeline for
 bank FDR/DPS rates, (2) a bank comparison scorecard. Do NOT build a single "best bank" or
 "invest here" verdict. This must present sourced data transparently and let the user decide,
 never issue a definitive recommendation.
@@ -56,6 +56,6 @@ MODULE 4: Bank comparison scorecard (NOT a recommendation engine)
   lag real conditions; users should independently verify before committing funds, especially
   for larger deposits.
 
-Wire this into the existing Takatox data model from modules 1-2. Ask before adding any bank
+Wire this into the existing TakaTalks data model from modules 1-2. Ask before adding any bank
 to the scraper list, each one needs manual verification of its rate-card page structure
 before an adapter is built for it.

@@ -3,7 +3,7 @@ import { GoalPlanner } from "@/components/goals/GoalPlanner";
 import { TrustBanner } from "@/components/calculator/TrustBanner";
 
 export const metadata = {
-  title: "লাইফ গোল ও ওয়েলথ প্ল্যানার — Takatox",
+  title: "লাইফ গোল ও ওয়েলথ প্ল্যানার — TakaTalks",
   description: "Bangladesh Life Goal & Retirement Planner with Inflation Adjustment and DPS SIP Math",
 };
 

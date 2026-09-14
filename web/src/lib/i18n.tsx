@@ -4,7 +4,7 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useSyncExte
 
 export type Lang = "en" | "bn";
 
-const STORAGE_KEY = "takatox_lang";
+const STORAGE_KEY = "takatalks_lang";
 
 function isLang(v: string | null): v is Lang {
   return v === "en" || v === "bn";

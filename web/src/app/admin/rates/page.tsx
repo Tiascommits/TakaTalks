@@ -6,7 +6,7 @@ import { AdminLoginForm } from "@/components/admin/AdminLoginForm";
 import { AdminSetupForm } from "@/components/admin/AdminSetupForm";
 import { AdminRatesDashboard } from "@/components/admin/AdminRatesDashboard";
 
-export const metadata = { title: "Admin: Rate monitoring — Takatox" };
+export const metadata = { title: "Admin: Rate monitoring — TakaTalks" };
 export const dynamic = "force-dynamic";
 
 export default async function AdminRatesPage() {

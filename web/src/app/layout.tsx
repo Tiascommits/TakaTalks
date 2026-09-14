@@ -23,7 +23,7 @@ const plexMono = IBM_Plex_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Takatox — আয়কর ও বিনিয়োগ ট্র্যাকার",
+  title: "TakaTalks — আয়কর ও বিনিয়োগ ট্র্যাকার",
   description:
     "Personal finance tools for a Bangladesh audience: tax calculator, rebate optimizer, and income/investment tracker.",
 };

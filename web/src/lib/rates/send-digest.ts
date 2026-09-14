@@ -50,7 +50,7 @@ export async function sendDigestEmail(digest: DigestResult): Promise<boolean> {
 
   const { sent } = await sendEmail({
     to: adminEmail,
-    subject: "Takatox: rate-scrape digest — action needed",
+    subject: "TakaTalks: rate-scrape digest — action needed",
     text: formatDigestText(digest),
   });
   return sent;

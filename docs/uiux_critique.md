@@ -1,4 +1,4 @@
-# Takatox — UI/UX critique
+# TakaTalks — UI/UX critique
 
 **Method:** ran the app locally (`npm run dev`), screenshotted every page at desktop
 (1440×900) and mobile (390×844) with Playwright, read the component source for the
