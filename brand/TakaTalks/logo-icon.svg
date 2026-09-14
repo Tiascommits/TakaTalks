@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" width="120" height="120">
+  <polygon points="30,96 16,114 40,100" fill="#07352a" stroke="#b98a2e" stroke-width="3" stroke-linejoin="round"/>
+  <circle cx="60" cy="56" r="46" fill="#07352a" stroke="#b98a2e" stroke-width="3"/>
+  <circle cx="60" cy="56" r="37" fill="none" stroke="#f6f3ec" stroke-opacity="0.55" stroke-width="1.5"/>
+  <text x="60" y="73" text-anchor="middle" font-family="'Noto Sans Bengali', 'Noto Serif Bengali', sans-serif" font-weight="700" font-size="52" fill="#f6f3ec">৳</text>
+</svg>
