@@ -26,8 +26,8 @@ test.describe("Bank rate scorecard — normal cases", () => {
 
   test("sorting by a column header doesn't crash the table", async ({ page }) => {
     await page.goto("/rates");
-    await page.getByRole("columnheader", { name: /Gross rate/ }).click();
-    await page.getByRole("columnheader", { name: /Gross rate/ }).click();
+    await page.getByRole("columnheader", { name: /Gross rate|মোট হার/ }).click();
+    await page.getByRole("columnheader", { name: /Gross rate|মোট হার/ }).click();
     await noGarbageOnPage(page);
   });
 });

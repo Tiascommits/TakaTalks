@@ -7,12 +7,16 @@ calculator + rebate optimizer, and the income/investment tracker.
 ## Getting started
 
 You need a Postgres database — a free [Neon](https://neon.tech) project is
-the easiest option (and what the Vercel deployment below uses).
+the easiest option for prod (and what the Vercel deployment below uses). For
+local dev, `docker-compose.yml` spins up a disposable local Postgres that
+matches `.env.example`'s default `DATABASE_URL`/`TEST_DATABASE_URL` host/port
+out of the box:
 
 ```bash
-cp .env.example .env      # fill in DATABASE_URL (and TEST_DATABASE_URL)
-npm install                # also runs `prisma generate`
-npx prisma migrate deploy  # applies migrations to DATABASE_URL
+docker compose up -d       # local Postgres on localhost:55432
+cp .env.example .env       # defaults already match the docker-compose db
+npm install                 # also runs `prisma generate`
+npx prisma migrate deploy   # applies migrations to DATABASE_URL
 npm run dev
 ```
 

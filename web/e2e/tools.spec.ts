@@ -73,6 +73,12 @@ test.describe("Freelance & IT Remittance Hub (/freelance)", () => {
     await expect(page.getByText(/ফ্রিল্যান্স ট্যাক্স ও রেমিট্যান্স ক্যালকুলেটর|Freelance Tax & Remittance Calculator/)).toBeVisible();
     await noGarbageOnPage(page);
 
+    // Exemption requires confirming the remittance came through a legal
+    // banking channel with FIRC/Form C — this defaults to unchecked
+    // (compliance is never assumed), so check it before the exempt badge
+    // and cash-incentive section appear.
+    await page.getByRole("checkbox").check();
+
     // Check 0% ITES tax exemption badge
     await expect(page.getByText(/১০০% করমুক্ত|100% Tax-Exempt/).first()).toBeVisible();
     await expect(page.getByText(/সরকারি রেমিট্যান্স প্রণোদনা|Government Inward Cash Incentive/).first()).toBeVisible();

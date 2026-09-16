@@ -31,7 +31,7 @@ test.describe("Calculator — normal cases", () => {
     const taxFreeLine = page.getByText("করমুক্ত সীমা (tax-free)").locator("..");
     await expect(taxFreeLine).toContainText("4,00,000"); // general default: ৳4,00,000
 
-    await page.getByLabel("Taxpayer category").selectOption({ value: "freedom_fighter" });
+    await page.getByLabel("করদাতার ক্যাটাগরি").selectOption({ value: "freedom_fighter" });
     await expect(taxFreeLine).toContainText("5,50,000"); // freedom fighter: ৳5,50,000
     await noGarbageOnPage(page);
   });

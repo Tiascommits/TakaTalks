@@ -1,0 +1,28 @@
+services:
+  # Local Postgres for dev + e2e, as an alternative to Neon (see README.md).
+  # Matches the host/port/db-names already assumed by .env.example so it
+  # works with zero config changes once `docker compose up -d` is running:
+  #   DATABASE_URL="postgresql://postgres:postgres@localhost:55432/takatalks"
+  #   TEST_DATABASE_URL="postgresql://postgres:postgres@localhost:55432/takatalks_test"
+  # `takatalks_test` isn't created here — `prisma migrate reset` (run by
+  # e2e/global-setup.ts on every test:e2e run) creates it on first use since
+  # the postgres role has CREATEDB rights.
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: takatalks
+    ports:
+      - "55432:5432"
+    volumes:
+      - takatalks-postgres:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  takatalks-postgres:
