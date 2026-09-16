@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useLanguage } from "@/lib/i18n";
-import { buildEmbedUrl } from "@/lib/videos/embed";
+import { VideoEmbed } from "@/components/videos/VideoEmbed";
 import { VIDEOS } from "@/config/videos";
 
 const ADVANCE_MS = 6000;
@@ -150,14 +150,7 @@ export function VideoReel() {
               className="snap-start shrink-0 w-[78vw] max-w-[300px] sm:w-[260px] bg-black/20 border border-paper/15 rounded-sm overflow-hidden"
             >
               <div className={video.format === "short" ? "aspect-[9/16]" : "aspect-video"}>
-                <iframe
-                  src={buildEmbedUrl(video.platform, video.url)}
-                  className="w-full h-full"
-                  allow="encrypted-media; picture-in-picture; web-share"
-                  allowFullScreen
-                  loading="lazy"
-                  title={t(video.title.en, video.title.bn)}
-                />
+                <VideoEmbed video={video} title={t(video.title.en, video.title.bn)} />
               </div>
               <div className="p-3.5">
                 <h3 className="font-serif font-semibold text-sm mb-1">

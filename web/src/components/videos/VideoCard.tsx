@@ -2,25 +2,17 @@
 
 import Link from "next/link";
 import { useLanguage } from "@/lib/i18n";
-import { buildEmbedUrl } from "@/lib/videos/embed";
+import { VideoEmbed } from "@/components/videos/VideoEmbed";
 import type { VideoEntry } from "@/config/videos";
 
 export function VideoCard({ video }: { video: VideoEntry }) {
   const { t } = useLanguage();
-  const embedUrl = buildEmbedUrl(video.platform, video.url);
   const aspectClass = video.format === "short" ? "aspect-[9/16]" : "aspect-video";
 
   return (
     <div className="bg-card border border-line rounded-sm overflow-hidden flex flex-col">
       <div className={`${aspectClass} bg-black`}>
-        <iframe
-          src={embedUrl}
-          className="w-full h-full"
-          allow="autoplay; encrypted-media; picture-in-picture; web-share"
-          allowFullScreen
-          loading="lazy"
-          title={t(video.title.en, video.title.bn)}
-        />
+        <VideoEmbed video={video} title={t(video.title.en, video.title.bn)} />
       </div>
       <div className="p-4 flex flex-col gap-2">
         <h3 className="font-serif font-bold text-base text-green-deep">

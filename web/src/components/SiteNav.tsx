@@ -19,7 +19,7 @@ function LanguageToggle({ className = "" }: { className?: string }) {
         onClick={() => setLang("en")}
         aria-pressed={lang === "en"}
         className={`px-2.5 py-1 text-xs font-mono transition-colors ${
-          lang === "en" ? "bg-gold text-green-deep font-semibold" : "hover:bg-paper/10"
+          lang === "en" ? "bg-gold text-ink font-semibold" : "hover:bg-paper/10"
         }`}
       >
         EN
@@ -29,7 +29,7 @@ function LanguageToggle({ className = "" }: { className?: string }) {
         onClick={() => setLang("bn")}
         aria-pressed={lang === "bn"}
         className={`px-2.5 py-1 text-xs font-mono transition-colors border-l border-paper/40 ${
-          lang === "bn" ? "bg-gold text-green-deep font-semibold" : "hover:bg-paper/10"
+          lang === "bn" ? "bg-gold text-ink font-semibold" : "hover:bg-paper/10"
         }`}
       >
         বাং
