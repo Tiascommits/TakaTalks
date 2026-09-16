@@ -20,10 +20,17 @@ export type RunScrapeSummary = {
  */
 export async function runScrape(): Promise<RunScrapeSummary> {
   for (const b of BANKS) {
+    // The two report URLs are only written when config actually has one,
+    // so a URL entered by hand at /admin/banks/[id] for a bank config
+    // can't supply isn't wiped on the next scrape.
+    const reportUrls = {
+      ...(b.annualReportPageUrl ? { annualReportPageUrl: b.annualReportPageUrl } : {}),
+      ...(b.dseCompanyUrl ? { dseCompanyUrl: b.dseCompanyUrl } : {}),
+    };
     await prisma.bank.upsert({
       where: { shortCode: b.shortCode },
-      update: { name: b.name, type: b.type },
-      create: { shortCode: b.shortCode, name: b.name, type: b.type },
+      update: { name: b.name, type: b.type, ...reportUrls },
+      create: { shortCode: b.shortCode, name: b.name, type: b.type, ...reportUrls },
     });
   }
 

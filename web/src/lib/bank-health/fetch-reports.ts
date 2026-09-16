@@ -8,10 +8,62 @@ export type FetchReportResult =
   | { status: "fetch_error"; errorMessage: string }
   | { status: "new_doc"; docUrl: string; pdfBuffer: Buffer };
 
+export type PdfLink = { href: string; text: string };
+
+/**
+ * "Annual Report 2025", "AR_2025" (BRAC's S3 filenames use this and give
+ * the anchor no text at all, so the href has to carry the match).
+ */
+const STRONG_REPORT = /annual[\s_-]*report|(?<![A-Za-z])AR[\s_-]?20\d{2}(?!\d)/i;
+
+/**
+ * Standard Chartered Bangladesh is a branch operation, not a listed
+ * company — it publishes "Financial Statements <year>" and never an
+ * "annual report". Accepted only when nothing scores on STRONG_REPORT.
+ */
+const MEDIUM_REPORT = /(audited[\s_-]*)?financial[\s_-]*statements?/i;
+
+/**
+ * Documents that sit next to the annual report on the same page and would
+ * otherwise win on a naive "href contains annual" test. Real examples hit
+ * while verifying the bank list: AB Bank's investor page links
+ * `2014-annual-report-credit-rating.pdf` (a 12-year-old rating letter),
+ * SCB's page is nothing but Basel III disclosures, and EBL links a
+ * standalone `Directors_Report_2025.pdf`.
+ */
+const REPORT_NOISE =
+  /credit[\s_-]*rating|brochure|reward|redemption|proxy|notice|agm|psi|price[\s_-]*sensitive|esg|climate|sustainab|half[\s_-]*year|quarter|unclaimed|schedule[\s_-]*of[\s_-]*charge|director'?s?[\s_-]*report|basel|pillar/i;
+
+/** Bare 4-digit year — not the `1780917670_` upload timestamp that
+ * prefixes Islami Bank's filenames, which otherwise reads as "2030". */
+const BARE_YEAR = /(?<!\d)(20\d{2})(?!\d)/g;
+
+/**
+ * Picks the most-likely-current annual report from a page's PDF links.
+ * Returns null rather than guessing when nothing looks like a report —
+ * the old behaviour of falling back to the first PDF on the page made
+ * half the verified bank pages yield the wrong document.
+ */
+export function pickAnnualReportLink(pdfLinks: PdfLink[]): PdfLink | null {
+  const scored = pdfLinks.map((link) => {
+    const haystack = `${link.text} ${link.href}`;
+    let score = 0;
+    if (STRONG_REPORT.test(link.text)) score += 6;
+    if (STRONG_REPORT.test(link.href)) score += 5;
+    if (score === 0 && MEDIUM_REPORT.test(haystack)) score += 3;
+    if (REPORT_NOISE.test(haystack)) score -= 8;
+
+    const years = [...haystack.matchAll(BARE_YEAR)].map((m) => Number(m[1]));
+    return { link, score, year: years.length ? Math.max(...years) : 0 };
+  });
+
+  const best = scored.sort((a, b) => b.score - a.score || b.year - a.year)[0];
+  return best && best.score > 0 ? best.link : null;
+}
+
 /**
  * Finds the most-likely-current annual report PDF linked from a bank's
- * investor-relations page. Heuristic only — prefers a link whose text/href
- * mentions "annual report", falls back to the first PDF link on the page.
+ * investor-relations page. Heuristic only — see pickAnnualReportLink.
  * Every result (including failures) gets an AnnualReportCheckLog row so a
  * bank whose page never yields anything is visible in the admin view.
  */
@@ -45,9 +97,7 @@ export async function checkBankForNewReport(bank: {
     .toArray()
     .filter((l) => l.href);
 
-  const best =
-    pdfLinks.find((l) => l.text.includes("annual report") || l.href.toLowerCase().includes("annual"))
-      ?? pdfLinks[0];
+  const best = pickAnnualReportLink(pdfLinks);
 
   if (!best) {
     await prisma.annualReportCheckLog.create({
