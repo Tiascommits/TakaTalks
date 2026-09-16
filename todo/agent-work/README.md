@@ -24,14 +24,49 @@ from you — see `../my-work/` and `../needs-us-both/` for what does.
 - [x] Admin multi-user accounts (`/admin/setup` bootstrap, email+password login) + audit log,
       replacing the single shared `ADMIN_SECRET` as ongoing auth (it still bootstraps the
       first account).
+- [x] IFIC Bank FDR scraper (`src/lib/rates/adapters/ific-bank.ts`), verified live
+      2026-09-16: its rates live in a PDF (`ificbank.com.bd/deposit-rate` embeds it, filename
+      changes on every rate revision) rather than HTML, parsed with the same `pdf-parse`
+      dependency Module 5 uses. Overrides IFIC's manual-seed entry in `registry.ts`.
+- [x] Local Postgres for dev + e2e (`web/docker-compose.yml`), matching `.env.example`'s
+      default host/port — `docker compose up -d` and both `DATABASE_URL`/`TEST_DATABASE_URL`
+      work with zero further config. `npm run build` (prebuild → unit tests, build, postbuild
+      → e2e) now runs clean end-to-end on a freshly cloned machine; verified across repeated
+      runs. This surfaced two e2e tests that had apparently never actually passed before
+      (nothing had ever gotten `test:e2e` running against a live DB): one asserted an
+      English-only field label the app never renders (default language is Bangla, see
+      `src/lib/i18n.tsx`), the other asserted a tax-exemption badge that correctly requires
+      opting into a compliance checkbox first. Both fixed in `web/e2e/`.
+- [x] Verified bank annual-report / DSE URLs supplied for the configured banks
+      (`src/config/banks.ts`, upserted by `runScrape`), so Module 5 has real sources
+      instead of reporting "not disclosed" for everything. City Bank and Sonali Bank have
+      no usable page and are left null on purpose — see
+      `../needs-us-both/bank-annual-report-urls.md` for each URL, the two gaps, and the
+      National Bank TLS caveat.
+- [x] Fixed annual-report document selection (`pickAnnualReportLink` in
+      `src/lib/bank-health/fetch-reports.ts`). The old "first PDF, or any href containing
+      'annual'" rule picked the wrong document on 5 of the 7 verified bank pages (AB
+      Bank's gave a 2014 credit-rating letter, Standard Chartered's a reward-points
+      leaflet, EBL's a standalone directors' report). Now scored, with the neighbouring
+      document types penalised, newest-year tie-break that ignores upload timestamps, and
+      null rather than a guess. Every real-world case is a regression test.
+- [x] Removed `src/lib/bank-health/seed-bank-health.ts`, which wrote CAR/NPL/ROA/ROE
+      figures for 8 banks straight to the public scorecard as approved,
+      confidence-1.0 "verified audited disclosures". Nothing referenced it, and 7 of the 8
+      `sourceReportUrl`s it recorded for those figures are 404s, so the numbers cannot
+      have come from the documents they cite. Recoverable from git if ever needed.
+- [x] Freelance/ITES exemption confirmed against the statute and applied — Income Tax Act
+      2023, Sixth Schedule, Part I, para (21) (100% exclusion, 1 Jul 2024 - 30 Jun 2027,
+      individuals only). Gated on the paragraph's bank-transfer proviso via an explicit
+      opt-in, default false. See `../needs-us-both/freelance-tax-rule.md`.
 
 ## Known follow-ups, not blocking
 
-- The local dev database needs `prisma db push --accept-data-loss` run manually once (the
-  harness's safety classifier blocks that flag) — see the command in the session summary.
-  The `User` table is empty so nothing is actually at risk.
-- `npm run build` / `npm run test:e2e` haven't been run this pass (would need the dev DB
-  migrated first, plus e2e's separate `TEST_DATABASE_URL`) — `npm run test` (vitest, 72
-  tests) and `tsc --noEmit` are clean.
-- IFIC Bank's real FDR rates live in a PDF, not HTML — could reuse the Module 5 pdf-parse
-  pipeline to scrape it properly in a follow-up pass instead of manual-seed.
+- `npm run test:e2e` has not been run against these changes: Prisma refuses to let an AI
+  agent run `prisma migrate reset` (which `e2e/global-setup.ts` does on every run)
+  without explicit per-invocation consent. `npm run test` (119 unit tests),
+  `tsc --noEmit` and `next build` are all clean. Not a bug — see
+  `../my-work/for_you.md`.
+- The stray `c08b153 "Your commit message here"` commit is still on `origin/main` with
+  that message. Fixing it means rewriting already-pushed history, so it is waiting on an
+  explicit go-ahead.

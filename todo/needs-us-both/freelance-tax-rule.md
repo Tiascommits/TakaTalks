@@ -1,26 +1,53 @@
 # Confirm the freelance / IT-enabled export-service income tax rule
 
-Status: blocking a feature, not the app. The calculator now has a dedicated "Freelance /
-export IT service income" field (separate from generic "other income"), but it's taxed
-identically to other income for now — no concessional rate is applied. A flag
-(`freelanceConcessionalRuleConfirmed: false` in `config/tax-rules-2025-26.ts`) gates this
-deliberately, because guessing a tax provision in a financial tool is worse than not having
-the feature.
+Status: **done, 2026-09-16.** No longer needs anything from you — kept for the citation
+trail. The calculator now applies the exemption, gated as described below.
 
-Bangladesh has had various incentive provisions over the years for freelance/IT-enabled
-export-service income (e.g. income tax exemptions for IT/ITES export earnings, reduced
-source tax on inward remittance for freelancers under certain thresholds) — but the specific,
-currently-in-force provision for AY 2025-26 needs to be pinned down from an actual NBR
-circular/SRO or a tax practitioner, not inferred.
+## What the rule turned out to be
 
-## What's needed
+Not an SRO and not a concessional rate — it is in the Act itself:
 
-- The specific NBR SRO/section number and its current terms (exemption %, income cap,
-  documentation requirements — e.g. proof of inward foreign remittance) for AY 2025-26.
-- Once supplied, drop the numbers into `config/tax-rules-2025-26.ts` next to the existing
-  `freelanceConcessionalRuleConfirmed` flag and flip it to `true` — no other code changes
-  needed, `calculate.ts` already branches on it.
+> **Income Tax Act 2023, SIXTH SCHEDULE, PART I** ("Exclusion from the computation of
+> total income"), **paragraph (21)**, as substituted by the Finance Act 2024 (Act No. V
+> of 2024):
+>
+> "Any income derived from the following business of a person being a resident or a
+> non-resident Bangladeshi individual for the period from July 1, 2024 to June 30, 2027,
+> namely:— (a) AI based solution development; … **(q) IT Freelancing;** (r) call centre
+> service; (s) document conversion, imaging and digital archiving:
+>
+> Provided that all income, expenditure and investment of the business shall be performed
+> wholly through bank transfer from July 1, 2024;"
 
-This affects real numbers freelancers see when estimating their tax, so it should come from
-a source you'd cite if a user asked "where does this come from," the same bar the rest of
-`tax-rules-2025-26.ts` is held to.
+Source: NBR's own authentic English text of the Act, as published in the Bangladesh
+Gazette (Extraordinary) of 16 October 2025 —
+<https://nbr.gov.bd/uploads/acts/Income_tax_act_2023.pdf> (Sixth Schedule begins at the
+page headed "THE SIXTH SCHEDULE / TAX EXEMPTIONS, REBATE AND CREDITS"; para 21 is on
+p. 269 of 287 in that PDF). This is the statute from the regulator's own site, which is
+the bar this file asked for — earlier drafts of the answer came from a BASIS explainer
+and a Daily Star piece, which agree with it but are secondary.
+
+Three things worth knowing, because they differ from what this file assumed:
+
+- **It's 100%, not a reduced rate.** Part I of the Sixth Schedule excludes income from
+  total income altogether, so `freelanceExemptionFraction` is 1, not a fraction.
+- **Individuals only** — "a person being a resident or a non-resident Bangladeshi
+  individual". Not companies.
+- **It expires.** The window closes for income earned after **30 June 2027** unless
+  extended again. `config/tax-rules-2025-26.ts` records the end date; a later tax-year
+  config must re-check the Schedule rather than copy `true` forward.
+
+## What was implemented
+
+`freelanceConcessionalRuleConfirmed: true` / `freelanceExemptionFraction: 1` in
+`config/tax-rules-2025-26.ts`, with the citation above inline.
+
+The proviso is a real condition, so it is **not** applied to everyone who types a number
+into the freelance field. `TaxCalculatorInput.freelanceBankTransferCompliant` (default
+false) has to be asserted first, via a checkbox on the calculator — the same
+never-assume-compliance pattern the `/freelance` hub already used for its banking-channel
+box. Left unchecked, the income is taxed exactly as it was before.
+
+`src/lib/freelance/freelance.ts` was already applying this exemption on its own, but
+attributed it only to unnamed "NBR IT/ITES statutory income exemption provisions"; it now
+cites paragraph (21) too.
