@@ -149,7 +149,7 @@ export function VideoReel() {
               key={video.id}
               className="snap-start shrink-0 w-[78vw] max-w-[300px] sm:w-[260px] bg-black/20 border border-paper/15 rounded-sm overflow-hidden"
             >
-              <div className={video.format === "short" ? "aspect-[9/16]" : "aspect-video"}>
+              <div style={{ aspectRatio: `${video.width} / ${video.height}` }}>
                 <VideoEmbed video={video} title={t(video.title.en, video.title.bn)} />
               </div>
               <div className="p-3.5">

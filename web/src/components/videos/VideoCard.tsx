@@ -7,11 +7,10 @@ import type { VideoEntry } from "@/config/videos";
 
 export function VideoCard({ video }: { video: VideoEntry }) {
   const { t } = useLanguage();
-  const aspectClass = video.format === "short" ? "aspect-[9/16]" : "aspect-video";
 
   return (
     <div className="bg-card border border-line rounded-sm overflow-hidden flex flex-col">
-      <div className={`${aspectClass} bg-black`}>
+      <div className="bg-black" style={{ aspectRatio: `${video.width} / ${video.height}` }}>
         <VideoEmbed video={video} title={t(video.title.en, video.title.bn)} />
       </div>
       <div className="p-4 flex flex-col gap-2">

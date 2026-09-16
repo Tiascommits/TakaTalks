@@ -8,6 +8,10 @@ export type VideoEntry = {
   title: { en: string; bn: string };
   description: { en: string; bn: string };
   url: string;
+  /** Native pixel dimensions of the source file, so the player is sized to
+   *  the video's actual aspect ratio instead of a guess from `format`. */
+  width: number;
+  height: number;
   /** Optional in-app tool this video walks through, shown as a follow-up CTA. */
   relatedTool?: { href: string; label: { en: string; bn: string } };
 };
@@ -26,6 +30,8 @@ export const VIDEOS: VideoEntry[] = [
       bn: "একই ইনকাম হওয়া সত্ত্বেও তিনজন মানুষের ট্যাক্স আলাদা হয় কেন — কারণটা জানলে অবাক হয়ে যাবেন।",
     },
     url: "/videos/same-income-different-tax.mp4",
+    width: 720,
+    height: 1280,
     relatedTool: {
       href: "/calculator",
       label: { en: "Try the Tax Calculator", bn: "ট্যাক্স ক্যালকুলেটর ব্যবহার করুন" },
@@ -44,6 +50,8 @@ export const VIDEOS: VideoEntry[] = [
       bn: "আপনার ইনকামে প্রতিটি ট্যাক্স স্ল্যাব ও হার কীভাবে প্রযোজ্য হয়, তার বিস্তারিত আলোচনা।",
     },
     url: "/videos/tax-slabs-explained.mp4",
+    width: 1280,
+    height: 720,
     relatedTool: {
       href: "/calculator",
       label: { en: "Try the Tax Calculator", bn: "ট্যাক্স ক্যালকুলেটর ব্যবহার করুন" },

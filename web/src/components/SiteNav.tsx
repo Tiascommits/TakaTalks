@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useLanguage } from "@/lib/i18n";
@@ -111,7 +112,8 @@ export function SiteNav() {
   return (
     <nav className="bg-green-deep text-paper border-b-4 border-gold relative z-40">
       <div className="max-w-[1160px] mx-auto px-5 py-3 flex items-center gap-6">
-        <Link href="/" className="font-serif font-semibold text-lg shrink-0">
+        <Link href="/" className="flex items-center gap-2 font-serif font-semibold text-lg shrink-0">
+          <Image src="/logo-mark.png" alt="" width={28} height={28} className="h-7 w-7" priority />
           TakaTalks
         </Link>
 
