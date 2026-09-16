@@ -2,6 +2,7 @@ import type { RateAdapter } from "./types";
 import { MANUAL_SEED_ADAPTERS } from "./manual-seed";
 import { abBankAdapter } from "./ab-bank";
 import { nationalBankAdapter } from "./national-bank";
+import { ificBankAdapter } from "./ific-bank";
 
 /**
  * Every bank in config/banks.ts that has no entry here gets no scrape
@@ -13,13 +14,16 @@ import { nationalBankAdapter } from "./national-bank";
  *
  * AB and National Bank were verified live on 2026-09-11 (see
  * todo/needs-us-both/confirm-new-bank-list.md for what was checked and
- * what wasn't) and get real adapters here, overriding their manual-seed
- * entries. Everything else in MANUAL_SEED_ADAPTERS stays on manual-seed —
- * their rate-card pages are either JS-rendered, PDF-only, or too
- * irregularly structured to parse reliably as of that verification pass.
+ * what wasn't); IFIC Bank followed on 2026-09-16 once its FDR rates were
+ * found to live in a PDF (see ific-bank.ts) rather than plain HTML. All
+ * three get real adapters here, overriding their manual-seed entries.
+ * Everything else in MANUAL_SEED_ADAPTERS stays on manual-seed — their
+ * rate-card pages are either JS-rendered, PDF-only but not yet parsed, or
+ * too irregularly structured to parse reliably as of that verification pass.
  */
 export const RATE_ADAPTERS = new Map<string, RateAdapter>([
   ...[...MANUAL_SEED_ADAPTERS].map((a): [string, RateAdapter] => [a.bankShortCode, a]),
   [abBankAdapter.bankShortCode, abBankAdapter],
   [nationalBankAdapter.bankShortCode, nationalBankAdapter],
+  [ificBankAdapter.bankShortCode, ificBankAdapter],
 ]);

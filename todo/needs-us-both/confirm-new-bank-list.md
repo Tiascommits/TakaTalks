@@ -26,10 +26,10 @@ adapters against what you see published, and decide on the three candidate banks
   misparsing was high enough to skip this pass. Seed values left as-is.
 - **City Bank** — the only FDR rate document findable was a PDF that search results suggest
   dates to 2015; not trustworthy enough to refresh from. Seed values left as-is.
-- **IFIC Bank** — `ificbank.com.bd/deposit-rate` only has a savings-tier table, not FDR
-  tenor rates; actual FDR rates are in a PDF (`.../Latest Deposit Rate_10.06.2026.pdf`),
-  which would need PDF parsing (same technique as Module 5) rather than HTML scraping.
-  Not built this pass. Seed values left as-is.
+- ~~**IFIC Bank**~~ — done 2026-09-16: got a real adapter
+  (`src/lib/rates/adapters/ific-bank.ts`) that finds and parses the current rate PDF
+  (filename changes each revision) via the same `pdf-parse` dependency Module 5 uses. No
+  longer on manual-seed.
 
 ## Candidate new banks — not added
 
