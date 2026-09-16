@@ -84,10 +84,10 @@ export function CalculatorForm({ initial }: { initial?: Partial<TaxCalculatorInp
       <div className="flex flex-col gap-4">
         <Fieldset
           legend={t("1. Profile", "১. প্রোফাইল")}
-          note={t("The taxpayer category sets your tax-free limit.", "Taxpayer category অনুযায়ী tax-free limit ঠিক হয়।")}
+          note={t("The taxpayer category sets your tax-free limit.", "করদাতার ক্যাটাগরি অনুযায়ী tax-free limit ঠিক হয়।")}
         >
           <SelectField
-            label={t("Taxpayer category", "Taxpayer category")}
+            label={t("Taxpayer category", "করদাতার ক্যাটাগরি")}
             value={input.categoryId}
             onChange={(v) => setInput({ ...input, categoryId: v })}
             options={TAXPAYER_CATEGORIES.map((c) => ({
@@ -203,11 +203,11 @@ export function CalculatorForm({ initial }: { initial?: Partial<TaxCalculatorInp
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
             <NumberField label={t("Sanchaypatra (annual)", "সঞ্চয়পত্র (annual)")} {...n("invSanchayAnnual")} />
             <NumberField
-              label={t("Govt securities/bonds (annual)", "Govt securities/bonds (annual)")}
+              label={t("Govt securities/bonds (annual)", "সরকারি সিকিউরিটিজ/বন্ড (annual)")}
               {...n("invBondAnnual")}
             />
             <NumberField
-              label={t("Mutual fund/ETF (annual)", "Mutual fund/ETF (annual)")}
+              label={t("Mutual fund/ETF (annual)", "মিউচুয়াল ফান্ড/ETF (annual)")}
               {...n("invMFAnnual")}
             />
             <NumberField
@@ -219,7 +219,7 @@ export function CalculatorForm({ initial }: { initial?: Partial<TaxCalculatorInp
               {...n("invLifeAnnual")}
             />
             <NumberField label={t("PF, own contribution (monthly)", "PF, নিজের contribution (monthly)")} {...n("invPFMonthly")} />
-            <NumberField label={t("DPS (monthly)", "DPS (monthly)")} {...n("invDPSMonthly")} />
+            <NumberField label={t("DPS (monthly)", "DPS (মাসিক)")} {...n("invDPSMonthly")} />
             <NumberField
               label={t("Donation to approved charities (annual)", "অনুমোদিত দাতব্য প্রতিষ্ঠানে দান (annual)")}
               {...n("invDonationAnnual")}

@@ -369,6 +369,9 @@ export function LoanCalculator() {
           </div>
         </div>
 
+        <p className="sm:hidden text-[11px] text-muted mb-1.5">
+          {t("← Swipe to see total paid & remaining balance →", "← মোট পরিশোধ ও অবশিষ্ট ঋণ দেখতে স্ক্রল করো →")}
+        </p>
         <div className="overflow-x-auto max-h-96 overflow-y-auto">
           <table className="w-full text-xs border-collapse">
             <thead className="sticky top-0 bg-[#FAF9F5] z-10">

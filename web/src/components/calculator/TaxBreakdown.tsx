@@ -27,7 +27,7 @@ function Line({
       className={`${base} ${variant ? variants[variant] : "border-b border-dashed border-line"}`}
     >
       <span>{label}</span>
-      <span>{value}</span>
+      <span className="font-mono">{value}</span>
     </div>
   );
 }
@@ -41,14 +41,14 @@ export function TaxBreakdown({ r, ait }: { r: TaxCalculationResult; ait: number 
 
   if (!r.hasAnyIncome) {
     return (
-      <div className="font-mono text-[12.5px]">
+      <div className="text-[12.5px]">
         <Line label={t("Numbers you enter will show up here", "তথ্য দিলে হিসাব এখানে আসবে")} value="—" />
       </div>
     );
   }
 
   return (
-    <div className="font-mono text-[12.5px]">
+    <div className="text-[12.5px]">
       <GroupTitle>{t("Income sources", "আয়ের খাত")}</GroupTitle>
       <Line label={t("Gross salary", "মোট বেতন (gross salary)")} value={fmtTaka(r.grossSalary)} />
       <Line

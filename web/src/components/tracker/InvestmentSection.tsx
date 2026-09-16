@@ -98,7 +98,7 @@ export function InvestmentSection({
                 <span className="font-medium">{e.label}</span>{" "}
                 <span className="text-muted text-xs">
                   ({t(INSTRUMENT_LABELS_EN[e.instrumentType], INSTRUMENT_LABELS[e.instrumentType])},{" "}
-                  {t("matures", "matures")}{" "}
+                  {t("matures", "মেয়াদ")}{" "}
                   {new Date(e.maturityDate).toLocaleDateString("en-GB")})
                 </span>
                 {e.payoutConfirmed && (

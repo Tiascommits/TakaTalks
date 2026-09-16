@@ -111,14 +111,14 @@ export function BankHealthPanel({ rows }: { rows: BankHealthRow[] }) {
             <thead>
               <tr className="text-left">
                 <th className="py-2 px-2 border-b-2 border-green text-green-deep font-semibold">
-                  {t("Bank", "Bank")}
+                  {t("Bank", "ব্যাংক")}
                 </th>
                 {DISPLAY_FIELDS.map((field) => (
                   <th key={field} className="py-2 px-2 border-b-2 border-green text-green-deep font-semibold text-right">
                     {field}
                     {field === "CAR" && (
                       <span className="block text-[10px] font-normal text-muted">
-                        {t(`min ${CRAR_REGULATORY_MINIMUM_PCT}%`, `min ${CRAR_REGULATORY_MINIMUM_PCT}%`)}
+                        {t(`min ${CRAR_REGULATORY_MINIMUM_PCT}%`, `সর্বনিম্ন ${CRAR_REGULATORY_MINIMUM_PCT}%`)}
                       </span>
                     )}
                   </th>

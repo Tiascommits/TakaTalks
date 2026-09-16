@@ -1,5 +1,7 @@
 "use client";
 
+import Link from "next/link";
+
 export default function AdminError({ reset }: { error: Error & { digest?: string }; reset: () => void }) {
   return (
     <div className="flex-1 flex items-center justify-center px-5">
@@ -9,16 +11,23 @@ export default function AdminError({ reset }: { error: Error & { digest?: string
           Something went wrong loading this page
         </h1>
         <p className="text-sm text-[#444] mb-6">
-          This is a backend/data issue, not something you did. If it keeps happening, check
-          the database migration status before filing a bug.
+          This is on our end, not something you did. Please try again in a moment.
         </p>
-        <button
-          type="button"
-          onClick={() => reset()}
-          className="bg-green-deep text-paper px-6 py-3 font-medium hover:bg-green transition-colors"
-        >
-          Try again
-        </button>
+        <div className="flex flex-col sm:flex-row gap-3 justify-center">
+          <button
+            type="button"
+            onClick={() => reset()}
+            className="bg-green-deep text-paper px-6 py-3 font-medium hover:bg-green transition-colors"
+          >
+            Try again
+          </button>
+          <Link
+            href="/"
+            className="border border-green-deep text-green-deep px-6 py-3 font-medium hover:bg-[#EFF6F1] transition-colors"
+          >
+            Back to home
+          </Link>
+        </div>
       </div>
     </div>
   );

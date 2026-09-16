@@ -24,7 +24,7 @@ export function FreelanceCalculator() {
   const [foreignAmount, setForeignAmount] = useState<number>(2_500);
   const [currency, setCurrency] = useState<CurrencyCode>("USD");
   const [categoryId, setCategoryId] = useState<string>("software_dev");
-  const [hasBankingChannelFIRC, setHasBankingChannelFIRC] = useState<boolean>(true);
+  const [hasBankingChannelFIRC, setHasBankingChannelFIRC] = useState<boolean>(false);
   const [cashIncentivePct, setCashIncentivePct] = useState<number>(2.5);
   const [customRate, setCustomRate] = useState<number>(DEFAULT_EXCHANGE_RATES.USD);
   const [editRate, setEditRate] = useState<boolean>(false);
@@ -160,6 +160,12 @@ export function FreelanceCalculator() {
                   {editRate ? t("Done", "সম্পন্ন") : t("Edit Rate", "রেট পরিবর্তন")}
                 </button>
               </div>
+              <p className="text-[10.5px] text-muted -mt-2">
+                {t(
+                  "Indicative rate, not live — check your bank/gateway's actual rate before relying on this figure.",
+                  "এটা একটা ইঙ্গিতমূলক রেট, লাইভ না — এই সংখ্যায় নির্ভর করার আগে নিজের ব্যাংক/গেটওয়ের প্রকৃত রেট দেখে নাও।"
+                )}
+              </p>
 
               {editRate && (
                 <div className="pt-1">
@@ -179,7 +185,7 @@ export function FreelanceCalculator() {
                 <select
                   value={categoryId}
                   onChange={(e) => setCategoryId(e.target.value)}
-                  className="w-full px-2.5 py-2 border border-line bg-[#FCFBF8] text-sm"
+                  className="w-full px-2.5 py-2 border border-line bg-[#FCFBF8] text-sm text-ellipsis overflow-hidden whitespace-nowrap"
                 >
                   {ITES_CATEGORIES.map((cat) => (
                     <option key={cat.id} value={cat.id}>

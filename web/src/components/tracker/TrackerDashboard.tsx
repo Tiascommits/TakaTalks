@@ -163,7 +163,7 @@ export function TrackerDashboard({
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 items-end">
           <div>
             <label htmlFor={categoryId} className="block text-xs text-[#555] mb-1">
-              Taxpayer category
+              {t("Taxpayer category", "করদাতার ক্যাটাগরি")}
             </label>
             <select
               id={categoryId}

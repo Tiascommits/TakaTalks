@@ -30,7 +30,11 @@
   --color-amber-border: var(--amber-border);
   --font-serif: var(--font-newsreader);
   --font-sans: var(--font-noto-bengali);
-  --font-mono: var(--font-plex-mono);
+  /* IBM Plex Mono has no Bengali glyphs — without this fallback, any
+     Bengali text styled with font-mono (used app-wide for eyebrows/labels)
+     gets shaped by an arbitrary system font per-character, breaking
+     conjunct rendering and word spacing. */
+  --font-mono: var(--font-plex-mono), var(--font-noto-bengali);
 }
 
 body {

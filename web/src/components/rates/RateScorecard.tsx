@@ -87,7 +87,7 @@ export function RateScorecard({
     return sortDirection === "asc" ? " ▲" : " ▼";
   }
 
-  const notAvailable = t("not available", "not available");
+  const notAvailable = t("not available", "নেই");
 
   return (
     <div className="max-w-[1160px] mx-auto px-5 mt-6 mb-16 flex flex-col gap-5">
@@ -114,9 +114,9 @@ export function RateScorecard({
 
       {bbAggregate && (
         <div className="bg-[#EFF6F1] border border-green px-4 py-3 text-[13px] text-green-deep">
-          <strong>{t("Bangladesh Bank official aggregate", "Bangladesh Bank official aggregate")}</strong> ({bbAggregate.periodLabel}):{" "}
-          {bbAggregate.label} — {pct(bbAggregate.ratePct)}. {t("Source:", "Source:")} {bbAggregate.source},{" "}
-          {t("entered", "entered")} {fmtDate(bbAggregate.enteredAt)}.{" "}
+          <strong>{t("Bangladesh Bank official aggregate", "বাংলাদেশ ব্যাংকের অফিসিয়াল গড় হার")}</strong> ({bbAggregate.periodLabel}):{" "}
+          {bbAggregate.label} — {pct(bbAggregate.ratePct)}. {t("Source:", "উৎস:")} {bbAggregate.source},{" "}
+          {t("entered", "যোগ করা হয়েছে")} {fmtDate(bbAggregate.enteredAt)}.{" "}
           <span className="text-muted">
             {t(
               "This is an official aggregate, not a specific product's rate — it won't match any individual bank's rate.",
@@ -199,37 +199,37 @@ export function RateScorecard({
                   className="py-2 px-2 border-b-2 border-green text-green-deep font-semibold cursor-pointer select-none"
                   onClick={() => toggleSort("bank")}
                 >
-                  {t("Bank", "Bank")}{sortIndicator("bank")}
+                  {t("Bank", "ব্যাংক")}{sortIndicator("bank")}
                 </th>
                 <th
                   className="py-2 px-2 border-b-2 border-green text-green-deep font-semibold cursor-pointer select-none"
                   onClick={() => toggleSort("type")}
                 >
-                  {t("Type", "Type")}{sortIndicator("type")}
+                  {t("Type", "ধরন")}{sortIndicator("type")}
                 </th>
                 <th
                   className="py-2 px-2 border-b-2 border-green text-green-deep font-semibold cursor-pointer select-none text-right"
                   onClick={() => toggleSort("rate")}
                 >
-                  {t("Gross rate", "Gross rate")}{sortIndicator("rate")}
+                  {t("Gross rate", "মোট হার")}{sortIndicator("rate")}
                 </th>
                 <th className="py-2 px-2 border-b-2 border-green text-green-deep font-semibold text-right">
-                  {t("Gross interest", "Gross interest")}
+                  {t("Gross interest", "মোট সুদ")}
                 </th>
                 <th className="py-2 px-2 border-b-2 border-green text-green-deep font-semibold text-right">
-                  {t("Net interest (after-tax)", "Net interest (after-tax)")}
+                  {t("Net interest (after-tax)", "নীট সুদ (কর-পরবর্তী)")}
                 </th>
                 <th className="py-2 px-2 border-b-2 border-green text-green-deep font-semibold text-right">
-                  {t("Effective after-tax rate", "Effective after-tax rate")}
+                  {t("Effective after-tax rate", "কার্যকর কর-পরবর্তী হার")}
                 </th>
                 <th className="py-2 px-2 border-b-2 border-green text-green-deep font-semibold">
-                  {t("Credit rating", "Credit rating")}
+                  {t("Credit rating", "ক্রেডিট রেটিং")}
                 </th>
                 <th className="py-2 px-2 border-b-2 border-green text-green-deep font-semibold">
-                  {t("Statement", "Statement")}
+                  {t("Statement", "বিবরণী")}
                 </th>
                 <th className="py-2 px-2 border-b-2 border-green text-green-deep font-semibold">
-                  {t("Source / last verified", "Source / last verified")}
+                  {t("Source / last verified", "উৎস / সর্বশেষ যাচাই")}
                 </th>
               </tr>
             </thead>
@@ -271,7 +271,7 @@ export function RateScorecard({
                         rel="noopener noreferrer"
                         className="underline text-green-deep"
                       >
-                        {t("link", "link")}
+                        {t("link", "লিংক")}
                       </a>
                     ) : (
                       <span className="text-muted">{notAvailable}</span>
@@ -280,15 +280,15 @@ export function RateScorecard({
                   <td className="py-2 px-2 text-[11px] text-muted">
                     {row.source ? (
                       <>
-                        {row.method === "MANUAL" ? t("Manual: ", "Manual: ") : t("Scraped: ", "Scraped: ")}
+                        {row.method === "MANUAL" ? t("Manual: ", "ম্যানুয়াল: ") : t("Scraped: ", "স্ক্র্যাপড: ")}
                         {row.source}
                         <br />
-                        {t("Last verified", "Last verified")} {fmtDate(row.lastVerifiedAt)}
+                        {t("Last verified", "সর্বশেষ যাচাই")} {fmtDate(row.lastVerifiedAt)}
                         {row.unverified && (
                           <>
                             {" "}
                             <span className="text-red font-semibold">
-                              {t(`— unverified since ${fmtDate(row.lastVerifiedAt)}`, `— unverified since ${fmtDate(row.lastVerifiedAt)}`)}
+                              {t(`— unverified since ${fmtDate(row.lastVerifiedAt)}`, `— অযাচাইকৃত, ${fmtDate(row.lastVerifiedAt)} থেকে`)}
                             </span>
                           </>
                         )}
