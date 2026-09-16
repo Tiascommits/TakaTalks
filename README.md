@@ -9,6 +9,16 @@ Everything here is early-stage. The `tools/` folder has working, testable demos.
 written for handoff to Claude Code. The `docs/` folder has the reasoning behind the
 decisions, so context survives past any one chat.
 
+## Setting up / working on this
+
+- **[`SETUP_ON_DEVICE.md`](SETUP_ON_DEVICE.md)** — full step-by-step setup on a brand-new
+  Windows device, from installing Node and Docker through to the app running on
+  `localhost:3000`, plus a troubleshooting list. Start here if you're new to the repo.
+- **[`git_instructions.md`](git_instructions.md)** — branching, commit-message rules, and
+  **a one-time fix everyone needs to apply**: `main`'s history was rewritten on
+  16 Sep 2026, so `git pull` alone will misbehave until you follow section 1.
+- `web/README.md` — shorter, Mac/Linux-flavoured version of the same setup.
+
 ## Guiding principle
 
 **Ask for less, not more.** No signup to try a calculator. Calculate on-device by default.
@@ -79,7 +89,7 @@ Hand these to Claude Code **in order**. Each one assumes the previous module exi
 | 1 | Tax calculator + rebate optimizer + printable tax slip | Built in `web/` (`/calculator`) |
 | 2 | Income/investment tracker, maturity reminders | Built in `web/` (`/tracker`) |
 | 3 | Bank rate comparison + scorecard (live daily monitoring) | Built in `web/` (`/rates`) |
-| 3 | Audited bank health disclosures (CAR, NPL, ROA, ROE) | Built & seeded in `web/` (`/rates`, `/admin/bank-health`) |
+| 3 | Audited bank health disclosures (CAR, NPL, ROA, ROE) | Built in `web/` (`/rates`, `/admin/bank-health`); figures come from the extraction pipeline and each needs manual approval before it shows |
 | 4 | Life goal planner (car, flat, education, retirement) | Built in `web/` (`/goals`) |
 | 4 | Salary offer analyzer & net take-home benchmark | Built in `web/` (`/salary`) |
 | 4 | Real yield matrix (Sanchayapatra vs FDR vs Sukuk) | Built in `web/` (`/instruments`) |
