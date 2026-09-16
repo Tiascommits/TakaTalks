@@ -84,10 +84,12 @@ export function calculateTax(rawInput: TaxCalculatorInput): TaxCalculationResult
   const business = input.businessAnnual;
   const houseProperty = input.housePropertyAnnual;
   const freelanceIncome = input.freelanceAnnual;
-  // No confirmed concessional rule yet (see todo/needs-us-both/freelance-tax-rule.md) —
-  // freelanceExemptionFraction stays 0 until TAX_RULES.freelanceConcessionalRuleConfirmed
-  // is flipped, so this is currently taxed identically to other income.
-  const freelanceTaxable = TAX_RULES.freelanceConcessionalRuleConfirmed
+  // Excluded from total income under the Sixth Schedule, Part I, para (21)
+  // — but only where that paragraph's bank-transfer proviso is met, which
+  // the filer has to assert. Otherwise taxed as ordinary income.
+  const freelanceExempt =
+    TAX_RULES.freelanceConcessionalRuleConfirmed && input.freelanceBankTransferCompliant;
+  const freelanceTaxable = freelanceExempt
     ? freelanceIncome * (1 - TAX_RULES.freelanceExemptionFraction)
     : freelanceIncome;
   const otherIncome = input.otherIncomeAnnual;

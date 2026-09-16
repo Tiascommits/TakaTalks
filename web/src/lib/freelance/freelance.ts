@@ -3,7 +3,13 @@
  *
  * Grounded in:
  * - Income Tax Act 2023 (Section 124, Section 89, Section 264 for PSR).
- * - NBR IT/ITES statutory income exemption provisions for software & IT-enabled export services.
+ * - Income Tax Act 2023, Sixth Schedule, Part I, paragraph (21): income from the 19 listed
+ *   software/ITES businesses (including "IT Freelancing") earned by a resident or
+ *   non-resident Bangladeshi individual is excluded from total income for the period
+ *   1 July 2024 to 30 June 2027, provided all income, expenditure and investment of the
+ *   business is performed wholly through bank transfer. See the citation on
+ *   TAX_RULES.freelanceConcessionalRuleConfirmed; note the exemption lapses after
+ *   30 June 2027 unless extended.
  * - Bangladesh Bank circulars on foreign inward remittance cash incentives (export subsidy).
  */
 
@@ -145,7 +151,9 @@ export function calculateFreelanceEarnings(
   let taxPayableBDT = 0;
 
   if (isITESExempt) {
-    // 100% statutory exemption on export ITES inward remittance
+    // Excluded from total income under Sixth Schedule, Part I, para (21);
+    // hasBankingChannelFIRC stands in for that paragraph's proviso that
+    // the business run wholly through bank transfer.
     taxableIncomeBDT = 0;
     taxPayableBDT = 0;
   } else {

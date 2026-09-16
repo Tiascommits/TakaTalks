@@ -50,6 +50,9 @@ export function CalculatorForm({ initial }: { initial?: Partial<TaxCalculatorInp
     const hp = parseNum("houseProperty"); if (hp !== undefined) patch.housePropertyAnnual = hp;
     const ot = parseNum("other"); if (ot !== undefined) patch.otherIncomeAnnual = ot;
     const fl = parseNum("freelance"); if (fl !== undefined) patch.freelanceAnnual = fl;
+    // Shared alongside the amount: without it a shared link would show
+    // exempt freelance income as fully taxed.
+    if (params.get("freelanceBank") === "1") patch.freelanceBankTransferCompliant = true;
     const ait = parseNum("ait"); if (ait !== undefined) patch.aitPaid = ait;
     const cat = params.get("cat"); if (cat) patch.categoryId = cat;
 
@@ -68,6 +71,7 @@ export function CalculatorForm({ initial }: { initial?: Partial<TaxCalculatorInp
     if (input.housePropertyAnnual) params.set("houseProperty", String(input.housePropertyAnnual));
     if (input.otherIncomeAnnual) params.set("other", String(input.otherIncomeAnnual));
     if (input.freelanceAnnual) params.set("freelance", String(input.freelanceAnnual));
+    if (input.freelanceAnnual && input.freelanceBankTransferCompliant) params.set("freelanceBank", "1");
     if (input.aitPaid) params.set("ait", String(input.aitPaid));
     if (input.categoryId && input.categoryId !== "general") params.set("cat", input.categoryId);
     const qs = params.toString();
@@ -154,10 +158,20 @@ export function CalculatorForm({ initial }: { initial?: Partial<TaxCalculatorInp
               {...n("freelanceAnnual")}
             />
           </div>
+          <div className="mt-1.5">
+            <CheckField
+              label={t(
+                "All of this business's income, expenses and investments go through bank transfer",
+                "এই ব্যবসার সব আয়, খরচ ও বিনিয়োগ bank transfer এ হয়"
+              )}
+              checked={input.freelanceBankTransferCompliant}
+              onChange={(b) => setInput({ ...input, freelanceBankTransferCompliant: b })}
+            />
+          </div>
           <p className="text-[11px] text-muted mt-1.5">
             {t(
-              "Taxed the same as other income for now — a possible concessional rate for freelance/export-service earners is being confirmed, this field just keeps it labeled separately so it's ready when that's added.",
-              "আপাতত অন্যান্য আয়ের মতোই tax হয় — freelance/export-service earner দের জন্য সম্ভাব্য concessional rate confirm করা হচ্ছে, এই field টা শুধু আলাদা label করে রাখছে যাতে যোগ হলে সহজ হয়।"
+              "IT freelancing and software/ITES income is fully exempt from income tax until 30 June 2027 (Income Tax Act 2023, Sixth Schedule, Part I, para 21) — but only if the box above is true, which is the condition the law itself attaches. Leave it unchecked and this income is taxed like any other.",
+              "IT freelancing ও software/ITES আয় ৩০ জুন ২০২৭ পর্যন্ত সম্পূর্ণ করমুক্ত (Income Tax Act 2023, Sixth Schedule, Part I, para 21) — তবে শুধু উপরের box টি সত্য হলে, কারণ আইনেই এই শর্ত দেওয়া আছে। Check না করলে এই আয় অন্য আয়ের মতোই tax হবে।"
             )}
           </p>
         </Fieldset>

@@ -51,15 +51,36 @@ describe("calculateTax — empty / normal cases", () => {
   });
 });
 
-describe("calculateTax — freelance income (no confirmed concessional rule yet)", () => {
-  it("taxes freelanceAnnual identically to otherIncomeAnnual while the rule is unconfirmed", () => {
-    expect(TAX_RULES.freelanceConcessionalRuleConfirmed).toBe(false);
+describe("calculateTax — freelance / ITES income (Sixth Schedule Part I para 21)", () => {
+  it("taxes freelanceAnnual identically to otherIncomeAnnual when the bank-transfer proviso is not met", () => {
+    // Compliance is never assumed — the statutory proviso requires all
+    // income, expenditure and investment to go through bank transfer.
     const viaFreelance = calculateTax(input({ freelanceAnnual: 500000 }));
     const viaOther = calculateTax(input({ otherIncomeAnnual: 500000 }));
     expect(viaFreelance.netPayable).toBeCloseTo(viaOther.netPayable, 6);
     expect(viaFreelance.freelanceIncome).toBe(500000);
     expect(viaFreelance.freelanceTaxable).toBe(500000);
     expect(viaFreelance.hasAnyIncome).toBe(true);
+  });
+
+  it("excludes the income entirely once the bank-transfer proviso is asserted", () => {
+    expect(TAX_RULES.freelanceConcessionalRuleConfirmed).toBe(true);
+    expect(TAX_RULES.freelanceExemptionFraction).toBe(1);
+    const r = calculateTax(
+      input({ freelanceAnnual: 500000, freelanceBankTransferCompliant: true })
+    );
+    expect(r.freelanceIncome).toBe(500000);
+    expect(r.freelanceTaxable).toBe(0);
+    // Nothing else to tax, so no liability at all.
+    expect(r.netPayable).toBe(0);
+  });
+
+  it("leaves other income taxable when freelance income is exempted alongside it", () => {
+    const exempt = calculateTax(
+      input({ freelanceAnnual: 500000, otherIncomeAnnual: 500000, freelanceBankTransferCompliant: true })
+    );
+    const otherOnly = calculateTax(input({ otherIncomeAnnual: 500000 }));
+    expect(exempt.netPayable).toBeCloseTo(otherOnly.netPayable, 6);
   });
 });
 

@@ -71,15 +71,33 @@ export const TAX_RULES = {
   minTaxFirstTime: 1000,
   minTaxRegular: 5000,
 
-  // Freelance / IT-enabled export-service income: BD has had various
-  // incentive provisions for this (export-earnings exemptions, reduced
-  // source tax), but the specific, currently-in-force NBR SRO/section for
-  // AY 2025-26 has not been confirmed against a citable source — see
-  // todo/needs-us-both/freelance-tax-rule.md. Until this flag is flipped,
-  // freelance income is taxed identically to other income (no exemption
-  // applied) rather than guessing a number in a financial tool.
-  freelanceConcessionalRuleConfirmed: false,
-  freelanceExemptionFraction: 0,
+  // Freelance / IT-enabled export-service income: confirmed 2026-09-16
+  // against the primary source — the Income Tax Act 2023, SIXTH SCHEDULE,
+  // PART I ("Exclusion from the computation of total income"), paragraph
+  // (21), as substituted by the Finance Act 2024 (Act No. V of 2024).
+  // Taken from NBR's own authentic English text of the Act (Bangladesh
+  // Gazette, Extraordinary, 16 October 2025):
+  // https://nbr.gov.bd/uploads/acts/Income_tax_act_2023.pdf
+  //
+  // It excludes from total income — i.e. a 100% exemption, not a
+  // concessional rate — "[a]ny income derived from the following business
+  // of a person being a resident or a non-resident Bangladeshi individual
+  // for the period from July 1, 2024 to June 30, 2027", listing 19
+  // businesses at (a)-(s), of which (q) is "IT Freelancing" and the rest
+  // are the software/ITES categories in ITES_CATEGORIES (src/lib/freelance).
+  //
+  // The paragraph carries one statutory proviso, which is why the
+  // exemption is gated on an explicit opt-in (freelanceBankTransferCompliant)
+  // and never assumed: "Provided that all income, expenditure and
+  // investment of the business shall be performed wholly through bank
+  // transfer from July 1, 2024".
+  //
+  // NOTE the end date: this exemption lapses for income earned after
+  // 30 June 2027 unless extended again, so a future tax-year config must
+  // not copy `true` forward without re-checking the Schedule.
+  freelanceConcessionalRuleConfirmed: true,
+  freelanceExemptionFraction: 1,
+  freelanceExemptionEnds: "2027-06-30",
 
   surchargeThresholds: [
     { above: 500000000, rate: 0.35 },

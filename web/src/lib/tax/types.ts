@@ -13,11 +13,15 @@ export interface TaxCalculatorInput {
   housePropertyAnnual: number;
   otherIncomeAnnual: number;
   // Freelance / IT-enabled export service income — kept separate from
-  // otherIncomeAnnual so a concessional NBR provision can apply to it once
-  // confirmed (see TAX_RULES.freelanceConcessionalRuleConfirmed and
-  // todo/needs-us-both/freelance-tax-rule.md). Until then it's taxed
-  // identically to other income.
+  // otherIncomeAnnual because it is excluded from total income under the
+  // Sixth Schedule, Part I, paragraph (21) (see
+  // TAX_RULES.freelanceConcessionalRuleConfirmed for the citation).
   freelanceAnnual: number;
+  // That paragraph's proviso requires all income, expenditure and
+  // investment of the business to be performed wholly through bank
+  // transfer. Compliance is never assumed: while this is false the income
+  // above is taxed identically to other income.
+  freelanceBankTransferCompliant: boolean;
 
   // Capital gains (annual)
   cgSharesFund: number;
@@ -56,6 +60,7 @@ export const EMPTY_TAX_INPUT: TaxCalculatorInput = {
   housePropertyAnnual: 0,
   otherIncomeAnnual: 0,
   freelanceAnnual: 0,
+  freelanceBankTransferCompliant: false,
   cgSharesFund: 0,
   cgWithin5Years: 0,
   cgAfter5Years: 0,
