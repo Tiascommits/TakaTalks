@@ -1,43 +1,46 @@
 # What's left for you (updated 2026-09-16, later same day)
 
-Git works again on this machine, so everything that was stuck behind it is now committed
-and pushed to `origin/main`. Since then I also finished both of the `needs-us-both/` items
-that only needed research rather than an account — bank annual-report URLs and the
-freelance tax rule. Details at the bottom.
+Git works again on this machine, so everything that was stuck behind it is committed and
+pushed. Both `needs-us-both/` items are now done — bank annual-report URLs and the
+freelance tax rule (details at the bottom). The e2e suite has been run (42 passing) and the
+stray `"Your commit message here"` commit has been given a real message and force-pushed;
+tell the team to read `git_instructions.md` before their next `git pull`.
 
-Two of the four things in the previous version of this list are genuinely yours (they need
-an account in your name), and there are two small decisions I need from you.
+Everything below needs you specifically — an account in your name, or a link only you can
+get.
 
-## 1. Decision: run the e2e suite? (~1 min of your attention)
+## 1. The one video we have doesn't play — need a working URL (~2 min, yours)
 
-`npm run test:e2e` hasn't run against today's changes. Prisma blocks `prisma migrate
-reset` — which `e2e/global-setup.ts` runs on every e2e run — when it detects an AI agent,
-and it requires your explicit per-invocation consent rather than anything I can set up
-once. This is by design, not a bug.
+The only entry in `web/src/config/videos.ts` is
+`https://www.facebook.com/share/v/19SFrZz1mm/`, and Facebook's embed player renders
+**"Video unavailable — This video may no longer exist, or you don't have permission to view
+it."** for it. Confirmed on both `/videos` and the new homepage reel; `curl` on that URL
+gets an HTTP 400 straight from Facebook.
 
-It only ever touches `TEST_DATABASE_URL`, which is the disposable `takatalks_test`
-database on the local docker-compose Postgres — no dev or prod data is at risk. If you
-tell me to go ahead, I'll run it. Otherwise `npm run test` (119 unit tests),
-`tsc --noEmit` and `next build` are all clean, and you can run it yourself with:
+This is pre-existing, not new — the e2e test only asserted that an `<iframe>` was present,
+never that the video inside it loaded, so it passed the whole time.
 
-```bash
-cd web && npm run test:e2e
-```
+Two likely causes, and I can't tell which from outside: the video is no longer public (or
+was deleted), or `/share/v/...` shortlinks simply aren't resolvable by Facebook's video
+plugin, which generally wants a canonical permalink like
+`facebook.com/<page>/videos/<id>` or `facebook.com/watch/?v=<id>`.
 
-## 2. Decision: fix the stray commit message? (needs a force-push)
+What I need from you: the **canonical permalink** for that video (open it on the page, use
+the post's own "Copy link", not the share sheet's short link), and confirmation the post's
+audience is Public. Paste it over the `url` in `config/videos.ts` and it'll work — or send
+it to me and I'll swap it in and verify the embed actually renders.
 
-`c08b153 "Your commit message here"` is still on `origin/main`. Giving it a real message
-means rewriting already-pushed history and force-pushing, which breaks anyone else who has
-pulled that branch. Say the word and I'll do it — I just won't rewrite shared history
-without you asking for it specifically.
+While you're there: the reel auto-advances only when there are **two or more** videos, so
+with one entry it sits still. Send me a handful of URLs and it'll animate as intended.
+Each video is one entry in that file.
 
-## 3. Resend email setup — `email-provider-setup.md` (~30 min, yours)
+## 2. Resend email setup — `email-provider-setup.md` (~30 min, yours)
 
 Unchanged, and now the single highest-leverage thing left: sign up, verify a sending
 domain, create an API key, set `RESEND_API_KEY` / `EMAIL_FROM` / `ADMIN_EMAIL`.
 Magic-link login and maturity reminders are fully built and silently no-op without it.
 
-## 4. Start WhatsApp Business verification — `whatsapp-business-api-setup.md` (yours)
+## 3. Start WhatsApp Business verification — `whatsapp-business-api-setup.md` (yours)
 
 Unchanged. Worth starting today whatever else happens — Meta's business verification is
 the long pole (days), and template approval adds another day or two. Unlocks WhatsApp

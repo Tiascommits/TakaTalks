@@ -137,22 +137,68 @@ test.describe("Zakat Calculator (/zakat)", () => {
   });
 });
 
-test.describe("Homepage Showcase Grid (/)", () => {
-  test("displays all 9 tools and navigates successfully", async ({ page }) => {
+test.describe("Homepage tool picker (/)", () => {
+  // The homepage deliberately shows one category of tools at a time rather
+  // than all nine at once, so the whole page stays about a screen tall on a
+  // phone. These assertions therefore check the tabs reveal the right tools,
+  // not that every tool is on screen simultaneously.
+  test("opens on the Tax category and only shows that category's tools", async ({ page }) => {
     await page.goto("/");
-    await expect(page.getByText(/আয়কর ও রিবেট অপটিমাইজার|Tax Calculator/)).toBeVisible();
-    await expect(page.getByText(/স্যালারি অফার ও ইন-হ্যান্ড পে|Salary Offer/)).toBeVisible();
+    await expect(page.getByRole("tab", { name: /কর|^Tax$/ })).toHaveAttribute("aria-selected", "true");
+
+    await expect(page.getByText(/আয়কর ও রিবেট অপটিমাইজার|Tax Calculator & Rebate Optimizer/)).toBeVisible();
     await expect(page.getByText(/ফ্রিল্যান্স ও আইটি রেমিট্যান্স হাব|Freelance & IT Remittance/)).toBeVisible();
-    await expect(page.getByText(/লোন ও গৃহঋণ ইএমআই প্ল্যানার|Loan & Home EMI/)).toBeVisible();
-    await expect(page.getByText(/যাকাত ক্যালকুলেটর বাংলাদেশ|Bangladesh Zakat Calculator/)).toBeVisible();
-    await expect(page.getByText(/ভবিষ্যৎ লক্ষ্য ও অবসর প্ল্যানার|Life Goal/)).toBeVisible();
+    // Belongs to another category, so it must not be rendered yet.
+    await expect(page.getByText(/যাকাত ক্যালকুলেটর বাংলাদেশ|Bangladesh Zakat Calculator/)).toHaveCount(0);
+    await noGarbageOnPage(page);
+  });
+
+  test("each tab reveals its own tools", async ({ page }) => {
+    await page.goto("/");
+
+    await page.getByRole("tab", { name: /আয়|^Earn$/ }).click();
+    await expect(page.getByText(/স্যালারি অফার ও ইন-হ্যান্ড পে|Salary Offer/)).toBeVisible();
+    await expect(page.getByText(/ইনকাম ও ইনভেস্টমেন্ট ট্র্যাকার|Income & Investment/)).toBeVisible();
+
+    await page.getByRole("tab", { name: /সঞ্চয়|^Save$/ }).click();
     await expect(page.getByText(/সঞ্চয় স্কিম তুলনামূলক ম্যাট্রিক্স|Real Yield Matrix/)).toBeVisible();
     await expect(page.getByText(/ব্যাংক রেট ও স্বাস্থ্য স্কোরকার্ড|Bank Rates/)).toBeVisible();
-    await expect(page.getByText(/ইনকাম ও ইনভেস্টমেন্ট ট্র্যাকার|Income & Investment/)).toBeVisible();
-    await noGarbageOnPage(page);
+    await expect(page.getByText(/ভবিষ্যৎ লক্ষ্য ও অবসর প্ল্যানার|Life Goal/)).toBeVisible();
 
-    // Click Goal Planner card
+    await page.getByRole("tab", { name: /ঋণ ও যাকাত|Borrow & Give/ }).click();
+    await expect(page.getByText(/লোন ও গৃহঋণ ইএমআই প্ল্যানার|Loan & Home EMI/)).toBeVisible();
+    await expect(page.getByText(/যাকাত ক্যালকুলেটর বাংলাদেশ|Bangladesh Zakat Calculator/)).toBeVisible();
+    await noGarbageOnPage(page);
+  });
+
+  test("a tool card navigates to its tool", async ({ page }) => {
+    await page.goto("/");
+    await page.getByRole("tab", { name: /সঞ্চয়|^Save$/ }).click();
     await page.getByText(/ভবিষ্যৎ লক্ষ্য ও অবসর প্ল্যানার|Life Goal & Wealth Planner/).first().click();
     await expect(page).toHaveURL(/\/goals/);
+  });
+});
+
+test.describe("Site nav", () => {
+  test("shows only the brand, Tools and Demo — not every tool", async ({ page }) => {
+    await page.goto("/");
+    const nav = page.getByRole("navigation");
+
+    await expect(nav.getByRole("link", { name: "TakaTalks" })).toBeVisible();
+    await expect(nav.getByRole("button", { name: /টুলস|^Tools$/ })).toBeVisible();
+    await expect(nav.getByRole("link", { name: /ডেমো|^Demo$/ })).toBeVisible();
+
+    // Tool links live behind the Tools menu, so none is in the bar itself.
+    await expect(nav.getByRole("link", { name: /ব্যাংক রেট|Bank Rates/ })).toHaveCount(0);
+  });
+
+  test("the Tools menu opens, navigates, and closes again", async ({ page }) => {
+    await page.goto("/");
+    const nav = page.getByRole("navigation");
+
+    await nav.getByRole("button", { name: /টুলস|^Tools$/ }).click();
+    await nav.getByRole("link", { name: /ব্যাংক রেট|Bank Rates/ }).click();
+    await expect(page).toHaveURL(/\/rates/);
+    await expect(nav.getByRole("link", { name: /ব্যাংক রেট|Bank Rates/ })).toHaveCount(0);
   });
 });

@@ -60,13 +60,28 @@ from you — see `../my-work/` and `../needs-us-both/` for what does.
       individuals only). Gated on the paragraph's bank-transfer proviso via an explicit
       opt-in, default false. See `../needs-us-both/freelance-tax-rule.md`.
 
+- [x] Homepage rebuilt mobile-first and the site nav cut back to brand + Tools + Demo.
+      The nav listed all 10 tools inline; it now has one "Tools" menu grouping them by
+      category (`src/config/tools.ts`, shared with the homepage so the two can't drift).
+      The homepage no longer stacks nine near-identical cards into a scroll-list — tools
+      are behind four category tabs (`components/home/ToolTabs.tsx`), which puts the whole
+      page at ~2.4 phone screens instead of ~6. Added an auto-advancing video reel
+      (`components/home/VideoReel.tsx`): scroll-snap so swiping works natively, and the
+      timer stops on hover/focus/touch, on a hidden tab, and under
+      `prefers-reduced-motion`. It only animates with 2+ videos in `config/videos.ts`.
+
 ## Known follow-ups, not blocking
 
-- `npm run test:e2e` has not been run against these changes: Prisma refuses to let an AI
-  agent run `prisma migrate reset` (which `e2e/global-setup.ts` does on every run)
-  without explicit per-invocation consent. `npm run test` (119 unit tests),
-  `tsc --noEmit` and `next build` are all clean. Not a bug — see
-  `../my-work/for_you.md`.
-- The stray `c08b153 "Your commit message here"` commit is still on `origin/main` with
-  that message. Fixing it means rewriting already-pushed history, so it is waiting on an
-  explicit go-ahead.
+- Full verification now runs clean end-to-end on this machine: 119 unit tests,
+  `tsc --noEmit`, `next build`, and 42 Playwright e2e tests. `npm run test:e2e` needs
+  `PRISMA_USER_CONSENT_FOR_DANGEROUS_AI_ACTION` set when an agent invokes it, since
+  `e2e/global-setup.ts` runs `prisma migrate reset`.
+- The single video in `config/videos.ts` does not play — Facebook's embed returns "Video
+  unavailable" for its `/share/v/...` shortlink (and curl gets an HTTP 400). Pre-existing;
+  the e2e test only asserted the iframe existed, never that it loaded. Needs a canonical
+  permalink from a public post — see `../my-work/for_you.md`.
+- `src/components/calculator/CalculatorForm.tsx` has a pre-existing
+  `react-hooks/set-state-in-effect` lint error (the mount effect that hydrates state from
+  URL params). Left alone: fixing it properly means moving to `useSearchParams` so the
+  values are read during render without a hydration mismatch. `npm run build` doesn't run
+  lint, which is why it went unnoticed.

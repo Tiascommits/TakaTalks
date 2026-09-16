@@ -24,10 +24,25 @@ test.describe("Videos (/videos)", () => {
   });
 });
 
-test.describe("Homepage videos banner (/)", () => {
-  test("links to the videos page", async ({ page }) => {
+test.describe("Homepage video reel (/)", () => {
+  test("shows the reel with a real embed and links through to the videos page", async ({ page }) => {
     await page.goto("/");
-    await page.getByText(/Watch the video, then run your own numbers|ভিডিও দেখুন, তারপর নিজের হিসাব করুন/).click();
+    await expect(
+      page.getByRole("heading", {
+        name: /Watch the video, then run your own numbers|ভিডিও দেখুন, তারপর নিজের হিসাব করুন/,
+      })
+    ).toBeVisible();
+
+    // The reel embeds the actual videos, not placeholder art.
+    await expect(page.locator("iframe[src*='facebook.com/plugins/video.php']").first()).toBeVisible();
+
+    await page.getByRole("link", { name: /See all videos|সব ভিডিও দেখুন/ }).click();
+    await expect(page).toHaveURL(/\/videos/);
+  });
+
+  test("the hero's demo button also reaches the videos page", async ({ page }) => {
+    await page.goto("/");
+    await page.getByRole("link", { name: /Watch the demo|ডেমো দেখুন/ }).click();
     await expect(page).toHaveURL(/\/videos/);
   });
 });
