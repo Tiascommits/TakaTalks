@@ -141,6 +141,23 @@ export default function Home() {
         </div>
       </div>
 
+      <div className="max-w-[1160px] mx-auto px-5 pt-8 w-full">
+        <Link
+          href="/videos"
+          className="flex items-center justify-between gap-4 bg-green-deep text-paper px-5 py-4 rounded-sm hover:bg-green transition-colors"
+        >
+          <div>
+            <p className="font-mono text-[10px] tracking-wider text-gold mb-1">
+              {t("SHORTFORM + LONGFORM", "শর্টফর্ম + লংফর্ম")}
+            </p>
+            <p className="font-serif font-semibold text-base sm:text-lg">
+              {t("Watch the video, then run your own numbers", "ভিডিও দেখুন, তারপর নিজের হিসাব করুন")}
+            </p>
+          </div>
+          <span className="text-xl shrink-0">▶</span>
+        </Link>
+      </div>
+
       <div className="max-w-[1160px] mx-auto px-5 py-12 w-full">
         <div className="text-center mb-8">
           <h2 className="font-serif font-bold text-xl sm:text-2xl text-green-deep">

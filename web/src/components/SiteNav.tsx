@@ -41,6 +41,7 @@ export function SiteNav() {
   const [menuOpen, setMenuOpen] = useState(false);
 
   const links = [
+    { href: "/videos", label: t("Videos", "ভিডিও") },
     { href: "/calculator", label: t("Tax Calculator", "আয়কর") },
     { href: "/salary", label: t("Salary Analyzer", "স্যালারি তুলনাকারী") },
     { href: "/freelance", label: t("Freelance & IT", "ফ্রিল্যান্স ও IT") },
