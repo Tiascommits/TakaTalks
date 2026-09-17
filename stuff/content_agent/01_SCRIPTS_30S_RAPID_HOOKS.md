@@ -71,3 +71,60 @@ These short-form scripts are designed for **Instagram Reels, TikTok, and YouTube
 | **00:04–00:14** | Screen recording: Add an FDR on `takatalks.com/tracker` with bank name, rate, and maturity date. | "Matured taka savings account e pore thakle 2-3% rate e inflation apnar taka kheye fele." | **Lazy Money loses to inflation!** |
 | **00:14–00:22** | Show the dashboard highlighting *"Matures in 30 days"* and *"Reinvestable Cash available"*. | "TakaTalks er investment tracker e shob FDR, DPS ek shathe track koro. Maturity r 30 din agei jante parba taka kothay reinvest korba." | **30/60/90 Day Maturity Alerts** 🔔 |
 | **00:22–00:30** | Creator to camera: | "Excel sheet ba diary r dorkar nai. Mobile thekei track koro takatalks.com e!" | **Track Free** 👉 takatalks.com |
+
+---
+
+## Script 6: "Basic Salary Kom, Allowance Beshi — Is This a Tax Hack?"
+- **Target Audience**: Corporate employees negotiating salary structure, HR/finance-curious professionals.
+- **Core Feature Showcased**: TakaTalks Tax Calculator (`/calculator`) — comparing two salary structures side by side.
+- **Vibe / Pacing**: Curious "insider trick" reveal.
+
+| Timing | Visual / Action | Spoken Audio (Banglish / Bangla) | On-Screen Text / Overlay |
+|---|---|---|---|
+| **00:00–00:04** | Creator holds up two mock salary slips side by side. | "Ekjon er basic salary 60%, arekjon er 40% — dujoner gross salary same, kintu tax same na! Ken?" | 🤔 **Same Salary, Different Tax?** |
+| **00:04–00:14** | Screen recording: enter Structure A (high basic, low allowance) on `/calculator`, note payable tax. | "Karon kichu allowance partially ba fully tax-exempt — jemon medical, conveyance. Basic salary jotota beshi, exempt portion tototai kom hoye jete pare." | **Structure A: Higher Basic** |
+| **00:14–00:22** | Switch to Structure B (lower basic, higher structured allowance) — tax number visibly drops. | "Ekhon shei same gross salary, kintu allowance-heavy structure e boshai — dekhun payable tax koto komlo!" | **Structure B: Lower Tax** 📉 |
+| **00:22–00:30** | Creator to camera: | "HR er shathe salary structure discuss korar age, nijer dutai option calculate kore dekhun — free, takatalks.com e." | **Compare Before You Sign** 👉 takatalks.com |
+
+---
+
+## Script 7: "TIN Ache, Income Zero-Bracket — Tobuo Ki Return Joma Dite Hobe?"
+- **Target Audience**: First-time filers, low-income TIN holders, students with a TIN for other purposes (visa, trade license).
+- **Core Feature Showcased**: TakaTalks Tax Calculator (`/calculator`) — zero-bracket clarity + filing obligation explainer.
+- **Vibe / Pacing**: Myth-busting, reassuring.
+
+| Timing | Visual / Action | Spoken Audio (Banglish / Bangla) | On-Screen Text / Overlay |
+|---|---|---|---|
+| **00:00–00:04** | Creator with a confused expression, holding a TIN certificate. | "Amar income tho tax-free bracket e, tahole ki return joma deyar dorkar ache?" | ❓ **TIN + Zero Tax = No Filing?** |
+| **00:04–00:14** | Screen recording: enter a low salary on `/calculator`, show ৳0 payable tax highlighted. | "Dekhun, income ৳3,50,000 er nichey hole payable tax shotti-i zero. Kintu 'tax zero' ar 'return submit na kora' — duita alada bishoy!" | **Tax = ৳0, But Filing ≠ Optional** |
+| **00:14–00:22** | On-screen checklist graphic: "TIN thakle return mandatory — except a few exemptions." | "TIN certificate thakle, ain onujayi prottek bochor return joma deya baddhotamulok, income kom hokleo — kichu exemption chhara." | **Know Your Obligation** ✅ |
+| **00:22–00:30** | Creator to camera: | "Nijer exact obostha check koren, tarpor deadline er age file koren. Estimate koren free, takatalks.com e." | **Check First, File On Time** 👉 takatalks.com |
+
+---
+
+## Script 8: "Duet — Is That Bank's 12% FDR Ad Actually True?"
+- **Target Audience**: Savers scrolling past bank ads, skeptical consumers.
+- **Core Feature Showcased**: Bank FDR Scorecard & After-Tax Comparison (`/rates`).
+- **Vibe / Pacing**: Reaction/duet format, fact-checking energy.
+
+| Timing | Visual / Action | Spoken Audio (Banglish / Bangla) | On-Screen Text / Overlay |
+|---|---|---|---|
+| **00:00–00:05** | Split screen: bank's ad/reel on one side ("12% FDR!") playing, creator reacting on the other. | "Ei ad ta dekhun — 12% FDR! Sounds amazing, tai na? Ekhon ashol number ta dekhi." | 🎬 **Reacting to a Bank's FDR Ad** |
+| **00:05–00:16** | Screen recording: open `takatalks.com/rates`, find the same bank, toggle TDS + inflation. | "12% headline rate e TIN thakle 10% TDS kata jabe, tarpor prai 9-10% inflation baad dile — real return ashe onek kom." | **12% → After-Tax Reality** |
+| **00:16–00:24** | Number on screen animates down to the true net return. | "Ei je real number ta dekhchen, eitai apnar pocket-e actual value add hobe — ad er headline number na." | **Real Return Revealed** 📊 |
+| **00:24–00:30** | Creator to camera: | "Next bar kono bank ad dekhle, nijer chokhe verified after-tax return check kore nin — takatalks.com e." | **Verify Every Ad** 👉 takatalks.com |
+
+---
+
+## Script 9: Jargon-Buster Micro-Series ("Slab Tax? TDS? AIT?")
+- **Target Audience**: Anyone confused by basic tax terminology; designed as a stackable 3-part series or Story Highlight.
+- **Core Feature Showcased**: TakaTalks Tax Calculator (`/calculator`) as the place these terms come alive.
+- **Vibe / Pacing**: Rapid-fire, dictionary-style, highly saveable.
+
+| Timing | Visual / Action | Spoken Audio (Banglish / Bangla) | On-Screen Text / Overlay |
+|---|---|---|---|
+| **00:00–00:05** | Bold text card: "Slab Tax Ki?" Creator speaks directly to camera. | "Slab tax mane apnar puro income ek rate e tax hoy na — bhag bhag kore, alada alada rate e tax hoy." | **Term 1: Slab Tax** |
+| **00:05–00:10** | Quick screen flash of `/calculator`'s slab breakdown table. | "Jemon prothom ৳3.5 lakh tax-free, tarpor porer bhag 5%, tarpor 10% — step by step." | *Visual: stacked slab bars* |
+| **00:10–00:16** | Bold text card: "TDS Mane Ki?" | "TDS mane Tax Deducted at Source — apnar salary ba FDR profit hate paoar AGEI, bank ba employer tax kete rakhe." | **Term 2: TDS** |
+| **00:16–00:23** | Bold text card: "AIT vs TDS Tofat Ki?" | "AIT — Advance Income Tax — shadharonoto import ba business transaction e advance e kata hoy. TDS shadharonoto salary ba interest income theke." | **Term 3: AIT vs TDS** |
+| **00:23–00:30** | Creator to camera: | "Ei shob term ekbar clear hoye gele, nijer tax hisab kora onek shohoj hoye jabe. Try koren takatalks.com e." | **Now You Know** 👉 takatalks.com |

@@ -69,3 +69,37 @@ These scripts are calibrated for **60-second Reels, YouTube Shorts, and TikTok**
 | **00:21–00:36** | Screen recording: Open `takatalks.com/tracker`. Enter 2 investments: 1 DPS, 1 FDR with term lengths. | "TakaTalks er Income & Investment Tracker e apnar shob investment list koren. Maturity date system automatically calculate kore ney." |
 | **00:36–00:48** | Dashboard displays: *"Upcoming maturities in 30 days"* and *"Reinvestable Cash Available: ৳3,20,000"*. | "Maturity er 30 din agei apnake reminder dibe, ar mature hole show korbe apnar hate koto 'Reinvestable Cash' ready ache!" |
 | **00:48–00:60** | Creator to camera: | "Eita kono boring corporate app na, kono password-er jhamelao nai. Start tracking your investments today on takatalks.com!" |
+
+---
+
+## Script 5: "Freelancers: Do You Owe Advance Tax Like a Business Does?"
+- **Audience**: Freelancers, remote agency owners, consultants billing foreign clients directly (not on payroll).
+- **Core Value**: Clarifying that freelancers don't sit under employer TDS and may face different Advance Income Tax (AIT) obligations, using `/tracker` + `/calculator`.
+- **Tone**: Direct, slightly cautionary, practical.
+
+### Video Breakdown:
+
+| Seconds | Visual / Production | Script (Audio / Spoken Banglish) |
+|---|---|---|
+| **00:00–00:09** | Creator at desk, laptop open to an invoice/Upwork dashboard. | "Chakrijibi der salary theke prottek mash TDS kete neya hoy — employer ei kaj ta kore. Kintu freelancer der jonno eita kaj kore na. Tahole apnar tax kivabe jomা hoy?" |
+| **00:09–00:23** | On-screen text: "No Employer = No Automatic TDS" with a crossed-out icon. | "Apnar kono employer nai je mash mash tax kete rakhbe. Tar mane dayitto ta apnar nijer — thik shomoy e nijer income hisab rakha ar return e report kora." |
+| **00:23–00:38** | Screen recording: `takatalks.com/tracker` — log freelance income entries across months. | "TakaTalks er tracker e apnar prottek mash er freelance income alada alada entry hishebe rakhun — shathe shathe ekta clear yearly total toiri hoye jabe." |
+| **00:38–00:50** | Sync to `/calculator` — show total taxable income and payable tax estimate. | "Year-end e ei total ta calculator e sync korle, apnar exact payable tax ekta clear number hishebe chole ashbe — kono guesswork na." |
+| **00:50–00:60** | Creator to camera: | "Freelancing e freedom ache, kintu tax dayitto ta bhole gele problem hoy. Track ar estimate koren free-te, takatalks.com e." |
+
+---
+
+## Script 6: "Hidden Tax Rebates: House Loan Interest & Life Insurance Premium"
+- **Audience**: Homeowners with a mortgage, anyone paying life insurance premiums, mid-career professionals looking to reduce tax.
+- **Core Value**: Surfacing lesser-known rebate-eligible investments beyond DPS/Sanchayapatra using the Rebate Optimizer on `/calculator`.
+- **Tone**: "You're missing free money" revelation.
+
+### Video Breakdown:
+
+| Seconds | Visual / Production | Script (Audio / Spoken Banglish) |
+|---|---|---|
+| **00:00–00:08** | Creator holding a home loan statement and a life insurance policy paper. | "Home loan er EMI dicchen? Life insurance premium bhorchen? Ei duita jinish o kintu apnar tax rebate e count hoy — beshirbhag manush eita janeই na!" |
+| **00:08–00:22** | On-screen breakdown: "Eligible Investments for Rebate" list expanding to show DPS, Sanchayapatra, Stocks, Life Insurance Premium, House Loan Interest. | "Rebate calculation e shudhu DPS ba Sanchayapatra na, approved life insurance premium ar nirdishto shorto shapekkhe home loan interest-o eligible investment hishebe dhora jete pare." |
+| **00:22–00:38** | Screen recording: `takatalks.com/calculator` Rebate Optimizer — add these entries, watch total eligible investment and rebate update. | "TakaTalks er Rebate Optimizer e ei shob entry add korun — system automatically apnar total eligible amount ar 3%/10%/৳7.5 lakh ceiling formula diye shobcheye kom (mane apnar actual rebate) ta calculate kore dey." |
+| **00:38–00:50** | Highlight the before/after payable tax numbers dropping. | "Dekhun — shudhu ei duita item add kore, kichu na kore, payable tax koto komlo!" |
+| **00:50–00:60** | Creator to camera: | "Apni already ei premium ar EMI ta dicchen — shudhu rebate e dhorte bhulchen na toh? Check koren takatalks.com e." |

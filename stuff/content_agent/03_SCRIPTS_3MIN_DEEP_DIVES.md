@@ -139,3 +139,48 @@ These scripts are crafted for **2 to 3-minute high-retention deep dives** (ideal
 - **Host**:
   > "Zero signup, zero ads, 100% on-device privacy. Bangla ebong English duita language-ei switch korte parben.
   > Nijer takar purno niyontron nin ajkei. Free te use koren: **takatalks.com**."
+
+---
+
+## Deep Dive 4: "The Complete Freelancer & Remote Earner Tax Playbook"
+- **Duration**: ~2 mins 55 secs.
+- **Hook**: Foreign remittance, local clients, Advance Tax, and remittance certificates — the full picture freelancers rarely get in one place.
+- **Key Features Showcased**: Multi-source income tracking (`/tracker`), tax calculation and rebate sync (`/calculator`).
+
+### Script & Scene Flow:
+
+#### [00:00 – 00:25] The Hook & The Problem
+- **Visual**: Host at a desk with a laptop showing Upwork/Payoneer alongside a local client invoice. Text graphic: *"Freelancer tax rules in Bangladesh: what nobody explains clearly."*
+- **Host (Voiceover/On-camera)**:
+  > "Freelancing e income ashe kintu kono HR, kono payroll department, kono automatic tax deduction nai. Tar mane bujhte hobe: dayitto ta shomponno-i apnar. Ajke step by step dekhi apnar exact obostha ta ki."
+
+#### [00:25 – 01:05] Foreign Remittance vs Local Client Income
+- **Visual**: Split diagram — "Foreign Client (via banking channel)" vs "Local Bangladeshi Client".
+- **Host**:
+  > "Prothom kotha: foreign client theke official banking channel diye asha remittance nirdishto shorte tax-exempt hote pare. Kintu local client theke paoa income shadharon business/professional income hishebe pura taxable.
+  > Ar remittance exempt hote hole apnar kache official Remittance Certificate thaka joruri — eita e bank ba MFS provider theke collect korte hoy, proof hishebe."
+
+#### [01:05 – 01:45] Advance Tax: The Rule Salaried People Don't Deal With
+- **Visual**: Side-by-side comparison graphic: "Salaried: Employer TDS" vs "Freelancer: Self Assessed / Advance Tax".
+- **Host**:
+  > "Chakrijibi der jonno employer proti mash TDS kete rakhe, tai year-end e beshirvag hisab already kora thake. Kintu freelancer ba professional der khetre, nirdishto income threshold periye gele Advance Income Tax nijer theke calculate kore nirdishto kisti te joma dite hote pare.
+  > Eita bhule gele year-end e ek shathe boro amount tax dena hoye jete pare — ja cash flow er upor chap fele."
+
+#### [01:45 – 02:25] Bringing It Together on TakaTalks
+- **Visual**: Screen capture of `takatalks.com/tracker` — add a "Foreign Remittance (Exempt)" entry and a "Local Client (Taxable)" entry in the same month.
+- **Host**:
+  > "Eta shohoj korar jonno TakaTalks er Tracker e apni alada alada label diye — foreign remittance, local income — shob entry rakhte paren.
+  > Tarpor ekta click e Calculator e sync korle, apni dekhben koto ongsho exempt, koto ongsho taxable, ar apnar current estimate payable tax koto — shob ekshathe, clear breakdown shoho."
+
+#### [02:25 – 02:45] Practical Checklist
+- **Visual**: On-screen checklist animates in.
+- **Host**:
+  > "Freelancer hishebe mone rakhar moto teen ta jinish:
+  > 1. Remittance certificate shongroho kore rakhun, proof hishebe.
+  > 2. Local ar foreign income alada kore track korun.
+  > 3. TIN thakle, payable tax zero holeo, return joma deya generally baddhotamulok."
+
+#### [02:45 – 02:55] Outro & CTA
+- **Visual**: Host back on camera, website on screen.
+- **Host**:
+  > "Freelancing e freedom ache — tax niye confusion thakar dorkar nai. Track ar calculate koren ekdom free, **takatalks.com** e."

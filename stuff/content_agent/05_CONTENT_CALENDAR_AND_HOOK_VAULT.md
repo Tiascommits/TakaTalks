@@ -20,6 +20,21 @@ This resource provides a **30-Day Content Publishing Calendar** and a **Hook Vau
 | **Day 24** | 30s Rapid Hook | "Save ৳30k tax with DPS investment" | Rebate Optimizer | Shorts, TikTok, Reels |
 | **Day 26** | 60s Value Video | Tracking multi-source income without Excel | `/tracker` (Anonymous session) | Facebook, YouTube, IG |
 | **Day 29** | 3min Deep Dive | "Full personal finance walkthrough with TakaTalks" | Full Ecosystem (`/calculator`, `/tracker`, `/rates`)| YouTube, Facebook |
+| **Day 2** | 30s Rapid Hook | "Basic salary kom, allowance beshi — eta ki tax banchanor secret?" | `/calculator` (Salary Structuring) | Reels, TikTok, Shorts |
+| **Day 4** | 60s Value Video | Freelancer Advance Tax rules vs salaried employees | `/tracker` + `/calculator` | Facebook, YouTube, IG |
+| **Day 6** | 30s Rapid Hook | Duet/react to a real bank's "12% FDR" ad — show after-tax, after-inflation number | `/rates` | Reels, Shorts, TikTok |
+| **Day 7** | 30s Rapid Hook | "TIN ache, income zero-bracket — return joma dite hobe?" | `/calculator` | Reels, TikTok, Shorts |
+| **Day 9** | Jargon-Buster Micro (15s x3) | "Slab tax ki?", "TDS mane ki?", "AIT vs TDS tofat?" | `/calculator` (educational) | Reels Series, Shorts, IG Highlights |
+| **Day 10** | 60s Value Video | House loan interest & life insurance premium as hidden rebate sources | `/calculator` (Rebate Optimizer) | Facebook, YouTube, IG |
+| **Day 12** | 30s Rapid Hook | "November 30 er por return dile koto jorimana?" (countdown format) | `/calculator` | Reels, TikTok, Shorts |
+| **Day 14** | Two-Character Skit | "Accountant bhai" vs "the client who overpaid for 3 years" | `/calculator` (trust/positioning) | Reels, Facebook, YouTube Shorts |
+| **Day 15** | 30s Rapid Hook | "Stock market e invest korle ki rebate paoa jay, naki shudhu DPS/Sanchayapatra?" | `/calculator` (Rebate Optimizer) | Reels, Shorts, TikTok |
+| **Day 17** | Comment-Reply Format | Answer a real (anonymized) follower tax question as standalone video | `/calculator` (trust building) | Reels, IG, Facebook |
+| **Day 19** | 60s Value Video | Payoneer/Wise dollar income — does the bank auto-deduct tax? | `/tracker` + `/calculator` | YouTube, Facebook, IG |
+| **Day 20** | 30s Rapid Hook | "50+ boyosider jonno tax-free limit alada — kara ei chhar pan?" | `/calculator` | Reels, TikTok, Shorts |
+| **Day 22** | Live Screen-Record "Stress Test" | Type an unusually high salary (৳5L/month) on camera, react to rebate optimizer live | `/calculator` (Rebate Optimizer) | YouTube, Facebook, Reels |
+| **Day 23** | 30s Rapid Hook | "Provident Fund er taka tax-free, naki taxable? Employer vs employee ongsho" | `/calculator` | Reels, Shorts, TikTok |
+| **Day 25** | 30s Rapid Hook | "Remittance certificate chhara freelance income 'proof' korte parben na — keno?" | `/tracker` | Reels, TikTok, Shorts |
 
 ---
 
@@ -85,6 +100,31 @@ Plan viral content campaigns around these key moments in Bangladesh:
 32. *"Savings account e idle taka rakha mane proti mash e takar value komano."*
 33. *"Maturity date ashle auto notification paben — apnar taka kothay reinvest korben plan ready thakbe."*
 34. *"Reinvestable cash track koren, takar ek payšao idle thakbe na."*
+
+### Category G: Salary, Deductions & Filing Mechanics
+35. *"Apnar basic salary kom, allowance beshi — eta ki tax banchanor secret?"*
+36. *"TIN ache kintu income tho zero-bracket — tahole o ki return joma dite hoy?"*
+37. *"November 30 er por return joma dile koto jorimana gunte hoy?"*
+38. *"House loan er shud theke o kintu tax rebate paoa jay — janten?"*
+39. *"Provident Fund er taka tax-free, naki taxable? Employer ar employee ongsho alada hisab!"*
+
+### Category H: Freelancer & Investment Rebate Extras
+40. *"Freelancer ra ki Advance Tax dite badhdho? Chakrijibider niyom ekhane khate na."*
+41. *"Payoneer/Wise e dollar aashle bank ki automatically tax kete nay?"*
+42. *"Remittance certificate chhara apnar freelance income 'proof' korte parben na — keno?"*
+43. *"Stock market e invest korle ki tax rebate paoa jay, naki shudhu DPS/Sanchayapatra tei?"*
+44. *"Life insurance premium o kintu rebate khatay dhora jay — koto % porjonto?"*
+45. *"50 bochorer beshi boyosider jonno tax-free limit alada — ei chhar 5ta category te kara pan?"*
+
+---
+
+## 4a. New Format Playbooks (beyond straight-to-camera explainer)
+
+- **Duet/Reaction**: React to a real bank ad claiming a high FDR rate; overlay the after-tax, after-inflation number live. Builds credibility by fact-checking a real, visible claim.
+- **Comment-Reply Format**: Pick a real (anonymized) follower question from comments/DMs and answer it as its own standalone video. Signals responsiveness and gives an infinite, low-effort content pipeline.
+- **Two-Character Skit**: "Accountant bhai" vs. "the client who overpaid for 3 years" — myth vs. reality, played for comedy. Good for reach; pairs well with a serious follow-up carousel/video.
+- **Jargon-Buster Micro-Series**: 15-second single-definition videos ("Slab tax ki?", "TDS mane ki?", "AIT vs TDS tofat?"). Stack as a Reels series or Story Highlight — low production cost, high save/share rate.
+- **Live Screen-Record Stress Test**: Type an unusually high or unusual salary on camera and react in real time to what the rebate optimizer suggests. Demonstrates the tool's range beyond the "average salary" demo.
 
 ---
 
