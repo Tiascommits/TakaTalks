@@ -99,20 +99,25 @@ If you get stuck, **stop before running anything destructive** and ask — a wro
 
 ## 2. Normal workflow
 
-`main` is the deployed branch. Work on a branch, open a PR, don't commit straight to `main`.
+**`main` is protected. Nobody commits or pushes to it directly — not even small fixes.**
+All day-to-day work happens on `experimental`, which already exists on the remote:
 
 ```bash
-git checkout main
+git checkout experimental
 git pull                              # fast-forward; safe once you've done section 1
-git checkout -b short-descriptive-name
+git checkout -b short-descriptive-name  # optional: a feature branch off experimental
 
 # ... make changes, then from web/:  npm run test  (and npm run build before anything big)
 
 git add -A
 git commit                            # see message rules below
-git push -u origin short-descriptive-name
-gh pr create                          # or open the PR on github.com
+git push -u origin short-descriptive-name  # or `git push` if you committed straight to experimental
 ```
+
+`experimental` only merges into `main` after a deliberate QA pass and a written QA report
+confirm it's ready. `experimental` itself is never deleted — it's the shared long-lived
+branch, not a throwaway. If you're committing straight to a named branch rather than a PR
+branch, that named branch is `experimental`, never `main`.
 
 ### Commit messages
 
