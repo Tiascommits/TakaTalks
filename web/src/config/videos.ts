@@ -31,7 +31,7 @@ export const VIDEOS: VideoEntry[] = [
     },
     url: "/videos/same-income-different-tax.mp4",
     width: 720,
-    height: 1280,
+    height: 406,
     relatedTool: {
       href: "/calculator",
       label: { en: "Try the Tax Calculator", bn: "ট্যাক্স ক্যালকুলেটর ব্যবহার করুন" },
