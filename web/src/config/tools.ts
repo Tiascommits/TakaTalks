@@ -133,6 +133,18 @@ export const TOOLS: Tool[] = [
     },
   },
   {
+    href: "/reinvest",
+    category: "save",
+    icon: "🔁",
+    tag: { en: "CATEGORY, NOT A BANK", bn: "ক্যাটাগরি, ব্যাংক নয়" },
+    title: { en: "Reinvestment Suggestion", bn: "পুনঃবিনিয়োগ পরামর্শ" },
+    navLabel: { en: "Reinvest", bn: "পুনঃবিনিয়োগ" },
+    desc: {
+      en: "When an investment matures, see which instrument category fits — by after-tax return, tax-rebate room, and your timeline.",
+      bn: "বিনিয়োগের মেয়াদ শেষ হলে কোন ক্যাটাগরি উপযুক্ত দেখুন — ট্যাক্স-পরবর্তী মুনাফা, রেয়াতের সুযোগ ও সময়সীমা অনুযায়ী।",
+    },
+  },
+  {
     href: "/goals",
     category: "save",
     icon: "🎯",

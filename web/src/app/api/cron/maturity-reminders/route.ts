@@ -3,8 +3,14 @@ import { prisma } from "@/lib/prisma";
 import { isAuthorizedCronRequest } from "@/lib/cron/auth";
 import { daysUntil } from "@/lib/tracker/derive";
 import { channelsAvailableForUser, notifyMaturityReminder } from "@/lib/notify";
+import { getReinvestContextForUser, logReinvestSuggestion } from "@/lib/reinvest/log";
 
 const REMINDER_WINDOWS_DAYS = [7, 1] as const;
+
+function resolveAppUrl(request: Request): string {
+  if (process.env.NEXT_PUBLIC_APP_URL) return process.env.NEXT_PUBLIC_APP_URL;
+  return new URL(request.url).origin;
+}
 
 /**
  * Daily cron (see vercel.json). For each not-yet-matured, not-yet-confirmed
@@ -31,6 +37,10 @@ export async function GET(request: Request) {
 
   let attempted = 0;
   let sent = 0;
+  const appUrl = resolveAppUrl(request);
+  // At most one ReinvestSuggestion row per investment per cron run, even if
+  // both the 7-day and 1-day windows happen to fire in the same run.
+  const reinvestLinkByInvestment = new Map<string, string>();
 
   for (const inv of investments) {
     const daysLeft = daysUntil(inv.maturityDate);
@@ -47,11 +57,41 @@ export async function GET(request: Request) {
       if (channelsToSend.length === 0) continue;
 
       attempted++;
-      const results = await notifyMaturityReminder(inv.user, {
-        label: inv.label,
-        principalAmount: inv.principalAmount,
-        maturityDate: inv.maturityDate,
-      });
+
+      // Pre-compute (and log) a reinvestment suggestion for this investment
+      // so the reminder can link straight to it — see
+      // src/lib/reinvest/log.ts and the "trigger point" note in
+      // docs/product-notes.md's Phase 5 entry. Best-effort: a failure here
+      // must never block the reminder itself from sending.
+      let reinvestLink = reinvestLinkByInvestment.get(inv.id);
+      if (!reinvestLink) {
+        try {
+          const ctx = await getReinvestContextForUser(inv.userId);
+          await logReinvestSuggestion({
+            userId: inv.userId,
+            investmentEntryId: inv.id,
+            reinvestAmount: inv.principalAmount,
+            horizonYears: Math.max(0.5, inv.termMonths / 12),
+            hasPSR: true,
+            inflationPct: 8.5,
+            taxResult: ctx.taxResult,
+          });
+          reinvestLink = `${appUrl}/reinvest?investmentEntryId=${inv.id}`;
+          reinvestLinkByInvestment.set(inv.id, reinvestLink);
+        } catch (err) {
+          console.error("[cron/maturity-reminders] reinvest suggestion failed:", err);
+        }
+      }
+
+      const results = await notifyMaturityReminder(
+        inv.user,
+        {
+          label: inv.label,
+          principalAmount: inv.principalAmount,
+          maturityDate: inv.maturityDate,
+        },
+        { reinvestLink }
+      );
 
       for (const result of results) {
         if (!channelsToSend.includes(result.channel)) continue;
