@@ -1,5 +1,6 @@
 import { BasicTaxHeader } from "@/components/basic-tax/BasicTaxHeader";
 import { BasicTaxCalculator } from "@/components/basic-tax/BasicTaxCalculator";
+import { TrustBanner } from "@/components/calculator/TrustBanner";
 
 export const metadata = {
   title: "বেসিক ইনকাম ট্যাক্স হিসাব — TakaTalks",
@@ -10,6 +11,7 @@ export default function TaxBasicCalculationPage() {
   return (
     <>
       <BasicTaxHeader />
+      <TrustBanner />
       <BasicTaxCalculator />
     </>
   );
