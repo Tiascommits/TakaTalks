@@ -70,18 +70,39 @@ from you — see `../my-work/` and `../needs-us-both/` for what does.
       timer stops on hover/focus/touch, on a hidden tab, and under
       `prefers-reduced-motion`. It only animates with 2+ videos in `config/videos.ts`.
 
+- [x] Wired up the basic tax calculator (2026-09-19) — an upstream pull had added
+      `/tax_basic_calculation` (income-only slab tax) without registering it anywhere.
+      Added it to `src/config/tools.ts` (now shows in nav + homepage), added the missing
+      "calculated on your device" trust banner it was missing per
+      `../../docs/feature-spec-tax-calculator.md`, and confirmed it already imports the
+      shared slab logic/config rather than duplicating it. Kept the relationship
+      one-directional: the basic calculator links up to `/calculator` for rebate
+      optimization; the full calculator doesn't link back down.
+
+- [x] Fixed the `CalculatorForm.tsx` lint error noted below (2026-09-19) — moved URL-param
+      hydration into a lazy `useState` initializer + `useSearchParams` inside a `Suspense`
+      boundary, per Next's documented pattern, instead of a mount `useEffect`. No
+      hydration-mismatch risk since the route is already dynamically rendered.
+
+- [x] Phase 5: AI reinvestment suggestions (2026-09-19) — built ahead of the original
+      "needs real usage data" gate on explicit product-owner sign-off; see
+      `../../docs/product-notes.md`'s "Phase 5 built ahead of the usage-data gate" section
+      for the full reasoning. Deterministic category-level scoring
+      (`src/lib/reinvest/suggest.ts`) over the person's own tracked data — after-tax real
+      yield (reuses `/instruments`' logic), tax-rebate headroom (reuses the `/calculator`
+      optimizer), and goal-horizon fit — never a named bank or product, and no LLM in the
+      loop. New `/reinvest` tool plus surfacing from `/tracker`'s maturity panel and the
+      maturity-reminder email. New `ReinvestSuggestion` model/migration.
+
 ## Known follow-ups, not blocking
 
-- Full verification now runs clean end-to-end on this machine: 119 unit tests,
-  `tsc --noEmit`, `next build`, and 42 Playwright e2e tests. `npm run test:e2e` needs
-  `PRISMA_USER_CONSENT_FOR_DANGEROUS_AI_ACTION` set when an agent invokes it, since
-  `e2e/global-setup.ts` runs `prisma migrate reset`.
+- Full verification runs clean end-to-end on this machine: 138 unit tests, `tsc --noEmit`,
+  `next build`, and (as of the last full run before the 2026-09-19 batch above) 42
+  Playwright e2e tests — the e2e suite hasn't been re-run since that batch merged, since it
+  requires a destructive `prisma migrate reset` and needs explicit human sign-off first.
+  `npm run test:e2e` needs `PRISMA_USER_CONSENT_FOR_DANGEROUS_AI_ACTION` set when an agent
+  invokes it, since `e2e/global-setup.ts` runs that reset.
 - The single video in `config/videos.ts` does not play — Facebook's embed returns "Video
   unavailable" for its `/share/v/...` shortlink (and curl gets an HTTP 400). Pre-existing;
   the e2e test only asserted the iframe existed, never that it loaded. Needs a canonical
   permalink from a public post — see `../my-work/for_you.md`.
-- `src/components/calculator/CalculatorForm.tsx` has a pre-existing
-  `react-hooks/set-state-in-effect` lint error (the mount effect that hydrates state from
-  URL params). Left alone: fixing it properly means moving to `useSearchParams` so the
-  values are read during render without a hydration mismatch. `npm run build` doesn't run
-  lint, which is why it went unnoticed.

@@ -51,11 +51,15 @@ server, no dependencies beyond a Google Fonts CDN link.
 
 ## What's in `web/`
 
-The real app scaffolded from **Prompt 1**: Next.js + TypeScript + Tailwind +
-Prisma/Postgres, covering the tax calculator + rebate optimizer and the
-income/investment tracker. Deployed on Vercel. See `web/README.md` for setup
-and deployment. The `tools/` HTML demos above remain as the reference logic
-and design history; `web/` is where ongoing development happens.
+The real app, scaffolded from **Prompt 1** and grown well past it since: Next.js +
+TypeScript + Tailwind + Prisma/Postgres, now covering every phase in the roadmap table
+below (tax calculator, tracker, rate scorecard, bank-health disclosures, goal planner,
+salary comparator, instrument yield matrix, and the Phase 5 reinvestment suggestions).
+Deployed on Vercel. See `web/README.md` for setup, deployment, and the current route/module
+list — this file's roadmap table is the status summary, `web/README.md` is where the
+route-by-route detail lives, so it isn't duplicated in both places. The `tools/` HTML demos
+above remain as the reference logic and design history; `web/` is where ongoing development
+happens.
 
 ## What's in `prompts/`
 
@@ -86,14 +90,14 @@ Hand these to Claude Code **in order**. Each one assumes the previous module exi
 
 | Phase | What | Status |
 |---|---|---|
-| 1 | Tax calculator + rebate optimizer + printable tax slip | Built in `web/` (`/calculator`) |
+| 1 | Tax calculator + rebate optimizer + printable tax slip | Built in `web/` (`/calculator`), plus a fast income-only on-ramp at `/tax_basic_calculation` that links up to the full calculator |
 | 2 | Income/investment tracker, maturity reminders | Built in `web/` (`/tracker`) |
 | 3 | Bank rate comparison + scorecard (live daily monitoring) | Built in `web/` (`/rates`) |
 | 3 | Audited bank health disclosures (CAR, NPL, ROA, ROE) | Built in `web/` (`/rates`, `/admin/bank-health`); figures come from the extraction pipeline and each needs manual approval before it shows |
 | 4 | Life goal planner (car, flat, education, retirement) | Built in `web/` (`/goals`) |
 | 4 | Salary offer analyzer & net take-home benchmark | Built in `web/` (`/salary`) |
 | 4 | Real yield matrix (Sanchayapatra vs FDR vs Sukuk) | Built in `web/` (`/instruments`) |
-| 5 | AI reinvestment suggestions | Deliberately deferred, needs real usage data first |
+| 5 | AI reinvestment suggestions | Built in `web/` (`/reinvest`, and surfaced from `/tracker`'s maturity flow), ahead of the original "needs real usage data" gate — see `docs/product-notes.md` for why that was safe: it's deterministic category-level scoring, not an LLM verdict, and stays on the math side of the advice-vs-math line |
 
 ## A few things to keep true as this grows
 
