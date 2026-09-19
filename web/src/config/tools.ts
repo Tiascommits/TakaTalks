@@ -73,6 +73,18 @@ export const TOOLS: Tool[] = [
     },
   },
   {
+    href: "/tax_basic_calculation",
+    category: "tax",
+    icon: "⚡",
+    tag: { en: "1-MINUTE ESTIMATE", bn: "১ মিনিটে হিসাব" },
+    title: { en: "Quick Basic Tax Estimate", bn: "দ্রুত বেসিক ট্যাক্স হিসাব" },
+    navLabel: { en: "Quick Tax Estimate", bn: "দ্রুত ট্যাক্স হিসাব" },
+    desc: {
+      en: "Just your yearly income and category — see the basic slab tax in seconds. No rebates or deductions.",
+      bn: "শুধু বছরের আয় ও ক্যাটাগরি দিন — কয়েক সেকেন্ডে বেসিক স্ল্যাব ট্যাক্স দেখুন। রিবেট বা বিয়োগ ছাড়া।",
+    },
+  },
+  {
     href: "/freelance",
     category: "tax",
     icon: "🌐",
