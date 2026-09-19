@@ -1,10 +1,21 @@
 import { cookies } from "next/headers";
-import { randomBytes, scryptSync, timingSafeEqual } from "node:crypto";
+import { createHmac, randomBytes, scryptSync, timingSafeEqual } from "node:crypto";
 import { prisma } from "@/lib/prisma";
 
 const SESSION_COOKIE_NAME = "taka_admin_session";
 const LEGACY_COOKIE_NAME = "taka_admin";
 const SESSION_TTL_MS = 30 * 24 * 60 * 60 * 1000; // 30 days
+
+function constantTimeCompare(a: string, b: string): boolean {
+  const bufA = Buffer.from(a);
+  const bufB = Buffer.from(b);
+  if (bufA.length !== bufB.length) return false;
+  return timingSafeEqual(bufA, bufB);
+}
+
+function getBootstrapToken(secret: string): string {
+  return createHmac("sha256", secret).update("admin_bootstrap_grant").digest("hex");
+}
 
 export function hashPassword(password: string): string {
   const salt = randomBytes(16).toString("hex");
@@ -48,16 +59,21 @@ export async function isAdmin(): Promise<boolean> {
   if ((await adminUserCount()) > 0) return false;
 
   const store = await cookies();
-  return store.get(LEGACY_COOKIE_NAME)?.value === secret;
+  const cookieVal = store.get(LEGACY_COOKIE_NAME)?.value;
+  if (!cookieVal) return false;
+
+  const expectedToken = getBootstrapToken(secret);
+  return constantTimeCompare(cookieVal, expectedToken) || constantTimeCompare(cookieVal, secret);
 }
 
 export async function setLegacyAdminCookie(providedSecret: string): Promise<boolean> {
   const secret = process.env.ADMIN_SECRET;
-  if (!secret || providedSecret !== secret) return false;
+  if (!secret || !constantTimeCompare(providedSecret, secret)) return false;
   if ((await adminUserCount()) > 0) return false; // bootstrap window closed
 
   const store = await cookies();
-  store.set(LEGACY_COOKIE_NAME, secret, {
+  const token = getBootstrapToken(secret);
+  store.set(LEGACY_COOKIE_NAME, token, {
     httpOnly: true,
     sameSite: "lax",
     maxAge: 60 * 60, // short-lived — just enough to complete /admin/setup

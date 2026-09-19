@@ -14,13 +14,13 @@ export function CalculatorHeader() {
         <h1 className="font-serif font-semibold text-2xl sm:text-3xl mb-1.5">
           {t(
             "Income Tax Estimator — see roughly where you stand",
-            "আয়কর এস্টিমেটর — দেখো তুমি মোটামুটি কোথায় আছো"
+            "আয়কর এস্টিমেটর — নিজের করদায় সহজে হিসাব করুন"
           )}
         </h1>
         <p className="max-w-[700px] text-sm text-[#DCE6DD]">
           {t(
             "Type in your numbers and see roughly what your tax could be — no account or signup needed. Salary, business, house property, capital gains, investment rebate — everything estimated together. The rebate optimizer tells you how much more to invest to lower your tax.",
-            "Type kore dekho tomar tax roughly koto hote pare, kono account/signup lagbe na। Salary, business, house property, capital gains, investment rebate সব একসাথে estimate kore dekhায়। Rebate optimizer বলে দেবে আরো কতটুকু invest করলে tax কমবে।"
+            "আপনার আয় ও ব্যয়ের তথ্য দিয়ে সহজেই করের পরিমাণ হিসাব করুন, কোনো অ্যাকাউন্ট বা সাইন-আপের প্রয়োজন নেই। বেতন, ব্যবসা, বাড়ি ভাড়া, ক্যাপিটাল গেইনস ও বিনিয়োগ রিবেট—সবকিছু একসাথে সমন্বিত। রিবেট অপটিমাইজার আপনাকে দেখাবে অতিরিক্ত কত বিনিয়োগ করলে কর সাশ্রয় হবে।"
           )}
         </p>
       </div>

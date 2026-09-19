@@ -24,12 +24,18 @@ export async function GET(request: Request) {
   }
 
   const maxWindow = Math.max(...REMINDER_WINDOWS_DAYS);
+  // Start of today in Bangladesh Standard Time (BST = UTC+6) to avoid cutting off today's maturities
+  const BST_OFFSET_MS = 6 * 60 * 60 * 1000;
+  const nowBST = new Date(Date.now() + BST_OFFSET_MS);
+  const startOfTodayBST = new Date(Date.UTC(nowBST.getUTCFullYear(), nowBST.getUTCMonth(), nowBST.getUTCDate()));
+  const startOfToday = new Date(startOfTodayBST.getTime() - BST_OFFSET_MS);
+
   const investments = await prisma.investmentEntry.findMany({
     where: {
       payoutConfirmed: false,
       maturityDate: {
-        gte: new Date(),
-        lte: new Date(Date.now() + maxWindow * 24 * 60 * 60 * 1000),
+        gte: startOfToday,
+        lte: new Date(Date.now() + (maxWindow + 1) * 24 * 60 * 60 * 1000),
       },
     },
     include: { user: true, reminderLogs: true },

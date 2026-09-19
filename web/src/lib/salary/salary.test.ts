@@ -2,8 +2,8 @@ import { describe, expect, it } from "vitest";
 import { calculateSalaryBreakdown, compareSalaries } from "./salary";
 
 describe("Salary Offer Analyzer (Income Tax Act 2023)", () => {
-  it("computes accurate statutory 1/3 exemption capped at ৳5 lakh", () => {
-    // High salary where 1/3 would exceed 5 lakh
+  it("computes accurate statutory 1/3 exemption capped at ৳4.5 lakh", () => {
+    // High salary where 1/3 would exceed 4.5 lakh
     const high = calculateSalaryBreakdown({
       label: "Senior Role",
       monthlyBasic: 150_000,
@@ -13,9 +13,9 @@ describe("Salary Offer Analyzer (Income Tax Act 2023)", () => {
       festivalBonusesCount: 2,
     });
 
-    // 1/3 of ~3.3M is ~1.1M, but must be capped at exactly 5,00,000
-    expect(high.statutoryExemption).toBe(500_000);
-    expect(high.taxableSalary).toBe(high.totalEmploymentReceiptsForTax - 500_000);
+    // 1/3 of ~3.3M is ~1.1M, but must be capped at exactly 4,50,000
+    expect(high.statutoryExemption).toBe(450_000);
+    expect(high.taxableSalary).toBe(high.totalEmploymentReceiptsForTax - 450_000);
   });
 
   it("computes 1/3 exemption when below ৳4.5 lakh cap", () => {

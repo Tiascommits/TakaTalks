@@ -15,7 +15,10 @@ const URL = "https://www.nblbd.com/interest-rate/deposit-rate";
 export const nationalBankAdapter: RateAdapter = {
   bankShortCode: "NATIONAL",
   async scrape(): Promise<ScrapedRate[]> {
-    const res = await fetch(URL, { headers: { "User-Agent": "Mozilla/5.0" } });
+    const res = await fetch(URL, {
+      headers: { "User-Agent": "Mozilla/5.0" },
+      signal: AbortSignal.timeout(10000),
+    });
     if (!res.ok) throw new Error(`National Bank fetch failed: HTTP ${res.status}`);
     const $ = cheerio.load(await res.text());
     const text = $.text().replace(/\s+/g, " ");
@@ -31,12 +34,18 @@ export const nationalBankAdapter: RateAdapter = {
       const idx = text.indexOf(label);
       if (idx === -1) continue;
       const after = text.slice(idx + label.length, idx + label.length + 300);
-      const rateMatch = after.match(/([\d.]+)\s*%/);
-      if (!rateMatch) continue;
+      // Look for plausible deposit rates (4% to 20%) to avoid matching small promotional add-ons
+      const rateMatches = [...after.matchAll(/(\d{1,2}(?:\.\d+)?)\s*%/g)];
+      const validMatch = rateMatches.find((m) => {
+        const val = parseFloat(m[1]);
+        return val >= 4 && val <= 20;
+      });
+      if (!validMatch) continue;
+
       rates.push({
         instrument: "FDR",
         termMonths,
-        ratePct: parseFloat(rateMatch[1]),
+        ratePct: parseFloat(validMatch[1]),
         method: "SCRAPED",
         source: URL,
       });

@@ -134,7 +134,11 @@ export function calculateTax(rawInput: TaxCalculatorInput): TaxCalculationResult
 
   let taxAfterRebate = Math.max(0, grossTax - rebate);
 
-  const minFloor = input.firstTimeFiler ? TAX_RULES.minTaxFirstTime : TAX_RULES.minTaxRegular;
+  const regularMinTax =
+    input.location && TAX_RULES.minTaxByLocation[input.location]
+      ? TAX_RULES.minTaxByLocation[input.location]
+      : TAX_RULES.minTaxRegular;
+  const minFloor = input.firstTimeFiler ? TAX_RULES.minTaxFirstTime : regularMinTax;
   let minApplied = false;
   const totalIncomeAll = slabBase + sharesFundGain + cgAfter5 + cgGold;
   if (totalIncomeAll > taxFree && taxAfterRebate < minFloor) {

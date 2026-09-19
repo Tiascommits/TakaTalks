@@ -97,6 +97,18 @@ export const TOOLS: Tool[] = [
     },
   },
   {
+    href: "/cars",
+    category: "tax",
+    icon: "🚗",
+    tag: { en: "CC SLABS & MULTI-CAR AIT", bn: "সিসি স্ল্যাব ও এআইটি" },
+    title: { en: "Car Buying & Tax Decision Engine", bn: "গাড়ি কেনা ও এআইটি কর বিশ্লেষণ" },
+    navLabel: { en: "Car Tax & AIT", bn: "গাড়ি ও এআইটি" },
+    desc: {
+      en: "Find your CC sweet spot, calculate BRTA annual AIT, avoid the 2nd-car wealth surcharge, and check TCO affordability.",
+      bn: "লাভজনক সিসি নির্বাচন করুন, বিআরটিএ এআইটি সমন্বয় হিসাব করুন এবং ২য় গাড়ির সারচার্জ ফাঁদ এড়িয়ে চলুন।",
+    },
+  },
+  {
     href: "/salary",
     category: "earn",
     icon: "💼",

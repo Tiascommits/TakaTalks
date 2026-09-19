@@ -16,29 +16,49 @@ export async function GET() {
   return NextResponse.json({ entries });
 }
 
+function addMonthsSafe(date: Date, months: number): Date {
+  const result = new Date(date.getTime());
+  const expectedMonth = (result.getMonth() + months) % 12;
+  result.setMonth(result.getMonth() + months);
+  if (result.getMonth() !== expectedMonth && result.getMonth() !== (expectedMonth + 12) % 12) {
+    result.setDate(0);
+  }
+  return result;
+}
+
 export async function POST(request: Request) {
   const body = await request.json().catch(() => null);
   const { label, instrumentType, principalAmount, startDate, termMonths, expectedRatePct } =
     body ?? {};
 
-  const validLabel = typeof label === "string" && label.trim().length > 0;
+  const validLabel =
+    typeof label === "string" && label.trim().length > 0 && label.trim().length <= 100;
   const validInstrument =
     typeof instrumentType === "string" && VALID_INSTRUMENTS.includes(instrumentType as InstrumentType);
   const validPrincipal =
-    typeof principalAmount === "number" && Number.isFinite(principalAmount) && principalAmount > 0;
+    typeof principalAmount === "number" &&
+    Number.isFinite(principalAmount) &&
+    principalAmount > 0 &&
+    principalAmount <= 100_000_000_000;
   const start = new Date(startDate);
   const validStartDate = typeof startDate === "string" && !Number.isNaN(start.getTime());
   const validTerm =
-    typeof termMonths === "number" && Number.isFinite(termMonths) && Number.isInteger(termMonths) && termMonths > 0;
+    typeof termMonths === "number" &&
+    Number.isFinite(termMonths) &&
+    Number.isInteger(termMonths) &&
+    termMonths > 0 &&
+    termMonths <= 600;
   const validRate =
-    typeof expectedRatePct === "number" && Number.isFinite(expectedRatePct) && expectedRatePct >= 0;
+    typeof expectedRatePct === "number" &&
+    Number.isFinite(expectedRatePct) &&
+    expectedRatePct >= 0 &&
+    expectedRatePct <= 100;
 
   if (!validLabel || !validInstrument || !validPrincipal || !validStartDate || !validTerm || !validRate) {
     return NextResponse.json({ error: "Missing or invalid fields" }, { status: 400 });
   }
 
-  const maturityDate = new Date(start);
-  maturityDate.setMonth(maturityDate.getMonth() + termMonths);
+  const maturityDate = addMonthsSafe(start, termMonths);
 
   const userId = await getOrCreateUserId();
   const entry = await prisma.investmentEntry.create({

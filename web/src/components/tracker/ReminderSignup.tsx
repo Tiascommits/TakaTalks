@@ -94,7 +94,7 @@ export function ReminderSignup({
     const res = await fetch("/api/account/verify", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ code }),
+      body: JSON.stringify({ code, destination: destination.trim() }),
     });
     setSubmitting(false);
     if (res.ok) setStep("done");

@@ -128,15 +128,18 @@ export async function extractFiguresFromPdf(
     }
   }
 
+  const denomination = detectDenominationMultiplier(text);
   for (const { field, patterns } of MONEY_FIELD_PATTERNS) {
     const found = firstMatch(text, patterns);
     if (found) {
+      const parsedNum = parseFloat(found.value.replace(/,/g, ""));
+      const numericValue = Number.isFinite(parsedNum) ? parsedNum * denomination.multiplier : null;
       candidates.push({
         field,
-        rawValue: found.raw,
-        numericValue: parseFloat(found.value.replace(/,/g, "")),
+        rawValue: denomination.multiplier > 1 ? `${found.raw} [${denomination.unitLabel}]` : found.raw,
+        numericValue,
         extractionConfidence: found.confidence,
-        sourcePageOrNote: null,
+        sourcePageOrNote: denomination.multiplier > 1 ? `Scaled by ${denomination.unitLabel}` : null,
       });
     }
   }
@@ -178,4 +181,17 @@ function firstMatch(
     if (m) return { raw: m[0].replace(/\s+/g, " ").trim(), value: m[1], confidence };
   }
   return null;
+}
+
+function detectDenominationMultiplier(text: string): { multiplier: number; unitLabel: string } {
+  if (/(?:figures\s+in|bdt\s+in|\(in)\s+(?:taka\s+in\s+)?crore/i.test(text)) {
+    return { multiplier: 10_000_000, unitLabel: "Crore BDT" };
+  }
+  if (/(?:figures\s+in|bdt\s+in|\(in)\s+(?:taka\s+in\s+)?million/i.test(text)) {
+    return { multiplier: 1_000_000, unitLabel: "Million BDT" };
+  }
+  if (/(?:figures\s+in|bdt\s+in|\(in)\s+(?:taka\s+in\s+)?(?:thousand|'000)/i.test(text)) {
+    return { multiplier: 1_000, unitLabel: "Thousand BDT" };
+  }
+  return { multiplier: 1, unitLabel: "BDT" };
 }

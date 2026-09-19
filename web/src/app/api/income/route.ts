@@ -20,9 +20,12 @@ export async function POST(request: Request) {
   const body = await request.json().catch(() => null);
   const { label, source, amount, frequency } = body ?? {};
 
-  const validLabel = typeof label === "string" && label.trim().length > 0;
-  const validSource = typeof source === "string" && source.trim().length > 0;
-  const validAmount = typeof amount === "number" && Number.isFinite(amount) && amount > 0;
+  const validLabel =
+    typeof label === "string" && label.trim().length > 0 && label.trim().length <= 100;
+  const validSource =
+    typeof source === "string" && source.trim().length > 0 && source.trim().length <= 50;
+  const validAmount =
+    typeof amount === "number" && Number.isFinite(amount) && amount > 0 && amount <= 100_000_000_000;
   const validFrequency =
     typeof frequency === "string" && VALID_FREQUENCIES.includes(frequency as IncomeFrequency);
 

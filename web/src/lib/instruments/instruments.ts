@@ -30,6 +30,8 @@ export interface InstrumentSpec {
   tdsRatePct: (hasPSR: boolean, amount: number) => number;
   sovereignGuaranteed: boolean;
   depositInsuranceCovered: boolean;
+  compounds?: boolean;
+  isMarketLinked?: boolean;
   liquidityEn: string;
   liquidityBn: string;
   eligibilityEn: string;
@@ -55,6 +57,7 @@ export const INSTRUMENT_CATALOG: InstrumentSpec[] = [
     tdsRatePct: (_hasPSR, amount) => (amount <= 500_000 ? 5 : 10),
     sovereignGuaranteed: true,
     depositInsuranceCovered: false,
+    compounds: false,
     liquidityEn: "Premature encashment permitted after 1 year with penalty slab.",
     liquidityBn: "১ বছর পর নির্দিষ্ট জরিমানা কেটে মেয়াদপূর্তির আগেই ভাঙানো যায়।",
     eligibilityEn: "Adult Bangladeshi women (18+), physically challenged, or senior citizens.",
@@ -78,6 +81,7 @@ export const INSTRUMENT_CATALOG: InstrumentSpec[] = [
     tdsRatePct: (_hasPSR, amount) => (amount <= 500_000 ? 5 : 10),
     sovereignGuaranteed: true,
     depositInsuranceCovered: false,
+    compounds: false,
     liquidityEn: "Quarterly profit payout. Premature encashment allowed after 1 year.",
     liquidityBn: "প্রতি ৩ মাস অন্তর মুনাফা। ১ বছর পর মূলধন ভাঙানোর সুযোগ আছে।",
     eligibilityEn: "All adult Bangladeshi citizens (male, female, individual, or joint).",
@@ -101,6 +105,7 @@ export const INSTRUMENT_CATALOG: InstrumentSpec[] = [
     tdsRatePct: (_hasPSR, amount) => (amount <= 500_000 ? 5 : 10),
     sovereignGuaranteed: true,
     depositInsuranceCovered: false,
+    compounds: false,
     liquidityEn: "Quarterly profit. Encashable prematurely under rules.",
     liquidityBn: "প্রতি ৩ মাস পর পর মুনাফা। সরকারি নিয়ম মেনে ভাঙানো যায়।",
     eligibilityEn: "Retired government, semi-govt, autonomous, or military employees.",
@@ -155,8 +160,10 @@ export const INSTRUMENT_CATALOG: InstrumentSpec[] = [
     tdsRatePct: (hasPSR) => (hasPSR ? 10 : 15),
     sovereignGuaranteed: false,
     depositInsuranceCovered: false,
-    liquidityEn: "Surrenderable to Asset Management Company (AMC) at weekly NAV.",
-    liquidityBn: "সাপ্তাহিক নেট অ্যাসেট ভ্যালু (NAV) অনুযায়ী ফান্ড ম্যানেজারের কাছে বিক্রয়যোগ্য।",
+    compounds: false,
+    isMarketLinked: true,
+    liquidityEn: "Indicative yield. Market-linked returns fluctuate with weekly NAV; no guaranteed yield.",
+    liquidityBn: "প্রাক্কলিত আয়। বাজার-ভিত্তিক রিটার্ন (সাপ্তাহিক NAV ওঠানামার ঝুঁকি রয়েছে, সরকারি গ্যারান্টি নেই)।",
     eligibilityEn: "All Bangladeshi citizens and non-resident Bangladeshis (NRB).",
     eligibilityBn: "সকল বাংলাদেশি ও প্রবাসী বাংলাদেশি (NRB) নাগরিক।",
   },
@@ -180,6 +187,8 @@ export interface InstrumentComparisonItem {
   capNotice: string | null;
   sovereignGuaranteed: boolean;
   depositInsuranceCovered: boolean;
+  compounds?: boolean;
+  isMarketLinked?: boolean;
   liquidityEn: string;
   liquidityBn: string;
   eligibilityEn: string;
@@ -243,11 +252,13 @@ export function compareInstruments({
     const annualTDSTax = Math.round(annualGrossProfit * (tdsRate / 100));
     const annualNetProfit = annualGrossProfit - annualTDSTax;
 
-    // Compound maturity for simple fixed deposits / bonds
+    // Maturity calculation: Sanchayapatra pays periodic non-compounding profit;
+    // Bank deposits and cumulative bonds compound annually.
     const netRateDecimal = netAnnualRate / 100;
-    const totalMaturityValue = Math.round(
-      safeAmount * Math.pow(1 + netRateDecimal, safeYears)
-    );
+    const isCompounding = spec.compounds !== false;
+    const totalMaturityValue = isCompounding
+      ? Math.round(safeAmount * Math.pow(1 + netRateDecimal, safeYears))
+      : Math.round(safeAmount + annualNetProfit * safeYears);
 
     // Real purchasing power at maturity adjusted for inflation
     const realPurchasingPowerAtMaturity = Math.round(
@@ -286,6 +297,8 @@ export function compareInstruments({
       capNotice,
       sovereignGuaranteed: spec.sovereignGuaranteed,
       depositInsuranceCovered: spec.depositInsuranceCovered,
+      compounds: spec.compounds !== false,
+      isMarketLinked: Boolean(spec.isMarketLinked),
       liquidityEn: spec.liquidityEn,
       liquidityBn: spec.liquidityBn,
       eligibilityEn: spec.eligibilityEn,

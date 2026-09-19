@@ -14,23 +14,24 @@ function randomOtpCode(): string {
   return crypto.randomInt(100000, 1000000).toString();
 }
 
-/**
- * If `email` already belongs to a different user, the current anonymous
- * cookie-user's tracker data is merged into that account and the now-empty
- * anonymous user is dropped, rather than creating a duplicate. This is what
- * makes "log in with the email you used on your other device" work as
- * recovery, not just as a second empty account.
- */
-async function resolveTargetUserIdForEmail(currentUserId: string, email: string): Promise<string> {
-  const existing = await prisma.user.findUnique({ where: { email } });
-  if (!existing || existing.id === currentUserId) return currentUserId;
-  return mergeIntoExistingUser(currentUserId, existing.id);
+const attemptMap = new Map<string, { attempts: number; resetAt: number }>();
+
+function checkRateLimit(key: string): boolean {
+  const now = Date.now();
+  const entry = attemptMap.get(key);
+  if (!entry || entry.resetAt < now) {
+    attemptMap.set(key, { attempts: 1, resetAt: now + 15 * 60 * 1000 });
+    return true;
+  }
+  if (entry.attempts >= 5) {
+    return false;
+  }
+  entry.attempts++;
+  return true;
 }
 
-async function resolveTargetUserIdForPhone(currentUserId: string, phone: string): Promise<string> {
-  const existing = await prisma.user.findUnique({ where: { phone } });
-  if (!existing || existing.id === currentUserId) return currentUserId;
-  return mergeIntoExistingUser(currentUserId, existing.id);
+function clearRateLimit(key: string): void {
+  attemptMap.delete(key);
 }
 
 async function mergeIntoExistingUser(fromUserId: string, intoUserId: string): Promise<string> {
@@ -61,13 +62,19 @@ export async function requestEmailLink(
 ): Promise<RequestResult> {
   if (!isEmailConfigured()) return { ok: false, reason: "not_configured" };
 
-  const targetUserId = await resolveTargetUserIdForEmail(currentUserId, email);
+  // Remove existing pending tokens for this email to avoid duplicates
+  await prisma.verificationToken
+    .deleteMany({
+      where: { destination: email.trim().toLowerCase(), consumedAt: null },
+    })
+    .catch(() => {});
+
   const token = randomLinkToken();
   await prisma.verificationToken.create({
     data: {
-      userId: targetUserId,
+      userId: currentUserId,
       channel: "EMAIL",
-      destination: email,
+      destination: email.trim().toLowerCase(),
       token,
       expiresAt: new Date(Date.now() + EMAIL_TOKEN_TTL_MS),
     },
@@ -75,7 +82,7 @@ export async function requestEmailLink(
 
   const link = `${appUrl}/account/verify?token=${token}`;
   const { sent, reason } = await sendEmail({
-    to: email,
+    to: email.trim(),
     subject: "Your TakaTalks login link",
     text: `Click to confirm this email and turn on reminders: ${link}\n\nThis link expires in 15 minutes. If you didn't request this, ignore it.`,
   });
@@ -88,20 +95,30 @@ export async function requestPhoneOtp(currentUserId: string, phone: string): Pro
   const templateName = process.env.WHATSAPP_OTP_TEMPLATE_NAME;
   if (!templateName) return { ok: false, reason: "template_not_configured" };
 
-  const targetUserId = await resolveTargetUserIdForPhone(currentUserId, phone);
+  const cleanPhone = phone.trim();
+
+  // Remove existing pending tokens for this phone to avoid collision
+  await prisma.verificationToken
+    .deleteMany({
+      where: { destination: cleanPhone, consumedAt: null },
+    })
+    .catch(() => {});
+
   const code = randomOtpCode();
+  // Token is destination-scoped to eliminate global OTP collisions and cross-account guessing
+  const token = `${cleanPhone}:${code}`;
   await prisma.verificationToken.create({
     data: {
-      userId: targetUserId,
+      userId: currentUserId,
       channel: "PHONE",
-      destination: phone,
-      token: code,
+      destination: cleanPhone,
+      token,
       expiresAt: new Date(Date.now() + PHONE_OTP_TTL_MS),
     },
   });
 
   const { sent, reason } = await sendWhatsAppTemplate({
-    to: phone,
+    to: cleanPhone,
     templateName,
     bodyParams: [code],
   });
@@ -110,28 +127,66 @@ export async function requestPhoneOtp(currentUserId: string, phone: string): Pro
 
 export type VerifyResult = { ok: boolean; userId?: string; reason?: string };
 
-/** Shared by both the magic-link click and OTP-code submission. */
-export async function consumeVerificationToken(token: string): Promise<VerifyResult> {
-  const record = await prisma.verificationToken.findUnique({ where: { token } });
+/**
+ * Shared by both the magic-link click and OTP-code submission.
+ * Merges accounts safely ONLY after verification succeeds.
+ */
+export async function consumeVerificationToken(
+  tokenOrCode: string,
+  destination?: string
+): Promise<VerifyResult> {
+  const rateLimitKey = destination || tokenOrCode;
+  if (!checkRateLimit(rateLimitKey)) {
+    return { ok: false, reason: "too_many_attempts" };
+  }
+
+  const cleanInput = tokenOrCode.trim();
+  let record = await prisma.verificationToken.findUnique({ where: { token: cleanInput } });
+
+  // If not found and destination is provided, check destination:code
+  if (!record && destination) {
+    const scopedToken = `${destination.trim()}:${cleanInput}`;
+    record = await prisma.verificationToken.findUnique({ where: { token: scopedToken } });
+  }
+
   if (!record) return { ok: false, reason: "invalid" };
+  if (destination && record.destination.toLowerCase() !== destination.trim().toLowerCase()) {
+    return { ok: false, reason: "invalid" };
+  }
   if (record.consumedAt) return { ok: false, reason: "already_used" };
   if (record.expiresAt.getTime() < Date.now()) return { ok: false, reason: "expired" };
 
-  await prisma.$transaction([
-    prisma.verificationToken.update({
-      where: { id: record.id },
-      data: { consumedAt: new Date() },
-    }),
-    record.channel === "EMAIL"
-      ? prisma.user.update({
-          where: { id: record.userId },
-          data: { email: record.destination, emailVerifiedAt: new Date() },
-        })
-      : prisma.user.update({
-          where: { id: record.userId },
-          data: { phone: record.destination, phoneVerifiedAt: new Date() },
-        }),
-  ]);
+  clearRateLimit(rateLimitKey);
 
-  return { ok: true, userId: record.userId };
+  // Mark token consumed
+  await prisma.verificationToken.update({
+    where: { id: record.id },
+    data: { consumedAt: new Date() },
+  });
+
+  // Safe deferred post-verification account merge
+  const existingUser =
+    record.channel === "EMAIL"
+      ? await prisma.user.findUnique({ where: { email: record.destination } })
+      : await prisma.user.findUnique({ where: { phone: record.destination } });
+
+  let finalUserId = record.userId;
+  if (existingUser && existingUser.id !== record.userId) {
+    finalUserId = await mergeIntoExistingUser(record.userId, existingUser.id);
+  }
+
+  // Update verified timestamp on the confirmed user
+  if (record.channel === "EMAIL") {
+    await prisma.user.update({
+      where: { id: finalUserId },
+      data: { email: record.destination, emailVerifiedAt: new Date() },
+    });
+  } else {
+    await prisma.user.update({
+      where: { id: finalUserId },
+      data: { phone: record.destination, phoneVerifiedAt: new Date() },
+    });
+  }
+
+  return { ok: true, userId: finalUserId };
 }
