@@ -29,7 +29,12 @@ export function channelsAvailableForUser(
  */
 export async function notifyMaturityReminder(
   user: Pick<User, "id" | "email" | "emailVerifiedAt" | "phone" | "phoneVerifiedAt">,
-  investment: { label: string; principalAmount: number; maturityDate: Date }
+  investment: { label: string; principalAmount: number; maturityDate: Date },
+  // Link to a pre-computed reinvestment suggestion for this investment (see
+  // src/lib/reinvest/log.ts and /reinvest). Only added to the free-form
+  // email body — the WhatsApp template is pre-approved by Meta with a fixed
+  // param count, so it's left unchanged rather than risking a broken send.
+  opts?: { reinvestLink?: string }
 ): Promise<NotifyResult[]> {
   const channels = channelsAvailableForUser(user);
   const dateLabel = investment.maturityDate.toLocaleDateString("en-GB", {
@@ -40,12 +45,15 @@ export async function notifyMaturityReminder(
   const results: NotifyResult[] = [];
 
   if (channels.includes("EMAIL") && user.email) {
+    const reinvestLine = opts?.reinvestLink
+      ? `\n\nWe've put together a reinvestment suggestion (by category, not a specific bank) for when this matures: ${opts.reinvestLink}`
+      : "";
     const { sent, reason } = await sendEmail({
       to: user.email,
       subject: `TakaTalks: "${investment.label}" matures ${dateLabel}`,
       text: `Your investment "${investment.label}" (${fmtTaka(
         investment.principalAmount
-      )}) matures on ${dateLabel}. Log in to TakaTalks to confirm the payout once it arrives.`,
+      )}) matures on ${dateLabel}. Log in to TakaTalks to confirm the payout once it arrives.${reinvestLine}`,
     });
     results.push({ channel: "EMAIL", sent, reason });
   }

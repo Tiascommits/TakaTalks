@@ -25,10 +25,11 @@ model User {
   phone           String?   @unique
   phoneVerifiedAt DateTime?
 
-  incomeEntries      IncomeEntry[]
-  investmentEntries  InvestmentEntry[]
-  taxProfile         TaxProfile?
-  verificationTokens VerificationToken[]
+  incomeEntries       IncomeEntry[]
+  investmentEntries   InvestmentEntry[]
+  taxProfile          TaxProfile?
+  verificationTokens  VerificationToken[]
+  reinvestSuggestions ReinvestSuggestion[]
 }
 
 enum VerificationChannel {
@@ -106,7 +107,8 @@ model InvestmentEntry {
   createdAt         DateTime       @default(now())
   updatedAt         DateTime       @updatedAt
 
-  reminderLogs      ReminderLog[]
+  reminderLogs        ReminderLog[]
+  reinvestSuggestions ReinvestSuggestion[]
 
   @@index([userId])
   @@index([maturityDate])
@@ -350,4 +352,61 @@ model AdminAuditLog {
 
   @@index([adminUserId, createdAt])
   @@index([targetType, targetId])
+}
+
+// --- Module: Phase 5 reinvestment suggestions ---
+// See src/lib/reinvest/suggest.ts. Deliberately the same shape of
+// restriction as the rate scorecard above: this scores instrument
+// *categories* using deterministic math over the person's own tracked
+// data (their instruments-style real-yield numbers, tax-rebate headroom,
+// and a goal horizon they enter), never a specific bank/product "winner"
+// and never aggregate cross-user data (none exists yet — see
+// docs/product-notes.md's Phase 5 note and the README roadmap).
+enum ReinvestCategory {
+  SANCHAYAPATRA
+  GOVT_BOND
+  BANK_DEPOSIT
+  MUTUAL_FUND
+}
+
+// One row per computed suggestion, so re-opening it later shows exactly
+// what was computed that day (with the inputs that produced it) instead of
+// silently recomputing and looking inconsistent if tracker data or the
+// instrument catalog has since changed, and so seen/dismissed state has
+// somewhere to live.
+model ReinvestSuggestion {
+  id     String @id @default(cuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Set when this run was triggered from a specific maturing/matured
+  // investment (tracker maturity panel or a reminder email); null for a
+  // standalone /reinvest run with a manually entered amount.
+  investmentEntryId String?
+  investmentEntry   InvestmentEntry? @relation(fields: [investmentEntryId], references: [id], onDelete: SetNull)
+
+  // The inputs the scoring actually ran on, kept alongside the result so
+  // the log is self-contained and auditable without re-deriving from
+  // tracker/tax state that may have changed since.
+  reinvestAmount Float
+  horizonYears   Float
+  hasPSR         Boolean
+  inflationPct   Float
+
+  // Highest-scored category only — never a bank or product name. The full
+  // ranked breakdown (every category, its numeric factors, and the
+  // deterministic reasoning strings shown in the UI) lives in
+  // categoryScores; see ReinvestSuggestionResult in src/lib/reinvest/suggest.ts.
+  topCategory    ReinvestCategory
+  categoryScores Json
+
+  seen        Boolean   @default(false)
+  seenAt      DateTime?
+  dismissed   Boolean   @default(false)
+  dismissedAt DateTime?
+
+  createdAt DateTime @default(now())
+
+  @@index([userId, createdAt])
+  @@index([investmentEntryId])
 }

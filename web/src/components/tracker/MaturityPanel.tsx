@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { fmtTaka } from "@/lib/format";
 import { daysUntil } from "@/lib/tracker/derive";
 import { INSTRUMENT_LABELS, INSTRUMENT_LABELS_EN, type InvestmentEntryDTO } from "./types";
@@ -33,9 +34,14 @@ export function MaturityPanel({
       </h2>
 
       {reinvestableCash > 0 && (
-        <div className="bg-[#EFF6F1] border border-green px-3.5 py-3 mb-3.5 text-sm">
-          <span className="font-mono font-bold text-green-deep">{fmtTaka(reinvestableCash)}</span>{" "}
-          {t("reinvestable cash (from confirmed payouts)", "পুনঃবিনিয়োগযোগ্য নগদ (নিশ্চিত হওয়া পেমেন্ট থেকে)")}
+        <div className="bg-[#EFF6F1] border border-green px-3.5 py-3 mb-3.5 text-sm flex flex-wrap items-center justify-between gap-2">
+          <span>
+            <span className="font-mono font-bold text-green-deep">{fmtTaka(reinvestableCash)}</span>{" "}
+            {t("reinvestable cash (from confirmed payouts)", "পুনঃবিনিয়োগযোগ্য নগদ (নিশ্চিত হওয়া পেমেন্ট থেকে)")}
+          </span>
+          <Link href="/reinvest" className="text-xs font-semibold text-green-deep underline shrink-0">
+            {t("See a reinvestment suggestion →", "পুনঃবিনিয়োগ পরামর্শ দেখুন →")}
+          </Link>
         </div>
       )}
 
@@ -63,6 +69,14 @@ export function MaturityPanel({
                 <div className="text-right">
                   <div className="font-mono">{fmtTaka(e.principalAmount)}</div>
                   <div className="text-[11px] text-muted">{t(`${days} days left`, `${days} দিন বাকি`)}</div>
+                  {days <= 30 && (
+                    <Link
+                      href={`/reinvest?investmentEntryId=${e.id}`}
+                      className="text-[11px] font-semibold text-green-deep underline"
+                    >
+                      {t("Plan ahead →", "আগে থেকে পরিকল্পনা →")}
+                    </Link>
+                  )}
                 </div>
               </li>
             );
@@ -94,6 +108,9 @@ function MaturedRow({
     <li className="flex flex-wrap items-center gap-2 bg-[#FBEFEF] border border-red px-3 py-2 text-sm">
       <span className="font-medium">{entry.label}</span>
       <span className="text-xs text-muted">({t(INSTRUMENT_LABELS_EN[entry.instrumentType], INSTRUMENT_LABELS[entry.instrumentType])})</span>
+      <Link href={`/reinvest?investmentEntryId=${entry.id}`} className="text-xs font-semibold text-green-deep underline">
+        {t("Reinvestment idea →", "পুনঃবিনিয়োগ পরামর্শ →")}
+      </Link>
       <div className="ml-auto flex items-center gap-2">
         <input
           type="number"
