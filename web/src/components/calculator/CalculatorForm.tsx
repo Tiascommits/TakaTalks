@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { Suspense, useMemo, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { TAXPAYER_CATEGORIES } from "@/config/tax-rules-2025-26";
 import { calculateTax } from "@/lib/tax/calculate";
 import { calculateOptimizer } from "@/lib/tax/optimizer";
@@ -22,44 +23,58 @@ function field<K extends keyof TaxCalculatorInput>(
   };
 }
 
+// Pure so it can run during render (via useSearchParams) instead of in a
+// mount effect — avoids the extra post-mount re-render and the
+// react-hooks/set-state-in-effect lint error that came with it.
+function parseSharedLinkPatch(params: URLSearchParams): Partial<TaxCalculatorInput> {
+  if (!params.toString()) return {};
+
+  const patch: Partial<TaxCalculatorInput> = {};
+  const parseNum = (k: string) => {
+    const v = params.get(k);
+    if (v) {
+      const n = parseFloat(v);
+      if (Number.isFinite(n) && n > 0) return n;
+    }
+    return undefined;
+  };
+
+  const b = parseNum("basic"); if (b !== undefined) patch.basicMonthly = b;
+  const a = parseNum("allowance"); if (a !== undefined) patch.allowanceMonthly = a;
+  const bn = parseNum("bonus"); if (bn !== undefined) patch.bonusAnnual = bn;
+  const bz = parseNum("biz"); if (bz !== undefined) patch.businessAnnual = bz;
+  const hp = parseNum("houseProperty"); if (hp !== undefined) patch.housePropertyAnnual = hp;
+  const ot = parseNum("other"); if (ot !== undefined) patch.otherIncomeAnnual = ot;
+  const fl = parseNum("freelance"); if (fl !== undefined) patch.freelanceAnnual = fl;
+  // Shared alongside the amount: without it a shared link would show
+  // exempt freelance income as fully taxed.
+  if (params.get("freelanceBank") === "1") patch.freelanceBankTransferCompliant = true;
+  const ait = parseNum("ait"); if (ait !== undefined) patch.aitPaid = ait;
+  const cat = params.get("cat"); if (cat) patch.categoryId = cat;
+
+  return patch;
+}
+
 export function CalculatorForm({ initial }: { initial?: Partial<TaxCalculatorInput> }) {
+  return (
+    <Suspense fallback={null}>
+      <CalculatorFormInner initial={initial} />
+    </Suspense>
+  );
+}
+
+function CalculatorFormInner({ initial }: { initial?: Partial<TaxCalculatorInput> }) {
   const { t } = useLanguage();
-  const [input, setInput] = useState<TaxCalculatorInput>({ ...EMPTY_TAX_INPUT, ...initial });
+  const searchParams = useSearchParams();
+  // Lazy initializer: runs once, so the URL patch is folded into the very
+  // first render instead of arriving a tick later via setState-in-effect.
+  const [input, setInput] = useState<TaxCalculatorInput>(() => ({
+    ...EMPTY_TAX_INPUT,
+    ...initial,
+    ...parseSharedLinkPatch(searchParams),
+  }));
   const [wealthOpen, setWealthOpen] = useState(false);
   const [showSlipModal, setShowSlipModal] = useState(false);
-
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-    const params = new URLSearchParams(window.location.search);
-    if (!params.toString()) return;
-
-    const patch: Partial<TaxCalculatorInput> = {};
-    const parseNum = (k: string) => {
-      const v = params.get(k);
-      if (v) {
-        const n = parseFloat(v);
-        if (Number.isFinite(n) && n > 0) return n;
-      }
-      return undefined;
-    };
-
-    const b = parseNum("basic"); if (b !== undefined) patch.basicMonthly = b;
-    const a = parseNum("allowance"); if (a !== undefined) patch.allowanceMonthly = a;
-    const bn = parseNum("bonus"); if (bn !== undefined) patch.bonusAnnual = bn;
-    const bz = parseNum("biz"); if (bz !== undefined) patch.businessAnnual = bz;
-    const hp = parseNum("houseProperty"); if (hp !== undefined) patch.housePropertyAnnual = hp;
-    const ot = parseNum("other"); if (ot !== undefined) patch.otherIncomeAnnual = ot;
-    const fl = parseNum("freelance"); if (fl !== undefined) patch.freelanceAnnual = fl;
-    // Shared alongside the amount: without it a shared link would show
-    // exempt freelance income as fully taxed.
-    if (params.get("freelanceBank") === "1") patch.freelanceBankTransferCompliant = true;
-    const ait = parseNum("ait"); if (ait !== undefined) patch.aitPaid = ait;
-    const cat = params.get("cat"); if (cat) patch.categoryId = cat;
-
-    if (Object.keys(patch).length > 0) {
-      setInput((prev) => ({ ...prev, ...patch }));
-    }
-  }, []);
 
   const shareUrl = useMemo(() => {
     if (typeof window === "undefined") return "";

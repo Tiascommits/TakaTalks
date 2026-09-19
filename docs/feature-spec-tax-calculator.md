@@ -1,8 +1,11 @@
 # TakaTalks Tax Calculator — Trust-First Feature Spec
 
-Scope: the tax calculator module only (module 1 from earlier planning). This is the
-highest-traffic, most shareable entry point into TakaTalks, so it gets built to the
-lowest-friction, lowest-trust-barrier standard before anything else.
+Scope: the tax calculator module (module 1 from earlier planning), which now ships as two
+routes sharing this spec: `/calculator` (full tax + rebate optimizer) and
+`/tax_basic_calculation` (a faster income-only slab-tax on-ramp that links up to the full
+calculator once someone needs rebate optimization). This is the highest-traffic, most
+shareable entry point into TakaTalks, so it gets built to the lowest-friction,
+lowest-trust-barrier standard before anything else.
 
 ## Core principle
 

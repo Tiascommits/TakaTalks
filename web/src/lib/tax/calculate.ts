@@ -48,7 +48,7 @@ function sanitizeInput(input: TaxCalculatorInput): TaxCalculatorInput {
   return clean;
 }
 
-function slabTax(amount: number): { tax: number; rows: SlabRow[] } {
+export function slabTax(amount: number): { tax: number; rows: SlabRow[] } {
   let remaining = Math.max(0, amount);
   let tax = 0;
   const rows: SlabRow[] = [];
