@@ -46,6 +46,16 @@ Unchanged. Worth starting today whatever else happens — Meta's business verifi
 the long pole (days), and template approval adds another day or two. Unlocks WhatsApp
 reminders and phone-based account recovery.
 
+## 4. Set YouTube API Keys in Vercel (~5 min, yours/dev's)
+
+We've added an automated YouTube feed to the `/videos` page. It fetches the latest uploads seamlessly via the YouTube Data API v3 and caches them (using Next.js ISR) so you don't hit API quotas.
+
+**What needs to be done:**
+1. The developer with Vercel access needs to add two new Environment Variables to the production/preview deployment settings:
+   - `YOUTUBE_API_KEY`
+   - `YOUTUBE_CHANNEL_ID`
+2. **Do not commit the API key to git.** The local `.env.example` has blank placeholders. I have drafted an email with the actual keys that you can send directly to your developer.
+
 ---
 
 ## Done without you this pass
