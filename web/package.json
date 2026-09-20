@@ -12,7 +12,8 @@
     "lint": "eslint",
     "test": "vitest run",
     "test:watch": "vitest",
-    "test:e2e": "playwright test"
+    "test:e2e": "playwright test",
+    "verify": "npm run test && tsc --noEmit && npm run lint && next build && npm run test:e2e"
   },
   "dependencies": {
     "@prisma/client": "^6.19.3",

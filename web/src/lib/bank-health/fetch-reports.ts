@@ -1,5 +1,6 @@
 import * as cheerio from "cheerio";
 import { prisma } from "@/lib/prisma";
+import { assertPublicUrl, fetchPublic, readBodyCapped } from "@/lib/net/safe-fetch";
 
 export type FetchReportResult =
   | { status: "no_source" }
@@ -7,6 +8,9 @@ export type FetchReportResult =
   | { status: "unchanged"; docUrl: string }
   | { status: "fetch_error"; errorMessage: string }
   | { status: "new_doc"; docUrl: string; pdfBuffer: Buffer };
+
+const MAX_PAGE_BYTES = 5 * 1024 * 1024;
+const MAX_PDF_BYTES = 25 * 1024 * 1024; // serverless processing limit
 
 export type PdfLink = { href: string; text: string };
 
@@ -67,45 +71,24 @@ export function pickAnnualReportLink(pdfLinks: PdfLink[]): PdfLink | null {
  * Every result (including failures) gets an AnnualReportCheckLog row so a
  * bank whose page never yields anything is visible in the admin view.
  */
-function isSafeHttpUrl(rawUrl: string): boolean {
-  try {
-    const u = new URL(rawUrl);
-    if (u.protocol !== "http:" && u.protocol !== "https:") return false;
-    const hostname = u.hostname.toLowerCase();
-    if (
-      hostname === "localhost" ||
-      hostname === "127.0.0.1" ||
-      hostname === "::1" ||
-      hostname.startsWith("10.") ||
-      hostname.startsWith("192.168.") ||
-      hostname.startsWith("169.254.") ||
-      /^172\.(1[6-9]|2[0-9]|3[0-1])\./.test(hostname)
-    ) {
-      return false;
-    }
-    return true;
-  } catch {
-    return false;
-  }
-}
-
 export async function checkBankForNewReport(bank: {
   id: string;
   annualReportPageUrl: string | null;
 }): Promise<FetchReportResult> {
   if (!bank.annualReportPageUrl) return { status: "no_source" };
-  if (!isSafeHttpUrl(bank.annualReportPageUrl)) {
+  try {
+    await assertPublicUrl(bank.annualReportPageUrl);
+  } catch {
     return { status: "fetch_error", errorMessage: "Invalid bank annual report URL" };
   }
 
   let pageHtml: string;
   try {
-    const res = await fetch(bank.annualReportPageUrl, {
+    const res = await fetchPublic(bank.annualReportPageUrl, {
       headers: { "User-Agent": "Mozilla/5.0" },
-      signal: AbortSignal.timeout(15000),
     });
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    pageHtml = await res.text();
+    pageHtml = (await readBodyCapped(res, MAX_PAGE_BYTES, "Report page")).toString("utf8");
   } catch (err) {
     const errorMessage = err instanceof Error ? err.message : String(err);
     await prisma.annualReportCheckLog.create({
@@ -133,7 +116,9 @@ export async function checkBankForNewReport(bank: {
   }
 
   const docUrl = new URL(best.href, bank.annualReportPageUrl).toString();
-  if (!isSafeHttpUrl(docUrl)) {
+  try {
+    await assertPublicUrl(docUrl);
+  } catch {
     const errorMessage = "Unsafe PDF link destination";
     await prisma.annualReportCheckLog.create({
       data: { bankId: bank.id, foundNewDoc: false, errorMessage },
@@ -153,18 +138,13 @@ export async function checkBankForNewReport(bank: {
   }
 
   try {
-    const pdfRes = await fetch(docUrl, {
+    const pdfRes = await fetchPublic(docUrl, {
       headers: { "User-Agent": "Mozilla/5.0" },
-      signal: AbortSignal.timeout(15000),
     });
     if (!pdfRes.ok) throw new Error(`HTTP ${pdfRes.status}`);
 
-    const contentLength = pdfRes.headers.get("content-length");
-    if (contentLength && parseInt(contentLength, 10) > 25 * 1024 * 1024) {
-      throw new Error("PDF exceeds 25MB safety limit for serverless processing");
-    }
-
-    const pdfBuffer = Buffer.from(await pdfRes.arrayBuffer());
+    // Capped while streaming, so a missing/lying Content-Length can't bypass it.
+    const pdfBuffer = await readBodyCapped(pdfRes, MAX_PDF_BYTES, "PDF");
     await prisma.annualReportCheckLog.create({
       data: { bankId: bank.id, foundNewDoc: true, docUrl },
     });

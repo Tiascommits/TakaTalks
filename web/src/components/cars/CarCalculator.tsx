@@ -87,7 +87,7 @@ export function CarCalculator() {
   const [vehiclePrice, setVehiclePrice] = useState<number>(2_500_000);
   const [downPayment, setDownPayment] = useState<number>(1_000_000);
   const [loanTenureYears, setLoanTenureYears] = useState<number>(5);
-  const [loanInterestRatePct, setLoanInterestRatePct] = useState<number>(12);
+  const [loanInterestRatePct] = useState<number>(12);
   const [monthlyKm, setMonthlyKm] = useState<number>(1_000);
   const [fuelType, setFuelType] = useState<FuelType>("PETROL_OCTANE");
   const [hasDriver, setHasDriver] = useState<boolean>(false);

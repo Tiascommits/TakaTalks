@@ -154,16 +154,47 @@ test.describe("Tracker — weird / adversarial input", () => {
     await expect(page.getByText("শূন্য মেয়াদ")).toHaveCount(0);
   });
 
-  test("accepts an extremely large investment without crashing", async ({ page }) => {
+  // POST /api/investments caps principal at ৳100,000,000,000 (100 billion).
+  test("accepts an investment right at the principal cap without crashing", async ({ page }) => {
     await page.goto("/tracker");
     const investmentForm = page.locator("section", { hasText: "বিনিয়োগ" }).last();
     await investmentForm.getByLabel("লেবেল").fill("বিশাল বিনিয়োগ");
-    await investmentForm.getByLabel("আসল (৳)").fill("999999999999");
+    await investmentForm.getByLabel("আসল (৳)").fill("100000000000");
     await investmentForm.getByLabel("মেয়াদ (মাস)").fill("12");
     await investmentForm.getByRole("button", { name: "যোগ করো" }).click();
 
     await expect(page.getByText("বিশাল বিনিয়োগ")).toBeVisible();
     await noGarbageOnPage(page);
+  });
+
+  test("rejects an investment above the principal cap with an error, doesn't add it", async ({
+    page,
+  }) => {
+    await page.goto("/tracker");
+    const investmentForm = page.locator("section", { hasText: "বিনিয়োগ" }).last();
+    await investmentForm.getByLabel("লেবেল").fill("সীমার বাইরের বিনিয়োগ");
+    await investmentForm.getByLabel("আসল (৳)").fill("100000000001");
+    await investmentForm.getByLabel("মেয়াদ (মাস)").fill("12");
+    await investmentForm.getByRole("button", { name: "যোগ করো" }).click();
+
+    // A specific "at most ৳…" message, not the generic "couldn't save, try again".
+    await expect(page.getByRole("alert").filter({ hasText: "সর্বোচ্চ" })).toBeVisible();
+    await expect(page.getByText("সেভ করা যায়নি")).toHaveCount(0);
+    await expect(page.getByText("সীমার বাইরের বিনিয়োগ")).toHaveCount(0);
+    await noGarbageOnPage(page);
+  });
+
+  test("rejects an income amount above the cap with a specific error, doesn't add it", async ({
+    page,
+  }) => {
+    await page.goto("/tracker");
+    await page.getByLabel("লেবেল").first().fill("সীমার বাইরের আয়");
+    await page.getByLabel("পরিমাণ (৳)").fill("100000000001");
+    await page.getByRole("button", { name: "যোগ করো" }).first().click();
+
+    await expect(page.getByRole("alert").filter({ hasText: "সর্বোচ্চ" })).toBeVisible();
+    await expect(page.getByText("সেভ করা যায়নি")).toHaveCount(0);
+    await expect(page.getByText("সীমার বাইরের আয়")).toHaveCount(0);
   });
 
   test("a brand-new visitor loading the tracker never silently creates an account", async ({

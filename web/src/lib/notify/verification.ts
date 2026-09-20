@@ -2,9 +2,14 @@ import crypto from "node:crypto";
 import { prisma } from "@/lib/prisma";
 import { sendEmail, isEmailConfigured } from "./email";
 import { sendWhatsAppTemplate, isWhatsAppConfigured } from "./whatsapp";
+import { attemptDestination } from "./attempt-key";
+import { maskDestination } from "./mask";
 
 const EMAIL_TOKEN_TTL_MS = 15 * 60 * 1000;
 const PHONE_OTP_TTL_MS = 10 * 60 * 1000;
+/** Guesses allowed against one pending OTP, and the wait before another OTP can be requested for the same phone. */
+const MAX_OTP_ATTEMPTS = 5;
+const OTP_RESEND_COOLDOWN_MS = 60 * 1000;
 
 function randomLinkToken(): string {
   return crypto.randomBytes(32).toString("hex");
@@ -97,6 +102,17 @@ export async function requestPhoneOtp(currentUserId: string, phone: string): Pro
 
   const cleanPhone = phone.trim();
 
+  // Without a cooldown, "request a fresh OTP, spend its guesses, repeat" would reset
+  // the attempt budget each time and undo the limit in consumeVerificationToken.
+  const recent = await prisma.verificationToken.findFirst({
+    where: {
+      channel: "PHONE",
+      destination: cleanPhone,
+      createdAt: { gt: new Date(Date.now() - OTP_RESEND_COOLDOWN_MS) },
+    },
+  });
+  if (recent) return { ok: false, reason: "too_soon" };
+
   // Remove existing pending tokens for this phone to avoid collision
   await prisma.verificationToken
     .deleteMany({
@@ -135,9 +151,36 @@ export async function consumeVerificationToken(
   tokenOrCode: string,
   destination?: string
 ): Promise<VerifyResult> {
-  const rateLimitKey = destination || tokenOrCode;
-  if (!checkRateLimit(rateLimitKey)) {
-    return { ok: false, reason: "too_many_attempts" };
+  // OTP guesses (anything aimed at a phone/email) spend one of the pending token's
+  // attempts BEFORE the guess is compared. The increment is a single atomic UPDATE
+  // guarded by `attempts < MAX`, so concurrent guesses can't overshoot the limit, and
+  // it lives in the database so it holds across serverless instances (attempt-key.ts
+  // explains why the bucket is the destination, not the guess).
+  const pendingDestination = attemptDestination(tokenOrCode, destination);
+  const pendingFilter = {
+    destination: { equals: pendingDestination ?? "", mode: "insensitive" as const },
+    consumedAt: null,
+    expiresAt: { gt: new Date() },
+  };
+  let rateLimitKey: string | null = null;
+  if (pendingDestination) {
+    const gate = await prisma.verificationToken.updateMany({
+      where: { ...pendingFilter, attempts: { lt: MAX_OTP_ATTEMPTS } },
+      data: { attempts: { increment: 1 } },
+    });
+    if (gate.count === 0) {
+      const exhausted = await prisma.verificationToken.count({
+        where: { ...pendingFilter, attempts: { gte: MAX_OTP_ATTEMPTS } },
+      });
+      if (exhausted > 0) return { ok: false, reason: "too_many_attempts" };
+      // No pending token for that destination: fall through to a plain "invalid".
+    }
+  } else {
+    // Bare magic-link token: 256 random bits, so only a cheap per-process guard.
+    rateLimitKey = `token:${tokenOrCode.trim()}`;
+    if (!checkRateLimit(rateLimitKey)) {
+      return { ok: false, reason: "too_many_attempts" };
+    }
   }
 
   const cleanInput = tokenOrCode.trim();
@@ -156,7 +199,7 @@ export async function consumeVerificationToken(
   if (record.consumedAt) return { ok: false, reason: "already_used" };
   if (record.expiresAt.getTime() < Date.now()) return { ok: false, reason: "expired" };
 
-  clearRateLimit(rateLimitKey);
+  if (rateLimitKey) clearRateLimit(rateLimitKey);
 
   // Mark token consumed
   await prisma.verificationToken.update({
@@ -189,4 +232,24 @@ export async function consumeVerificationToken(
   }
 
   return { ok: true, userId: finalUserId };
+}
+
+export type PreviewResult = { ok: true; destination: string } | { ok: false; reason: string };
+
+/**
+ * Who a magic link will sign in, masked, WITHOUT consuming it — shown on the
+ * confirmation screen so someone who was handed another person's link can
+ * tell it isn't theirs. Email links only: a phone token is `"<phone>:<code>"`,
+ * and answering "is this a live token?" for those would be a guess-checking
+ * oracle that bypasses the OTP attempt limit in consumeVerificationToken.
+ */
+export async function previewVerificationToken(token: string): Promise<PreviewResult> {
+  const clean = token.trim();
+  if (!clean || clean.includes(":")) return { ok: false, reason: "invalid" };
+
+  const record = await prisma.verificationToken.findUnique({ where: { token: clean } });
+  if (!record || record.channel !== "EMAIL") return { ok: false, reason: "invalid" };
+  if (record.consumedAt) return { ok: false, reason: "already_used" };
+  if (record.expiresAt.getTime() < Date.now()) return { ok: false, reason: "expired" };
+  return { ok: true, destination: maskDestination(record.destination) };
 }

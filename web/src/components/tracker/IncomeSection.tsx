@@ -12,6 +12,7 @@ import {
   type IncomeFrequency,
 } from "./types";
 import { useLanguage } from "@/lib/i18n";
+import { MAX_AMOUNT_TAKA, MAX_LABEL_LENGTH } from "@/lib/tracker/limits";
 
 const SOURCES = Object.keys(INCOME_SOURCE_LABELS);
 const FREQUENCIES: IncomeFrequency[] = ["MONTHLY", "ANNUAL", "ONE_TIME"];
@@ -49,8 +50,16 @@ export function IncomeSection({
       setError(t("Give it a label.", "লেবেল দাও।"));
       return;
     }
+    if (label.trim().length > MAX_LABEL_LENGTH) {
+      setError(t(`Label can be at most ${MAX_LABEL_LENGTH} characters.`, `লেবেল সর্বোচ্চ ${MAX_LABEL_LENGTH} অক্ষরের হতে পারবে।`));
+      return;
+    }
     if (!Number.isFinite(amount) || amount <= 0) {
       setError(t("Amount must be a number greater than zero.", "পরিমাণ অবশ্যই শূন্যের চেয়ে বড় একটা সংখ্যা হতে হবে।"));
+      return;
+    }
+    if (amount > MAX_AMOUNT_TAKA) {
+      setError(t(`Amount can be at most ${fmtTaka(MAX_AMOUNT_TAKA)}.`, `পরিমাণ সর্বোচ্চ ${fmtTaka(MAX_AMOUNT_TAKA)} হতে পারবে।`));
       return;
     }
     setSubmitting(true);

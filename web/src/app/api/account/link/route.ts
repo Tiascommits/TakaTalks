@@ -37,7 +37,7 @@ export async function POST(request: Request) {
       : await requestPhoneOtp(userId, destination);
 
   if (!result.ok) {
-    const status = result.reason === "not_configured" ? 503 : 500;
+    const status = result.reason === "not_configured" ? 503 : result.reason === "too_soon" ? 429 : 500;
     return NextResponse.json({ error: result.reason ?? "send_failed" }, { status });
   }
   return NextResponse.json({ ok: true });

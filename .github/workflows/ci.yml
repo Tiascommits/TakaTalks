@@ -1,0 +1,86 @@
+name: CI
+
+# Same stages as `npm run verify` (web/package.json), run against a throwaway
+# Postgres service container. `main` is protected and `experimental` only merges
+# into it after QA, so this is the automatic gate for both.
+on:
+  pull_request:
+    branches: [main, experimental]
+  push:
+    branches: [experimental]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    defaults:
+      run:
+        working-directory: web
+
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+    env:
+      # Throwaway database inside the service container. `prisma migrate reset`
+      # (e2e/global-setup.ts) creates and wipes it on every run.
+      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/takatalks_test
+      TEST_DATABASE_URL: postgresql://postgres:postgres@localhost:5432/takatalks_test
+      # Dummy values: the e2e admin test needs ADMIN_SECRET set, nothing else
+      # here talks to a real service. Email/WhatsApp are left unset (they no-op).
+      ADMIN_SECRET: ci-only-admin-secret-not-used-anywhere-else
+      CRON_SECRET: ci-only-cron-secret-not-used-anywhere-else
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+
+      - run: npm ci
+
+      - name: Typecheck
+        run: npx tsc --noEmit
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Unit tests
+        run: npm test
+
+      - name: Production build
+        run: npx next build
+
+      - name: Install Playwright browser
+        run: npx playwright install --with-deps chromium
+
+      - name: E2E tests
+        run: npm run test:e2e
+
+      - name: Upload Playwright traces
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-test-results
+          path: web/test-results/
+          if-no-files-found: ignore

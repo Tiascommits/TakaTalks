@@ -33,7 +33,8 @@ test.describe("Homepage video reel (/)", () => {
     // The reel embeds the actual video, not placeholder art.
     await expect(page.locator("video, iframe").first()).toBeVisible();
 
-    await page.getByRole("link", { name: /See all videos|সব ভিডিও দেখুন/ }).click();
+    // The reel renders two "see all" links (header and footer), copy is "SEE ALL VIDEOS →" / "সব ভিডিও →".
+    await page.getByRole("link", { name: /see all videos|সব ভিডিও/i }).first().click();
     await expect(page).toHaveURL(/\/videos/);
   });
 

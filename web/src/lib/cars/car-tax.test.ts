@@ -4,7 +4,6 @@ import {
   calculateTaxAbsorption,
   calculateMultiCarComparison,
   calculateCarTco,
-  VEHICLE_SLABS,
 } from "./car-tax";
 
 describe("Car AIT & Decision Engine (Income Tax Act 2023)", () => {

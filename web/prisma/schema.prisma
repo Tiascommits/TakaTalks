@@ -50,6 +50,9 @@ model VerificationToken {
   expiresAt   DateTime
   consumedAt  DateTime?
   createdAt   DateTime            @default(now())
+  // Guesses spent against this pending token (see consumeVerificationToken);
+  // stored here, not in memory, so the limit holds across serverless instances.
+  attempts    Int                 @default(0)
 
   @@index([userId])
 }

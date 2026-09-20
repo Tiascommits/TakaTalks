@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { signUserId, verifyAndExtractUserId } from "./session";
 
 describe("Tracker Session Security & Signing", () => {
@@ -38,5 +38,39 @@ describe("Tracker Session Security & Signing", () => {
     expect(verifyAndExtractUserId("")).toBeNull();
     expect(verifyAndExtractUserId("too.many.dots.here")).toBeNull();
     expect(verifyAndExtractUserId(".onlysig")).toBeNull();
+  });
+});
+
+describe("Session secret configuration", () => {
+  afterEach(() => vi.unstubAllEnvs());
+
+  it("refuses to sign in production when no secret is configured (no baked-in default)", () => {
+    vi.stubEnv("NODE_ENV", "production");
+    vi.stubEnv("SESSION_SECRET", "");
+    vi.stubEnv("ADMIN_SECRET", "");
+    expect(() => signUserId("cuid1234567890abcdefgh")).toThrow(/SESSION_SECRET/);
+    expect(() => verifyAndExtractUserId("cuid1234567890abcdefgh.abcd")).toThrow(/SESSION_SECRET/);
+  });
+
+  it("still works outside production without configuration", () => {
+    vi.stubEnv("NODE_ENV", "test");
+    vi.stubEnv("SESSION_SECRET", "");
+    vi.stubEnv("ADMIN_SECRET", "");
+    expect(verifyAndExtractUserId(signUserId("cuid1234567890abcdefgh"))).toBe("cuid1234567890abcdefgh");
+  });
+
+  it("prefers SESSION_SECRET and falls back to ADMIN_SECRET in production", () => {
+    vi.stubEnv("NODE_ENV", "production");
+    vi.stubEnv("SESSION_SECRET", "");
+    vi.stubEnv("ADMIN_SECRET", "admin-secret-value");
+    const withAdmin = signUserId("cuid1234567890abcdefgh");
+
+    vi.stubEnv("SESSION_SECRET", "dedicated-session-secret");
+    const withSession = signUserId("cuid1234567890abcdefgh");
+
+    expect(withAdmin).not.toBe(withSession);
+    expect(verifyAndExtractUserId(withSession)).toBe("cuid1234567890abcdefgh");
+    // A cookie signed with the fallback key is not valid once a dedicated key is set.
+    expect(verifyAndExtractUserId(withAdmin)).toBeNull();
   });
 });

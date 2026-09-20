@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { InstrumentType } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUserId, getOrCreateUserId } from "@/lib/tracker/session";
+import { MAX_AMOUNT_TAKA, MAX_LABEL_LENGTH, MAX_RATE_PCT, MAX_TERM_MONTHS } from "@/lib/tracker/limits";
 
 const VALID_INSTRUMENTS = Object.values(InstrumentType);
 
@@ -32,14 +33,14 @@ export async function POST(request: Request) {
     body ?? {};
 
   const validLabel =
-    typeof label === "string" && label.trim().length > 0 && label.trim().length <= 100;
+    typeof label === "string" && label.trim().length > 0 && label.trim().length <= MAX_LABEL_LENGTH;
   const validInstrument =
     typeof instrumentType === "string" && VALID_INSTRUMENTS.includes(instrumentType as InstrumentType);
   const validPrincipal =
     typeof principalAmount === "number" &&
     Number.isFinite(principalAmount) &&
     principalAmount > 0 &&
-    principalAmount <= 100_000_000_000;
+    principalAmount <= MAX_AMOUNT_TAKA;
   const start = new Date(startDate);
   const validStartDate = typeof startDate === "string" && !Number.isNaN(start.getTime());
   const validTerm =
@@ -47,12 +48,12 @@ export async function POST(request: Request) {
     Number.isFinite(termMonths) &&
     Number.isInteger(termMonths) &&
     termMonths > 0 &&
-    termMonths <= 600;
+    termMonths <= MAX_TERM_MONTHS;
   const validRate =
     typeof expectedRatePct === "number" &&
     Number.isFinite(expectedRatePct) &&
     expectedRatePct >= 0 &&
-    expectedRatePct <= 100;
+    expectedRatePct <= MAX_RATE_PCT;
 
   if (!validLabel || !validInstrument || !validPrincipal || !validStartDate || !validTerm || !validRate) {
     return NextResponse.json({ error: "Missing or invalid fields" }, { status: 400 });

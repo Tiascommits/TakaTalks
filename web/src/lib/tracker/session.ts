@@ -5,15 +5,23 @@ import { prisma } from "@/lib/prisma";
 const COOKIE_NAME = "taka_uid";
 const COOKIE_MAX_AGE_SECONDS = 60 * 60 * 24 * 365 * 2; // 2 years
 
+/**
+ * Key for the session-cookie HMAC. Prefers a dedicated SESSION_SECRET; falls
+ * back to ADMIN_SECRET so existing deployments keep working. In production
+ * there is no literal default: with neither set this throws, so a
+ * misconfigured deploy fails on the first cookie read/write instead of
+ * silently signing sessions with a key that is in the source tree.
+ * (Evaluated per call, not at import, so `next build` doesn't need it.)
+ */
 function getSessionSecret(): string {
   const secret = process.env.SESSION_SECRET || process.env.ADMIN_SECRET;
-  if (!secret) {
-    if (process.env.NODE_ENV === "production") {
-      console.warn("[SECURITY WARNING] SESSION_SECRET is not set in production. Using fallback salt.");
-    }
-    return "takatalks-default-session-salt-replace-in-production";
+  if (secret) return secret;
+  if (process.env.NODE_ENV === "production") {
+    throw new Error(
+      "SESSION_SECRET is not set (and ADMIN_SECRET is not set as a fallback). Refusing to sign sessions in production."
+    );
   }
-  return secret;
+  return "takatalks-dev-only-session-secret";
 }
 
 export function signUserId(userId: string): string {

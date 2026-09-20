@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { IncomeFrequency } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUserId, getOrCreateUserId } from "@/lib/tracker/session";
+import { MAX_AMOUNT_TAKA, MAX_LABEL_LENGTH, MAX_SOURCE_LENGTH } from "@/lib/tracker/limits";
 
 export async function GET() {
   const userId = await getCurrentUserId();
@@ -21,11 +22,11 @@ export async function POST(request: Request) {
   const { label, source, amount, frequency } = body ?? {};
 
   const validLabel =
-    typeof label === "string" && label.trim().length > 0 && label.trim().length <= 100;
+    typeof label === "string" && label.trim().length > 0 && label.trim().length <= MAX_LABEL_LENGTH;
   const validSource =
-    typeof source === "string" && source.trim().length > 0 && source.trim().length <= 50;
+    typeof source === "string" && source.trim().length > 0 && source.trim().length <= MAX_SOURCE_LENGTH;
   const validAmount =
-    typeof amount === "number" && Number.isFinite(amount) && amount > 0 && amount <= 100_000_000_000;
+    typeof amount === "number" && Number.isFinite(amount) && amount > 0 && amount <= MAX_AMOUNT_TAKA;
   const validFrequency =
     typeof frequency === "string" && VALID_FREQUENCIES.includes(frequency as IncomeFrequency);
 
