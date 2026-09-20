@@ -60,7 +60,8 @@ test.describe("Calculator — normal cases", () => {
   }) => {
     await page.goto("/calculator");
     await page.getByLabel("ব্যবসা / পেশার নেট মুনাফা (annual)").fill("5000000");
-    await expect(page.getByText("রিবেট অপটিমাইজার")).toBeVisible();
+    // Heading by role: the phrase also appears in the page header's intro copy.
+    await expect(page.getByRole("heading", { name: "রিবেট অপটিমাইজার" })).toBeVisible();
     await expect(page.getByText(/বাঁচাতে পারো/)).toBeVisible();
     await noGarbageOnPage(page);
   });

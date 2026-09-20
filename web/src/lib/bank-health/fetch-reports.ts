@@ -1,5 +1,6 @@
 import * as cheerio from "cheerio";
 import { prisma } from "@/lib/prisma";
+import { assertPublicUrl, fetchPublic, readBodyCapped } from "@/lib/net/safe-fetch";
 
 export type FetchReportResult =
   | { status: "no_source" }
@@ -7,6 +8,9 @@ export type FetchReportResult =
   | { status: "unchanged"; docUrl: string }
   | { status: "fetch_error"; errorMessage: string }
   | { status: "new_doc"; docUrl: string; pdfBuffer: Buffer };
+
+const MAX_PAGE_BYTES = 5 * 1024 * 1024;
+const MAX_PDF_BYTES = 25 * 1024 * 1024; // serverless processing limit
 
 export type PdfLink = { href: string; text: string };
 
@@ -72,14 +76,19 @@ export async function checkBankForNewReport(bank: {
   annualReportPageUrl: string | null;
 }): Promise<FetchReportResult> {
   if (!bank.annualReportPageUrl) return { status: "no_source" };
+  try {
+    await assertPublicUrl(bank.annualReportPageUrl);
+  } catch {
+    return { status: "fetch_error", errorMessage: "Invalid bank annual report URL" };
+  }
 
   let pageHtml: string;
   try {
-    const res = await fetch(bank.annualReportPageUrl, {
+    const res = await fetchPublic(bank.annualReportPageUrl, {
       headers: { "User-Agent": "Mozilla/5.0" },
     });
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    pageHtml = await res.text();
+    pageHtml = (await readBodyCapped(res, MAX_PAGE_BYTES, "Report page")).toString("utf8");
   } catch (err) {
     const errorMessage = err instanceof Error ? err.message : String(err);
     await prisma.annualReportCheckLog.create({
@@ -107,6 +116,15 @@ export async function checkBankForNewReport(bank: {
   }
 
   const docUrl = new URL(best.href, bank.annualReportPageUrl).toString();
+  try {
+    await assertPublicUrl(docUrl);
+  } catch {
+    const errorMessage = "Unsafe PDF link destination";
+    await prisma.annualReportCheckLog.create({
+      data: { bankId: bank.id, foundNewDoc: false, errorMessage },
+    });
+    return { status: "fetch_error", errorMessage };
+  }
 
   const lastLog = await prisma.annualReportCheckLog.findFirst({
     where: { bankId: bank.id, docUrl: { not: null } },
@@ -120,9 +138,13 @@ export async function checkBankForNewReport(bank: {
   }
 
   try {
-    const pdfRes = await fetch(docUrl, { headers: { "User-Agent": "Mozilla/5.0" } });
+    const pdfRes = await fetchPublic(docUrl, {
+      headers: { "User-Agent": "Mozilla/5.0" },
+    });
     if (!pdfRes.ok) throw new Error(`HTTP ${pdfRes.status}`);
-    const pdfBuffer = Buffer.from(await pdfRes.arrayBuffer());
+
+    // Capped while streaming, so a missing/lying Content-Length can't bypass it.
+    const pdfBuffer = await readBodyCapped(pdfRes, MAX_PDF_BYTES, "PDF");
     await prisma.annualReportCheckLog.create({
       data: { bankId: bank.id, foundNewDoc: true, docUrl },
     });

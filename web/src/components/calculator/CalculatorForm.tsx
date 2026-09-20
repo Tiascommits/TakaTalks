@@ -1,8 +1,9 @@
 "use client";
 
 import { Suspense, useMemo, useState } from "react";
+import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { TAXPAYER_CATEGORIES } from "@/config/tax-rules-2025-26";
+import { TAXPAYER_CATEGORIES, type TaxLocation } from "@/config/tax-rules-2025-26";
 import { calculateTax } from "@/lib/tax/calculate";
 import { calculateOptimizer } from "@/lib/tax/optimizer";
 import { EMPTY_TAX_INPUT, type TaxCalculatorInput } from "@/lib/tax/types";
@@ -114,6 +115,27 @@ function CalculatorFormInner({ initial }: { initial?: Partial<TaxCalculatorInput
               label: `${t(c.labelEn, c.label)} — Tax-free ৳${c.taxFreeLimit.toLocaleString("en-IN")}`,
             }))}
           />
+          <div className="mt-2.5">
+            <SelectField
+              label={t("Tax Location / Jurisdiction", "কর অঞ্চল / ভৌগোলিক অবস্থান")}
+              value={input.location ?? "dhaka_ctg"}
+              onChange={(v) => setInput({ ...input, location: v as TaxLocation })}
+              options={[
+                {
+                  value: "dhaka_ctg",
+                  label: `${t("Dhaka & Chattogram City Corporation", "ঢাকা ও চট্টগ্রাম সিটি কর্পোরেশন")} — ${t("Min Tax ৳5,000", "ন্যূনতম কর ৳৫,০০০")}`,
+                },
+                {
+                  value: "other_city",
+                  label: `${t("Other City Corporations", "অন্যান্য সিটি কর্পোরেশন")} — ${t("Min Tax ৳4,000", "ন্যূনতম কর ৳৪,০০০")}`,
+                },
+                {
+                  value: "non_city",
+                  label: `${t("Non-City / District / Upazila areas", "সিটি কর্পোরেশন বহির্ভূত এলাকা / জেলা")} — ${t("Min Tax ৳3,000", "ন্যূনতম কর ৳৩,০০০")}`,
+                },
+              ]}
+            />
+          </div>
           <div className="grid grid-cols-2 gap-2.5 mt-2">
             <NumberField
               label={t("Number of disabled children (each +৳50,000 tax-free)", "প্রতিবন্ধী সন্তান সংখ্যা (each +৳50,000 tax-free)")}
@@ -257,6 +279,17 @@ function CalculatorFormInner({ initial }: { initial?: Partial<TaxCalculatorInput
         </Fieldset>
 
         <Fieldset legend={t("6. AIT", "৬. AIT")}>
+          <div className="flex items-center justify-between gap-2 mb-1.5">
+            <span className="text-[11px] text-muted">
+              {t("BRTA car advance tax or bank TDS?", "বিআরটিএ গাড়ির অগ্রিম কর বা ব্যাংক টিডিএস?")}
+            </span>
+            <Link
+              href="/cars"
+              className="text-[11px] text-gold hover:underline font-medium"
+            >
+              {t("Calculate Car AIT →", "গাড়ির AIT হিসাব →")}
+            </Link>
+          </div>
           <NumberField
             label={t("AIT already deducted (advance tax / TDS)", "আগেই কর্তিত AIT (advance tax / TDS)")}
             {...n("aitPaid")}
@@ -329,7 +362,7 @@ function CalculatorFormInner({ initial }: { initial?: Partial<TaxCalculatorInput
           <p className="text-[11px] text-muted mt-3.5 pt-2.5 border-t border-line">
             {t(
               "This is a rough estimate, not an official record, and nothing is saved anywhere. Per-instrument sub-caps are simplified. Verify everything officially before actually filing.",
-              "Ei ekটা rough estimate, official record na, ar kothao save hoy na। Per-instrument sub-caps simplified। Real filing er age sob officially verify koro।"
+              "এটি একটি প্রাথমিক আনুমানিক হিসাব, কোনো প্রাতিষ্ঠানিক নথি নয় এবং কোনো তথ্য সংরক্ষণ করা হয় না। প্রতিটি খাতের অভ্যন্তরীণ সীমা এখানে সরলীকৃত করা হয়েছে। চূড়ান্ত রিটার্ন দাখিলের আগে আনুষ্ঠানিকভাবে যাচাই করে নিন।"
             )}
           </p>
         </div>

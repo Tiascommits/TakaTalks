@@ -5,6 +5,7 @@ import { fmtTaka } from "@/lib/format";
 import { NumberField } from "@/components/ui/fields";
 import { INSTRUMENT_LABELS, INSTRUMENT_LABELS_EN, type InstrumentType, type InvestmentEntryDTO } from "./types";
 import { useLanguage } from "@/lib/i18n";
+import { MAX_AMOUNT_TAKA, MAX_LABEL_LENGTH, MAX_RATE_PCT, MAX_TERM_MONTHS } from "@/lib/tracker/limits";
 
 const INSTRUMENTS = Object.keys(INSTRUMENT_LABELS) as InstrumentType[];
 
@@ -50,16 +51,32 @@ export function InvestmentSection({
       setError(t("Give it a label.", "লেবেল দাও।"));
       return;
     }
+    if (label.trim().length > MAX_LABEL_LENGTH) {
+      setError(t(`Label can be at most ${MAX_LABEL_LENGTH} characters.`, `লেবেল সর্বোচ্চ ${MAX_LABEL_LENGTH} অক্ষরের হতে পারবে।`));
+      return;
+    }
     if (!Number.isFinite(principal) || principal <= 0) {
       setError(t("Principal amount must be greater than zero.", "আসল পরিমাণ অবশ্যই শূন্যের চেয়ে বড় হতে হবে।"));
+      return;
+    }
+    if (principal > MAX_AMOUNT_TAKA) {
+      setError(t(`Principal can be at most ${fmtTaka(MAX_AMOUNT_TAKA)}.`, `আসল সর্বোচ্চ ${fmtTaka(MAX_AMOUNT_TAKA)} হতে পারবে।`));
       return;
     }
     if (!Number.isInteger(t2) || t2 <= 0) {
       setError(t("Term must be a positive whole number (months).", "মেয়াদ অবশ্যই একটা ধনাত্মক পূর্ণসংখ্যা (মাস) হতে হবে।"));
       return;
     }
+    if (t2 > MAX_TERM_MONTHS) {
+      setError(t(`Term can be at most ${MAX_TERM_MONTHS} months.`, `মেয়াদ সর্বোচ্চ ${MAX_TERM_MONTHS} মাস হতে পারবে।`));
+      return;
+    }
     if (r < 0) {
       setError(t("Rate can't be negative.", "রেট ঋণাত্মক হতে পারে না।"));
+      return;
+    }
+    if (r > MAX_RATE_PCT) {
+      setError(t(`Rate can be at most ${MAX_RATE_PCT}%.`, `রেট সর্বোচ্চ ${MAX_RATE_PCT}% হতে পারবে।`));
       return;
     }
 

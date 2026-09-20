@@ -28,25 +28,25 @@ describe("calculateTax — empty / normal cases", () => {
 
   it("applies the first slab correctly just above the tax-free limit", () => {
     // general category tax-free 400,000. Push taxable salary to 400,000 + 50,000.
-    // gross salary G such that G - min(G/3,500000) = 450000. For G <= 1,500,000, exemption = G/3.
+    // gross salary G such that G - min(G/3,450000) = 450000. For G <= 1,350,000, exemption = G/3.
     // G - G/3 = 450000 => (2/3)G = 450000 => G = 675000
     const r = calculateTax(input({ basicMonthly: 675000 / 12 }));
     expect(r.taxableSalary).toBeCloseTo(450000, 6);
     expect(r.incomeAboveTaxFree).toBeCloseTo(50000, 6);
-    expect(r.baseSlabTax).toBeCloseTo(5000, 6); // 10% of 50,000
+    expect(r.baseSlabTax).toBeCloseTo(2500, 6); // 5% of 50,000
     expect(r.slabRows).toHaveLength(1);
-    expect(r.slabRows[0].rate).toBe(0.1);
+    expect(r.slabRows[0].rate).toBe(0.05);
   });
 
   it("spreads a large income across every slab in order", () => {
     // slab-base income of 4,000,000 above tax-free (well past the top bracket)
     const r = calculateTax(input({ businessAnnual: 4000000 + 400000 }));
-    // rows should be in slab order: 10/15/20/25/30
+    // rows should be in slab order: 5/10/15/20/25/30
     const rates = r.slabRows.map((row) => row.rate);
-    expect(rates).toEqual([0.1, 0.15, 0.2, 0.25, 0.3]);
+    expect(rates).toEqual([0.05, 0.1, 0.15, 0.2, 0.25, 0.3]);
     // manually verify the tax total
     const expectedTax =
-      300000 * 0.1 + 400000 * 0.15 + 500000 * 0.2 + 2000000 * 0.25 + (4000000 - 3200000) * 0.3;
+      100000 * 0.05 + 300000 * 0.1 + 400000 * 0.15 + 500000 * 0.2 + 2000000 * 0.25 + (4000000 - 3300000) * 0.3;
     expect(r.baseSlabTax).toBeCloseTo(expectedTax, 6);
   });
 });
@@ -202,6 +202,18 @@ describe("calculateTax — minimum tax", () => {
       input({ businessAnnual: 450000, invStockAnnual: 100000, firstTimeFiler: true })
     );
     expect(r.taxAfterRebate).toBe(TAX_RULES.minTaxFirstTime);
+  });
+
+  it("applies location-specific statutory minimum tax for non-Dhaka/Ctg locations", () => {
+    const otherCity = calculateTax(
+      input({ businessAnnual: 450000, invStockAnnual: 100000, location: "other_city" })
+    );
+    expect(otherCity.taxAfterRebate).toBe(4000);
+
+    const nonCity = calculateTax(
+      input({ businessAnnual: 450000, invStockAnnual: 100000, location: "non_city" })
+    );
+    expect(nonCity.taxAfterRebate).toBe(3000);
   });
 
   it("never applies minimum tax when total income is below the tax-free limit", () => {

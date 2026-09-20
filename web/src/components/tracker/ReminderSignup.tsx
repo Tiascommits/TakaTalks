@@ -62,6 +62,24 @@ export function ReminderSignup({
     );
   }
 
+  // The API returns short codes; anything not listed here is shown unchanged.
+  function describeError(code: string): string {
+    switch (code) {
+      case "too_soon":
+        return t("Please wait a minute before requesting another code.", "আরেকটা কোড চাইতে এক মিনিট অপেক্ষা করো।");
+      case "too_many_attempts":
+        return t("Too many wrong codes. Please request a new one.", "অনেকবার ভুল কোড দেওয়া হয়েছে। নতুন কোড চেয়ে নাও।");
+      case "invalid":
+        return t("That code isn't right.", "কোডটা ঠিক নেই।");
+      case "expired":
+        return t("That code has expired. Please request a new one.", "কোডটার মেয়াদ শেষ। নতুন কোড চেয়ে নাও।");
+      case "already_used":
+        return t("That code was already used. Please request a new one.", "কোডটা আগেই ব্যবহার করা হয়েছে। নতুন কোড চেয়ে নাও।");
+      default:
+        return code;
+    }
+  }
+
   async function submitEmail() {
     setSubmitting(true);
     setError(null);
@@ -94,7 +112,7 @@ export function ReminderSignup({
     const res = await fetch("/api/account/verify", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ code }),
+      body: JSON.stringify({ code, destination: destination.trim() }),
     });
     setSubmitting(false);
     if (res.ok) setStep("done");
@@ -226,7 +244,7 @@ export function ReminderSignup({
         </p>
       )}
 
-      {error && <p className="text-xs text-red mt-1.5">{error}</p>}
+      {error && <p className="text-xs text-red mt-1.5">{describeError(error)}</p>}
     </div>
   );
 }

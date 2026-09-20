@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { adminUserCount, createAdminSession, hashPassword } from "@/lib/admin/auth";
+import { adminSecretMatches } from "@/lib/admin/secret";
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -15,7 +16,10 @@ export async function POST(request: Request) {
   const email = typeof body?.email === "string" ? body.email.trim().toLowerCase() : "";
   const password = typeof body?.password === "string" ? body.password : "";
 
-  if (secret !== process.env.ADMIN_SECRET) {
+  if (!process.env.ADMIN_SECRET) {
+    return NextResponse.json({ error: "Admin setup is not configured" }, { status: 503 });
+  }
+  if (!adminSecretMatches(secret, process.env.ADMIN_SECRET)) {
     return NextResponse.json({ error: "Invalid admin secret" }, { status: 401 });
   }
   if (!EMAIL_RE.test(email)) {

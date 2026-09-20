@@ -56,12 +56,28 @@ export function BasicTaxCalculator() {
           onChange={(n) => setInput({ ...input, income: n })}
         />
 
+        <div className="mt-2 mb-3 flex items-center gap-2">
+          <input
+            id="is-salary"
+            type="checkbox"
+            checked={Boolean(input.isSalary)}
+            onChange={(e) => setInput({ ...input, isSalary: e.target.checked })}
+            className="w-4 h-4 accent-green rounded border-line cursor-pointer"
+          />
+          <label htmlFor="is-salary" className="text-xs text-ink cursor-pointer select-none">
+            {t(
+              "This is salary income (apply 1/3 statutory exemption, max ৳4,50,000)",
+              "এটি চাকরির বেতন আয় (১/৩ অংশ সংবিধিবদ্ধ কর অব্যাহতি, সর্বোচ্চ ৳৪,৫০,০০০)"
+            )}
+          </label>
+        </div>
+
         <button
           type="button"
           onClick={() => setInput({ ...EMPTY_BASIC_TAX_INPUT, income: 1000000 })}
           className="text-xs text-green-deep underline underline-offset-2 hover:no-underline"
         >
-          {t("Try the video's example (৳10,00,000)", "ভিডিওর উদাহরণটা দেখো (৳১০,০০,০০০)")}
+          {t("Try the video's example (৳10,00,000)", "ভিডিওর উদাহরণ দেখুন (৳১০,০০,০০০)")}
         </button>
       </div>
 
@@ -77,6 +93,19 @@ export function BasicTaxCalculator() {
         ) : (
           <div className="text-[12.5px]">
             <Row label={t("Total yearly income", "মোট বছরের ইনকাম")} value={fmtTaka(input.income)} />
+            {result.salaryExemption > 0 && (
+              <>
+                <Row
+                  label={t("Statutory salary exemption (1/3, max ৳4.5L)", "সংবিধিবদ্ধ চাকরি অব্যাহতি (১/৩ অংশ, সর্বোচ্চ ৳৪.৫ লাখ)")}
+                  value={`−${fmtTaka(result.salaryExemption)}`}
+                  variant="sub"
+                />
+                <Row
+                  label={t("Taxable salary income", "করযোগ্য বেতন আয়")}
+                  value={fmtTaka(result.taxableIncome)}
+                />
+              </>
+            )}
             <Row label={t("Tax-free limit", "করমুক্ত সীমা")} value={`−${fmtTaka(result.taxFree)}`} />
             <Row
               label={t("Income above tax-free limit", "করমুক্ত সীমার উপরে আয়")}

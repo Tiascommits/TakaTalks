@@ -23,6 +23,14 @@ export type TaxpayerCategory = {
   taxFreeLimit: number;
 };
 
+export type TaxLocation = "dhaka_ctg" | "other_city" | "non_city";
+
+export const MIN_TAX_BY_LOCATION: Record<TaxLocation, number> = {
+  dhaka_ctg: 5000,
+  other_city: 4000,
+  non_city: 3000,
+};
+
 export const TAXPAYER_CATEGORIES: TaxpayerCategory[] = [
   { id: "general", label: "সাধারণ", labelEn: "General", taxFreeLimit: 400000 },
   {
@@ -45,6 +53,7 @@ export const TAX_RULES = {
   sourceYear: "2025-26",
 
   slabs: [
+    { amt: 100000, rate: 0.05 },
     { amt: 300000, rate: 0.1 },
     { amt: 400000, rate: 0.15 },
     { amt: 500000, rate: 0.2 },
@@ -55,7 +64,7 @@ export const TAX_RULES = {
   disabledChildTaxFreeAddOn: 50000,
 
   salaryExemptionFraction: 1 / 3,
-  salaryExemptionCap: 500000,
+  salaryExemptionCap: 450000,
 
   sharesFundExemption: 5000000, // 50 lakh, listed shares + fund units combined
   capitalGainsFlatRateAfter5Years: 0.15,
@@ -68,6 +77,7 @@ export const TAX_RULES = {
   sharedGroupCap: 500000, // sanchaypatra + govt bond + mutual fund, combined
   dpsCap: 120000, // per year
 
+  minTaxByLocation: MIN_TAX_BY_LOCATION,
   minTaxFirstTime: 1000,
   minTaxRegular: 5000,
 

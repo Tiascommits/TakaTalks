@@ -80,4 +80,17 @@ describe("Bangladeshi Instrument Comparison & Real Yield Matrix", () => {
     expect(ids).toContain("treasury-bond-sukuk");
     expect(ids).toContain("bank-fdr-top");
   });
+
+  it("models Sanchayapatra as non-compounding periodic payout", () => {
+    const results = compareInstruments({
+      amount: 1_000_000,
+      tenureYears: 5,
+      hasPSR: true,
+    });
+    const paribar = results.find((i) => i.id === "paribar-sanchaya")!;
+    expect(paribar.compounds).toBe(false);
+    // Simple interest: safeAmount + (annualNetProfit * safeYears)
+    const expectedMaturity = 1_000_000 + paribar.annualNetProfit * 5;
+    expect(paribar.totalMaturityValue).toBe(expectedMaturity);
+  });
 });

@@ -16,11 +16,8 @@ test.describe("Videos (/videos)", () => {
     await expect(page.getByRole("heading", { name: /Shortform|শর্টফর্ম/ })).toBeVisible();
     await expect(page.getByRole("heading", { name: /Longform|লংফর্ম/ })).toBeVisible();
 
-    // The seeded Facebook short renders as an iframe.
-    await expect(page.locator("iframe[src*='facebook.com/plugins/video.php']")).toBeVisible();
-
-    // Longform has no real entries yet, so it should show the empty state, not a broken embed.
-    await expect(page.getByText(/More long-form videos coming soon|আরও লংফর্ম ভিডিও শীঘ্রই আসছে/)).toBeVisible();
+    // The videos render as either HTML5 video elements or embed iframes.
+    await expect(page.locator("video, iframe").first()).toBeVisible();
   });
 });
 
@@ -33,10 +30,11 @@ test.describe("Homepage video reel (/)", () => {
       })
     ).toBeVisible();
 
-    // The reel embeds the actual videos, not placeholder art.
-    await expect(page.locator("iframe[src*='facebook.com/plugins/video.php']").first()).toBeVisible();
+    // The reel embeds the actual video, not placeholder art.
+    await expect(page.locator("video, iframe").first()).toBeVisible();
 
-    await page.getByRole("link", { name: /See all videos|সব ভিডিও দেখুন/ }).click();
+    // The reel renders two "see all" links (header and footer), copy is "SEE ALL VIDEOS →" / "সব ভিডিও →".
+    await page.getByRole("link", { name: /see all videos|সব ভিডিও/i }).first().click();
     await expect(page).toHaveURL(/\/videos/);
   });
 

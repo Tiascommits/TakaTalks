@@ -14,9 +14,8 @@ export default defineConfig({
   },
   projects: [{ name: "chromium", use: { ...devices["Desktop Chrome"] } }],
   webServer: {
-    // Assumes `next build` has already produced .next (see package.json's
-    // postbuild script, which is what normally invokes this suite) — do not
-    // call `npm run build` here, that would recurse into this test run.
+    // Assumes `next build` has already produced .next (`npm run verify` and
+    // the CI workflow both build first) — don't build from here.
     // Runs against its own Postgres database (see global-setup.ts and
     // e2e/test-db.ts) so a test run never touches the developer's real
     // dev/prod database.

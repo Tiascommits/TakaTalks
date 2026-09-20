@@ -97,7 +97,7 @@ Hand these to Claude Code **in order**. Each one assumes the previous module exi
 | 4 | Life goal planner (car, flat, education, retirement) | Built in `web/` (`/goals`) |
 | 4 | Salary offer analyzer & net take-home benchmark | Built in `web/` (`/salary`) |
 | 4 | Real yield matrix (Sanchayapatra vs FDR vs Sukuk) | Built in `web/` (`/instruments`) |
-| 5 | AI reinvestment suggestions | Built in `web/` (`/reinvest`, and surfaced from `/tracker`'s maturity flow), ahead of the original "needs real usage data" gate — see `docs/product-notes.md` for why that was safe: it's deterministic category-level scoring, not an LLM verdict, and stays on the math side of the advice-vs-math line |
+| 5 | Smart reinvestment optimizer | Built in `web/` (`/reinvest`, and surfaced from `/tracker`'s maturity flow), ahead of the original "needs real usage data" gate — see `docs/product-notes.md` for why that was safe: it's deterministic category-level scoring, not an LLM verdict, and stays on the math side of the advice-vs-math line |
 
 ## A few things to keep true as this grows
 

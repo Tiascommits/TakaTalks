@@ -15,8 +15,28 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
+  const url = new URL(request.url);
+  const limitParam = url.searchParams.get("limit");
+  const bankIdParam = url.searchParams.get("bankId");
+  // Default to processing 1 bank per invocation to stay safely within serverless timeout/memory limits
+  const limit = limitParam ? Math.max(1, Math.min(5, parseInt(limitParam, 10))) : 1;
+
+  const whereClause: {
+    active: boolean;
+    annualReportPageUrl: { not: null };
+    id?: string;
+  } = {
+    active: true,
+    annualReportPageUrl: { not: null },
+  };
+
+  if (bankIdParam) {
+    whereClause.id = bankIdParam;
+  }
+
   const banks = await prisma.bank.findMany({
-    where: { active: true, annualReportPageUrl: { not: null } },
+    where: whereClause,
+    take: limit,
   });
 
   let checked = 0;

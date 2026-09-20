@@ -107,7 +107,8 @@ git checkout experimental
 git pull                              # fast-forward; safe once you've done section 1
 git checkout -b short-descriptive-name  # optional: a feature branch off experimental
 
-# ... make changes, then from web/:  npm run test  (and npm run build before anything big)
+# ... make changes, then from web/:  npm run test  (and npm run verify before anything big —
+# unit tests, typecheck, lint, build and e2e; CI runs the same on every PR)
 
 git add -A
 git commit                            # see message rules below

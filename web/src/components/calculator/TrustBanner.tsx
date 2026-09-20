@@ -12,17 +12,17 @@ export function TrustBanner() {
         <span>
           {t(
             "This calculation happens on your device — nothing is sent anywhere. No signup, no account, no data goes to a server.",
-            "এই হিসাব তোমার device-এ হয়, কোথাও পাঠানো হয় না। No signup, no account, kono data server-e jay na।"
+            "এই হিসাবটি সম্পূর্ণ আপনার ডিভাইসে সম্পন্ন হয়, কোনো তথ্য সার্ভারে পাঠানো হয় না। কোনো অ্যাকাউন্ট বা সাইন-আপের প্রয়োজন নেই।"
           )}
         </span>
       </div>
       <div className="bg-[#FBEFEF] border border-red text-red text-xs px-4 py-2.5">
         {t(
           "This is an estimate tool, not an official filing. Rules change every budget, so some caps are simplified. For an actual return filing, use ",
-          "Ei ta ekটা estimate tool, official filing na। Rules budget e change hoy, tai kichu cap simplified. Actual return filing er jonno "
+          "এটি একটি প্রাথমিক হিসাবের টুল, অফিশিয়াল ট্যাক্স রিটার্ন নয়। প্রতি বাজেটে নিয়ম পরিবর্তিত হওয়ায় কিছু সীমা এখানে সরলীকৃত করা হয়েছে। চূড়ান্ত রিটার্ন দাখিলের জন্য "
         )}
         <strong>etaxnbr.gov.bd</strong>
-        {t(" or consult a tax practitioner.", " use koro ba tax practitioner dekhao।")}
+        {t(" or consult a tax practitioner.", " ব্যবহার করুন অথবা একজন ট্যাক্স আইনজীবীর পরামর্শ নিন।")}
       </div>
     </div>
   );

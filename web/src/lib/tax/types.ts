@@ -1,7 +1,10 @@
+import type { TaxLocation } from "@/config/tax-rules-2025-26";
+
 export interface TaxCalculatorInput {
   categoryId: string;
   disabledChildren: number;
   firstTimeFiler: boolean;
+  location?: TaxLocation;
 
   // Salary (monthly unless noted)
   basicMonthly: number;
@@ -52,6 +55,7 @@ export const EMPTY_TAX_INPUT: TaxCalculatorInput = {
   categoryId: "general",
   disabledChildren: 0,
   firstTimeFiler: false,
+  location: "dhaka_ctg",
   basicMonthly: 0,
   allowanceMonthly: 0,
   bonusAnnual: 0,

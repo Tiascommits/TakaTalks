@@ -191,6 +191,7 @@ Everything else can stay as shipped:
 | `DATABASE_URL` | **Yes** (default works) | Your dev database. |
 | `TEST_DATABASE_URL` | Only for e2e tests (default works) | Wiped on every test run. **Never point this at real data.** |
 | `ADMIN_SECRET` | Only for `/admin/*` | Gates admin pages; also bootstraps the first admin account at `/admin/setup`. |
+| `SESSION_SECRET` | In production | Signs the anonymous-session cookie. Falls back to `ADMIN_SECRET`; if neither is set, production refuses to sign sessions (locally it works without). |
 | `CRON_SECRET` | Only for `/api/cron/*` | Cron routes reject everything without it. |
 | `NEXT_PUBLIC_APP_URL` | No | Base URL for links in emails. Falls back to the request origin. |
 | `RESEND_API_KEY`, `EMAIL_FROM`, `ADMIN_EMAIL` | No | Email sending. Unset = email silently no-ops. |
@@ -309,16 +310,17 @@ The UI is bilingual (Bangla/English) with a language toggle; Bangla is the defau
 npm run test
 ```
 
-Expect `119 passed`.
+Expect `241 passed`.
 
 **Everything, in the right order** — this is the real pre-push check:
 
 ```powershell
-npm run build
+npm run verify
 ```
 
-That chains four steps: unit tests → production build → end-to-end tests. Expect
-`37 passed` at the end.
+That chains five steps: unit tests → typecheck → lint → production build → end-to-end
+tests. Expect `56 passed` at the end. (`npm run build` alone only runs the unit tests and
+the build — it no longer runs the e2e suite.)
 
 > **`npm run test:e2e` on its own will fail on a fresh clone.** The e2e suite starts a
 > *production* server, so it needs `.next` to exist. Run `npm run build` at least once
@@ -451,4 +453,4 @@ Virtualization is off in BIOS. See section 2.1.
 | e2e server port | 3100 (transient) |
 | Minimum Node | 20.9.0 |
 | Start db / app | `docker compose up -d` / `npm run dev` |
-| Full check | `npm run build` |
+| Full check | `npm run verify` |

@@ -40,10 +40,10 @@ to show live data (see `src/lib/rates/`, `src/lib/bank-health/`, `src/lib/admin/
    next build`), which applies any pending migrations to `DATABASE_URL`
    before building — no separate migration step needed on future pushes.
 
-`vercel-build` intentionally skips the local `build` script's
-prebuild/postbuild test hooks (Playwright needs a browser install and a
-disposable test database that don't belong in a deploy step) — run
-`npm test` / `npm run test:e2e` in CI or locally instead.
+`vercel-build` intentionally skips the local `build` script's `prebuild`
+unit-test hook, and Vercel never runs the e2e suite (Playwright needs a browser
+install and a disposable test database that don't belong in a deploy step). The
+e2e suite runs in CI (`.github/workflows/ci.yml`) and via `npm run verify`.
 
 ## Structure
 
@@ -75,15 +75,17 @@ drives both the site nav and the homepage tool tabs — add a tool there, not in
 
 ## Testing
 
-`npm run build` automatically runs the full test suite — a broken test fails
-the build:
+Two layers of tests. `npm run build` runs the unit tests first (`prebuild`), so a broken
+unit test fails a local build. The e2e suite is **not** part of `build` — run
+`npm run verify` (unit tests → `tsc` → lint → production build → e2e) before merging; CI
+runs the same steps on every pull request.
 
-- **prebuild** → `npm test` (Vitest): pure unit tests across every `src/lib/<domain>/`
+- **Unit** (`prebuild`, or `npm test`) → Vitest: pure unit tests across every `src/lib/<domain>/`
   module — tax calculation (normal use, every taxpayer category, every capital-gains
   rule, rebate/surcharge edge cases, and adversarial input like negative numbers, NaN,
   Infinity, absurdly large values, all clamped to sane non-negative output), reinvestment
   scoring, freelance exemption, bank-health document selection, and more.
-- **postbuild** → `npm run test:e2e` (Playwright, real Chromium): drives the
+- **E2E** (`npm run test:e2e`, also run by `npm run verify` and CI) → Playwright, real Chromium: drives the
   actual built app through normal flows plus weird ones (negative/zero/huge/decimal
   input, rejected form submissions, matured-investment payout confirmation, cross-reload
   persistence) and asserts the page never shows `NaN`/`Infinity`/`undefined`. Runs against
