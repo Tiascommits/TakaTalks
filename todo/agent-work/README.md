@@ -94,7 +94,34 @@ from you — see `../my-work/` and `../needs-us-both/` for what does.
       loop. New `/reinvest` tool plus surfacing from `/tracker`'s maturity panel and the
       maturity-reminder email. New `ReinvestSuggestion` model/migration.
 
+- [x] Car AIT tables aligned with the statute (2026-09-21). `src/lib/cars/car-tax.ts` had
+      the tiers above 2000cc, the microbus rate and the whole EV table wrong against
+      Income Tax Act 2023 s.153 as substituted by the Finance Act 2026 (in force
+      1 July 2026; read on bdlaws.minlaw.gov.bd). Now: 2501-3000cc 200k, 3001-3500cc 250k,
+      3501-4500cc 400k, >4500cc 500k, microbus / double-cabin pickup 40k, EVs by kW
+      (200/300/400) at 25k/50k/75k/100k. Category IDs for the changed tiers were renamed;
+      nothing persists them. The 1500cc/2000cc amounts and the 50% second-vehicle rate
+      (not a doubling) were already right. `docs/Car.md` corrected and annotated with
+      what was and wasn't checked. Verified in the browser preview (12 dropdown options,
+      3501-4500cc gives ৳4,00,000).
+- [x] `src/lib/videos/youtube.ts` typed (2026-09-21): removed the `no-explicit-any` lint
+      error and, in doing so, fixed a latent bug — private and deleted videos come back
+      from `playlistItems` with no thumbnails, so `thumbnailUrl` could be `undefined`
+      despite its declared type. Those items are now skipped.
+- [x] Set `NEXT_PUBLIC_GOATCOUNTER_CODE` (Production only) and `YOUTUBE_CHANNEL_ID`
+      (Production + Preview) in Vercel through the browser, redeployed production, and
+      confirmed the count request returns 200 (2026-09-21). Secrets (`CRON_SECRET`,
+      `SESSION_SECRET`, `ADMIN_SECRET`, `YOUTUBE_API_KEY`, Resend/WhatsApp) are left for
+      the owner on purpose; see `../../formenow.md`.
+
 ## Known follow-ups, not blocking
+
+- Unverified and not touched: the calculator's "10% wealth surcharge for a second car"
+  (`src/lib/cars/car-tax.ts`, `calculateMultiCarComparison`), and the salary-to-tax figures
+  in `docs/Car.md`. Check them against the Act before anything is published from them.
+- Latest verification run (2026-09-21, after the car and YouTube changes): 248 unit tests,
+  `tsc --noEmit` clean, `eslint` 0 errors (6 pre-existing warnings). `next build` and the
+  e2e suite were **not** re-run for this batch.
 
 - Full verification runs clean end-to-end on this machine: 138 unit tests, `tsc --noEmit`,
   `next build`, and (as of the last full run before the 2026-09-19 batch above) 42

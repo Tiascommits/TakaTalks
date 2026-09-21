@@ -38,6 +38,11 @@ to show live data (see `src/lib/rates/`, `src/lib/bank-health/`, `src/lib/admin/
 3. Add env vars in the Vercel project: `DATABASE_URL` (prod database), and
    `NEXT_PUBLIC_GOATCOUNTER_CODE` if you want analytics (see below) — set that one on
    the **production** environment only, so preview deploys don't skew the stats.
+   Production also needs `CRON_SECRET`, `SESSION_SECRET` and `ADMIN_SECRET` (without
+   `CRON_SECRET` every cron route refuses every request; without `SESSION_SECRET` or
+   `ADMIN_SECRET` the tracker can't sign sessions). Optional: `YOUTUBE_API_KEY` +
+   `YOUTUBE_CHANNEL_ID` for the `/videos` auto-feed, and the email/WhatsApp variables
+   listed in `.env.example`. The variable-by-variable checklist is in `../formenow.md`.
 4. Deploy. Vercel runs the `vercel-build` script (`prisma migrate deploy &&
    next build`), which applies any pending migrations to `DATABASE_URL`
    before building — no separate migration step needed on future pushes.
@@ -65,6 +70,8 @@ drives both the site nav and the homepage tool tabs — add a tool there, not in
 | Salary/offer comparator | `src/lib/salary/` | `/salary` |
 | Instrument real-yield matrix | `src/lib/instruments/` | `/instruments` |
 | Reinvestment suggestions (Phase 5) | `src/lib/reinvest/` (`suggest.ts`: deterministic category scoring, `log.ts`: persistence) | `/reinvest`, surfaced from `/tracker`'s maturity panel |
+| Car AIT and affordability | `src/lib/cars/` (`car-tax.ts`: BRTA advance income tax by engine cc / EV kW per Income Tax Act 2023 s.153 as amended by the Finance Act 2026; re-check the table whenever a Finance Act touches s.153) | `/cars` |
+| YouTube feed | `src/lib/videos/youtube.ts` (Data API v3, ISR-cached for an hour; needs `YOUTUBE_API_KEY` + `YOUTUBE_CHANNEL_ID`), hand-picked entries in `src/config/videos.ts` | `/videos` |
 | Zakat | `src/lib/zakat/` | `/zakat` |
 | Loan calculator | `src/lib/loans/` | `/loans` |
 | Notifications (email/WhatsApp, no-op until env vars set) | `src/lib/notify/` | used by tracker + reinvest cron flows |

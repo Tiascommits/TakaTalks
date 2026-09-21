@@ -196,6 +196,10 @@ Everything else can stay as shipped:
 | `NEXT_PUBLIC_APP_URL` | No | Base URL for links in emails. Falls back to the request origin. |
 | `RESEND_API_KEY`, `EMAIL_FROM`, `ADMIN_EMAIL` | No | Email sending. Unset = email silently no-ops. |
 | `WHATSAPP_*` (4 vars) | No | WhatsApp sending. Unset = silently no-ops. |
+| `YOUTUBE_API_KEY`, `YOUTUBE_CHANNEL_ID` | No | The `/videos` auto-feed of your latest uploads. Unset = the feed is empty and the hand-picked videos still show. Never commit the key. |
+| `NEXT_PUBLIC_GOATCOUNTER_CODE` | No | Cookie-less analytics. Leave blank locally; set only on Vercel's Production environment. |
+
+For where each variable goes on Vercel, see [`formenow.md`](formenow.md).
 
 `.env` is gitignored and must never be committed.
 

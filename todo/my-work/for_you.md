@@ -7,22 +7,29 @@ Two things changed since the last pass: the broken Facebook video is gone (the `
 page now runs on three real YouTube entries, and the 2026-09-20 QA run has the embed
 tests passing), and analytics is now built and waiting on an account.
 
+**Update, later on 2026-09-21:** analytics is now live (GoatCounter account created, env
+var set, redeployed, count request confirmed). The short, ordered checklist is in
+[`../../formenow.md`](../../formenow.md); this file is the longer version with the
+reasoning.
+
 ## Start here: the Vercel environment checklist
 
-I can't see your Vercel project, so I can't tell which of these are already set. Three of
-them fail **silently** if they're missing — no error page, the feature just never
-happens — so they're worth eyeballing even if you think they're done.
+I looked at the Vercel project's Environment Variables page on 2026-09-21. It holds
+**only** `DATABASE_URL`, `NEXT_PUBLIC_GOATCOUNTER_CODE` (Production) and
+`YOUTUBE_CHANNEL_ID`. Everything else in the table below is **not set**. Three of them
+fail **silently** when missing — no error page, the feature just never happens.
 
 | Variable | If it's missing | Priority |
 |---|---|---|
-| `DATABASE_URL` | Nothing works. Obviously set, or the site would be down. | — |
+| `DATABASE_URL` | Nothing works. **Set.** | — |
+| `ADMIN_SECRET` | `/admin/*` is locked and you can't create your first admin login at `/admin/setup`. Also the fallback for `SESSION_SECRET`. | High |
 | `CRON_SECRET` | **All three cron jobs refuse every request.** Rate scrapes, maturity reminders and the monthly bank-health check silently never run. Verified in `src/lib/cron/auth.ts`: no secret → `false`, always. | **Check first** |
 | `SESSION_SECRET` (or `ADMIN_SECRET` as fallback) | In production the app **throws** rather than signing a session, so `/tracker` can't save anything. | **Check first** |
 | `NEXT_PUBLIC_APP_URL` | Magic-link emails build links off the request origin instead. Usually right, wrong behind a proxy or a preview URL. | Check |
 | `RESEND_API_KEY`, `EMAIL_FROM`, `ADMIN_EMAIL` | Email quietly no-ops. See item 2. | High |
 | `WHATSAPP_*` (4 vars) | WhatsApp quietly no-ops. See item 1. | Medium |
-| `YOUTUBE_API_KEY`, `YOUTUBE_CHANNEL_ID` | The auto-feed returns an empty list and logs an error. The three hand-curated videos still show, so the page looks fine — you just get no new uploads. See item 3. | Medium |
-| `NEXT_PUBLIC_GOATCOUNTER_CODE` | No analytics at all. See item 4. | Medium |
+| `YOUTUBE_API_KEY`, `YOUTUBE_CHANNEL_ID` | The auto-feed returns an empty list and logs an error. The three hand-curated videos still show, so the page looks fine — you just get no new uploads. **`YOUTUBE_CHANNEL_ID` is set; the key is not.** See item 3. | Medium |
+| `NEXT_PUBLIC_GOATCOUNTER_CODE` | No analytics at all. **Set and live.** See item 4. | Done |
 
 Anything named `NEXT_PUBLIC_*` is baked in at build time, so setting it without
 redeploying does nothing.
@@ -44,31 +51,37 @@ Note this one interacts with `CRON_SECRET` above: maturity reminders need *both*
 email keys and a working cron job. Setting Resend alone won't produce a single reminder
 if the cron secret is missing.
 
-## 3. Set the YouTube API keys in Vercel (~5 min, yours/dev's)
+## 3. Set the YouTube API key in Vercel (~5 min, yours)
 
 The `/videos` page pulls your latest uploads via the YouTube Data API v3, cached with
 Next's ISR so you don't burn quota.
 
-1. Add `YOUTUBE_API_KEY` and `YOUTUBE_CHANNEL_ID` to the Vercel project.
-2. **Don't commit the key.** `.env.example` has blank placeholders; I drafted an email
-   with the real keys for you to send your developer directly.
+1. `YOUTUBE_CHANNEL_ID` is **already set** (Production + Preview, 2026-09-21).
+2. Add `YOUTUBE_API_KEY` (Secret, Production + Preview) using the key from your
+   developer's message, then redeploy. Secrets are typed in by you, never by an agent.
+3. **Don't commit the key.** `.env.example` has blank placeholders.
+4. In Google Cloud Console → Credentials, restrict the key to **YouTube Data API v3**
+   only. It has been pasted into a chat, so regenerate it if it ever leaks.
 
 Without them the page degrades gracefully rather than breaking — the auto-feed is empty
 and the three curated videos in `src/config/videos.ts` still render — so this is a
 "missing feature", not an outage.
 
-## 4. Create the GoatCounter site and set one env var (~5 min, yours)
+## 4. GoatCounter — done, two small things left (yours)
 
-There's still no analytics, so there's no way to tell which calculator anyone actually
-uses. It's built and tested — it just needs an account in your name.
+**Done 2026-09-21:** the site `takatalks` exists, `NEXT_PUBLIC_GOATCOUNTER_CODE=takatalks`
+is set on **Production only**, production was redeployed without the build cache, and
+loading www.takatalks.com sends `POST https://takatalks.goatcounter.com/count` which
+returns 200. (That check counted as one pageview from us.)
 
-1. Sign up at [goatcounter.com](https://www.goatcounter.com) and pick a site code. The
-   code becomes the dashboard URL: `takatalks` → `https://takatalks.goatcounter.com`.
-2. In Vercel, add `NEXT_PUBLIC_GOATCOUNTER_CODE` = that code, on the **Production**
-   environment only. Leaving it off Preview keeps test deploys out of the numbers.
-3. Redeploy, since it's baked in at build time.
+Still yours:
 
-Until it's set, analytics is off: no script loads and no request is made.
+1. **Click the verification link** GoatCounter emailed to nshababa16@gmail.com. Data is
+   arriving, but the account is unconfirmed until you do.
+2. **Decide the commercial-use question** below.
+
+Analytics stays off on Preview deploys and locally: no script loads and no request is
+made when the variable is unset.
 
 **Why GoatCounter and not Google Analytics.** No cookies, no personal data, no
 cross-site tracking — path, referrer, browser and country, and that's it. So no consent
@@ -97,12 +110,30 @@ Islami Bank). No deadline, but the scorecard stays at nine banks until you do.
 
 - **Publishing cadence and the CDN video migration** live in `next_steps.md` — strategy,
   not setup, so they're tracked separately.
-- **`docs/Car.md`'s AIT claim** needs checking against the Income Tax Act 2023 before you
-  publish anything from it. The advance tax credit is real, but it only nets to zero when
-  your liability is at least the AIT amount. I didn't verify it against the Act, and this
-  repo has been bitten by unverified tax figures before.
+- **`docs/Car.md`'s remaining unverified claims.** The AIT amounts and the credit
+  mechanism are now checked against Section 153 (see the 2026-09-21 second pass below).
+  Still unchecked, so don't publish from them yet: the salary-to-tax figures in Car.md,
+  whether salary counts as "regular source" income under Section 163(2), and the
+  calculator's "10% wealth surcharge" for a second car. This repo has been bitten by
+  unverified tax figures before.
 
 ---
+
+## Done without you — 2026-09-21, second pass
+
+- **Vercel env vars, the non-secret ones** — `NEXT_PUBLIC_GOATCOUNTER_CODE=takatalks`
+  (Production only) and `YOUTUBE_CHANNEL_ID` (Production + Preview), both saved as Config
+  variables. Production redeployed after the first; analytics confirmed live. Secrets were
+  left for you on purpose.
+- **Car AIT tables corrected against the statute** — Income Tax Act 2023, Section 153, as
+  substituted by the Finance Act 2026 from 1 July 2026 (read on bdlaws.minlaw.gov.bd).
+  The tiers above 2000cc, the microbus rate and the whole EV table were wrong; they now
+  match the Act, with tests. `docs/Car.md` no longer says a second car pays double (the
+  Act says 50% more; the code already did this). Motorcycles are excluded from this AIT.
+  On `experimental` only until it is QA'd and merged.
+- **YouTube feed** now skips private/deleted videos (they have no thumbnail and would have
+  rendered as a broken image), and the lint error that arrived with the feed is fixed.
+  `eslint`: 0 errors. `tsc`: clean. Unit tests: 248 / 248.
 
 ## Done without you — 2026-09-21 pass
 
