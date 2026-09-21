@@ -56,6 +56,38 @@ We've added an automated YouTube feed to the `/videos` page. It fetches the late
    - `YOUTUBE_CHANNEL_ID`
 2. **Do not commit the API key to git.** The local `.env.example` has blank placeholders. I have drafted an email with the actual keys that you can send directly to your developer.
 
+## 5. Create the GoatCounter site and set one env var (~5 min, yours)
+
+The site has no analytics at all right now, so there is no way to tell which calculator
+anyone actually uses. GoatCounter is wired up and tested — it just needs an account,
+which has to be in your name.
+
+1. Sign up at [goatcounter.com](https://www.goatcounter.com) and pick a site code. The
+   code becomes the dashboard URL: `takatalks` → `https://takatalks.goatcounter.com`.
+2. In Vercel, add `NEXT_PUBLIC_GOATCOUNTER_CODE` = that code, on the **Production**
+   environment only. Leaving it off Preview keeps test deploys out of the numbers.
+3. Redeploy. It's a `NEXT_PUBLIC_` variable, so it's baked in at build time — setting it
+   without redeploying does nothing.
+
+Until that variable is set, analytics is off: no script loads and no request is made.
+Nothing breaks either way, so there's no rush beyond wanting the numbers.
+
+**Why GoatCounter and not Google Analytics.** No cookies, no personal data, no
+cross-site tracking — it records path, referrer, browser and country, and that's it.
+That means no consent banner and no contradiction with the "calculated on your device,
+nothing is sent to our server" promise the calculators make. GA would undercut that
+claim on the one page where it matters most.
+
+**One thing to check:** goatcounter.com's hosted service is free for non-commercial use,
+and asks businesses to pay (a few dollars a month). Whether TakaTalks counts is your
+call — if it does, it's the paid plan or self-hosting. The code handles both: set
+`NEXT_PUBLIC_GOATCOUNTER_CODE` to a hostname instead of a site code and it points at your
+own instance.
+
+Optional, later: ad blockers block `gc.zgo.at`, so some share of visits go uncounted.
+GoatCounter supports serving the script from your own domain to avoid that — worth doing
+only if the numbers start looking implausibly low.
+
 ---
 
 ## Done without you this pass
