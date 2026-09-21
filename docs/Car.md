@@ -7,7 +7,9 @@
 The BRTA takes an **Advance Income Tax (AIT)** when you register or renew a car:
 - **Up to 1500cc:** 25,000 BDT / year
 - **1501cc to 2000cc:** 50,000 BDT / year
-*(Double these if it's your second car!)*
+*(Your second car costs 50% more, not double: 37,500 and 75,000. Third and later cars too.)*
+
+> **Checked against the Act (2026-09-21):** Income Tax Act 2023, Section 153, table as substituted by the Finance Act 2026 from 1 July 2026. Amounts and the 50% rule confirmed. The Section 153(6)–(7) caveat is real: the AIT is credited only up to your tax on regular income, and any excess is **not refundable**. "Free" holds only if your tax liability is at least the AIT. Motorcycles are excluded (153(8)(a)), so a bike has no AIT. **Not yet checked:** the salary-to-tax figures below, and whether salary counts as "regular source" income under Section 163(2).
 
 But it is an **Advance** on your income tax to the NBR. 
 According to the Income Tax Act 2023, if your Gross Monthly Salary is just **1.11 Lakh BDT**, your annual tax liability is already 50,000 BDT. 

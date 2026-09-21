@@ -22,41 +22,49 @@ describe("Car AIT & Decision Engine (Income Tax Act 2023)", () => {
 
     expect(
       calculateCarAit({ category: "CAR_2501_TO_3000CC", isSecondOrMoreCar: false }).totalAitDue
-    ).toBe(125_000);
-
-    expect(
-      calculateCarAit({ category: "CAR_3001_TO_3500CC", isSecondOrMoreCar: false }).totalAitDue
-    ).toBe(150_000);
-
-    expect(
-      calculateCarAit({ category: "CAR_ABOVE_3500CC", isSecondOrMoreCar: false }).totalAitDue
     ).toBe(200_000);
 
     expect(
+      calculateCarAit({ category: "CAR_3001_TO_3500CC", isSecondOrMoreCar: false }).totalAitDue
+    ).toBe(250_000);
+
+    expect(
+      calculateCarAit({ category: "CAR_3501_TO_4500CC", isSecondOrMoreCar: false }).totalAitDue
+    ).toBe(400_000);
+
+    expect(
+      calculateCarAit({ category: "CAR_ABOVE_4500CC", isSecondOrMoreCar: false }).totalAitDue
+    ).toBe(500_000);
+
+    expect(
       calculateCarAit({ category: "MICROBUS", isSecondOrMoreCar: false }).totalAitDue
-    ).toBe(30_000);
+    ).toBe(40_000);
   });
 
-  it("calculates EV motor capacity tiers correctly", () => {
+  it("calculates EV motor capacity tiers correctly (Section 153 Table 2, kW)", () => {
     expect(
-      calculateCarAit({ category: "EV_UP_TO_75KW", isSecondOrMoreCar: false }).totalAitDue
-    ).toBe(20_000);
+      calculateCarAit({ category: "EV_UP_TO_200KW", isSecondOrMoreCar: false }).totalAitDue
+    ).toBe(25_000);
 
     expect(
-      calculateCarAit({ category: "EV_75_TO_100KW", isSecondOrMoreCar: false }).totalAitDue
-    ).toBe(40_000);
+      calculateCarAit({ category: "EV_201_TO_300KW", isSecondOrMoreCar: false }).totalAitDue
+    ).toBe(50_000);
 
     expect(
-      calculateCarAit({ category: "EV_100_TO_125KW", isSecondOrMoreCar: false }).totalAitDue
-    ).toBe(60_000);
+      calculateCarAit({ category: "EV_301_TO_400KW", isSecondOrMoreCar: false }).totalAitDue
+    ).toBe(75_000);
 
     expect(
-      calculateCarAit({ category: "EV_125_TO_150KW", isSecondOrMoreCar: false }).totalAitDue
-    ).toBe(80_000);
-
-    expect(
-      calculateCarAit({ category: "EV_ABOVE_150KW", isSecondOrMoreCar: false }).totalAitDue
+      calculateCarAit({ category: "EV_ABOVE_400KW", isSecondOrMoreCar: false }).totalAitDue
     ).toBe(100_000);
+  });
+
+  it("applies the 50% second-vehicle rate to the higher tiers, not a doubling", () => {
+    // 2501-3000cc: 200,000 + 50% = 300,000 (Section 153(2) proviso)
+    const second = calculateCarAit({ category: "CAR_2501_TO_3000CC", isSecondOrMoreCar: true });
+    expect(second.penaltySurchargeAit).toBe(100_000);
+    expect(second.totalAitDue).toBe(300_000);
+    expect(second.effectiveMultiple).toBe(1.5);
   });
 
   it("applies 50% extra AIT penalty on second and subsequent vehicles", () => {

@@ -1,7 +1,8 @@
 /**
  * Types for the Car Buying, CC Tier, and Advance Income Tax (AIT) Engine.
  * Grounded in:
- * - Bangladesh Income Tax Act 2023 (Section 153 & Second Schedule)
+ * - Bangladesh Income Tax Act 2023, Section 153 (Table 1 by engine cc, Table 2 by
+ *   motor kW), as substituted by the Finance Act 2026 from 1 July 2026
  * - BRTA annual fitness renewal & advance tax rules
  * - Surcharge rules on multiple motor cars
  */
@@ -14,13 +15,13 @@ export type VehicleCategory =
   | "CAR_2001_TO_2500CC"
   | "CAR_2501_TO_3000CC"
   | "CAR_3001_TO_3500CC"
-  | "CAR_ABOVE_3500CC"
+  | "CAR_3501_TO_4500CC"
+  | "CAR_ABOVE_4500CC"
   | "MICROBUS"
-  | "EV_UP_TO_75KW"
-  | "EV_75_TO_100KW"
-  | "EV_100_TO_125KW"
-  | "EV_125_TO_150KW"
-  | "EV_ABOVE_150KW";
+  | "EV_UP_TO_200KW"
+  | "EV_201_TO_300KW"
+  | "EV_301_TO_400KW"
+  | "EV_ABOVE_400KW";
 
 export interface VehicleSlabConfig {
   id: VehicleCategory;

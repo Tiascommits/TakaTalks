@@ -45,8 +45,8 @@ const CAR_PRESETS: CarPreset[] = [
   },
   {
     id: "byd_ev",
-    name: "BYD Atto 3 / Seal (150kW EV)",
-    category: "EV_125_TO_150KW",
+    name: "BYD Atto 3 (150kW EV)",
+    category: "EV_UP_TO_200KW",
     price: 5_500_000,
     fuelType: "EV",
     monthlyKm: 1_200,
@@ -252,33 +252,33 @@ export function CarCalculator() {
                       {lang === "bn" ? "২০০১ - ২৫০০ সিসি (৳৭৫,০০০ AIT)" : "2001cc – 2500cc (৳75,000 AIT)"}
                     </option>
                     <option value="CAR_2501_TO_3000CC">
-                      {lang === "bn" ? "২৫০১ - ৩০০০ সিসি (৳১,২৫,০০০ AIT)" : "2501cc – 3000cc (৳1,25,000 AIT)"}
+                      {lang === "bn" ? "২৫০১ - ৩০০০ সিসি (৳২,০০,০০০ AIT)" : "2501cc – 3000cc (৳2,00,000 AIT)"}
                     </option>
                     <option value="CAR_3001_TO_3500CC">
-                      {lang === "bn" ? "৩০০১ - ৩৫০০ সিসি (৳১,৫০,০০০ AIT)" : "3001cc – 3500cc (৳1,50,000 AIT)"}
+                      {lang === "bn" ? "৩০০১ - ৩৫০০ সিসি (৳২,৫০,০০০ AIT)" : "3001cc – 3500cc (৳2,50,000 AIT)"}
                     </option>
-                    <option value="CAR_ABOVE_3500CC">
-                      {lang === "bn" ? "৩৫০০ সিসির উপরে (৳২,০০,০০০ AIT)" : "Above 3500cc (৳2,00,000 AIT)"}
+                    <option value="CAR_3501_TO_4500CC">
+                      {lang === "bn" ? "৩৫০১ - ৪৫০০ সিসি (৳৪,০০,০০০ AIT)" : "3501cc – 4500cc (৳4,00,000 AIT)"}
+                    </option>
+                    <option value="CAR_ABOVE_4500CC">
+                      {lang === "bn" ? "৪৫০০ সিসির উপরে (৳৫,০০,০০০ AIT)" : "Above 4500cc (৳5,00,000 AIT)"}
                     </option>
                     <option value="MICROBUS">
-                      {lang === "bn" ? "মাইক্রোবাস (৳৩০,০০০ AIT)" : "Microbus (৳30,000 AIT)"}
+                      {lang === "bn" ? "মাইক্রোবাস / ডাবল কেবিন পিকআপ (৳৪০,০০০ AIT)" : "Microbus / Double-cabin pickup (৳40,000 AIT)"}
                     </option>
                   </optgroup>
                   <optgroup label={t("Electric Vehicles (EV)", "বৈদ্যুতিক গাড়ি (EV)")}>
-                    <option value="EV_UP_TO_75KW">
-                      {lang === "bn" ? "ইভি: ৭৫ kW পর্যন্ত (৳২০,০০০ AIT)" : "EV: Up to 75 kW (৳20,000 AIT)"}
+                    <option value="EV_UP_TO_200KW">
+                      {lang === "bn" ? "ইভি: ২০০ kW পর্যন্ত (৳২৫,০০০ AIT)" : "EV: Up to 200 kW (৳25,000 AIT)"}
                     </option>
-                    <option value="EV_75_TO_100KW">
-                      {lang === "bn" ? "ইভি: ৭৫ - ১০০ kW (৳৪০,০০০ AIT)" : "EV: 75 kW – 100 kW (৳40,000 AIT)"}
+                    <option value="EV_201_TO_300KW">
+                      {lang === "bn" ? "ইভি: ২০১ - ৩০০ kW (৳৫০,০০০ AIT)" : "EV: 201 kW – 300 kW (৳50,000 AIT)"}
                     </option>
-                    <option value="EV_100_TO_125KW">
-                      {lang === "bn" ? "ইভি: ১০০ - ১২৫ kW (৳৬০,০০০ AIT)" : "EV: 100 kW – 125 kW (৳60,000 AIT)"}
+                    <option value="EV_301_TO_400KW">
+                      {lang === "bn" ? "ইভি: ৩০১ - ৪০০ kW (৳৭৫,০০০ AIT)" : "EV: 301 kW – 400 kW (৳75,000 AIT)"}
                     </option>
-                    <option value="EV_125_TO_150KW">
-                      {lang === "bn" ? "ইভি: ১২৫ - ১৫০ kW (৳৮০,০০০ AIT)" : "EV: 125 kW – 150 kW (৳80,000 AIT)"}
-                    </option>
-                    <option value="EV_ABOVE_150KW">
-                      {lang === "bn" ? "ইভি: ১৫০ kW এর উপরে (৳১,০০,০০০ AIT)" : "EV: Above 150 kW (৳1,00,000 AIT)"}
+                    <option value="EV_ABOVE_400KW">
+                      {lang === "bn" ? "ইভি: ৪০০ kW এর উপরে (৳১,০০,০০০ AIT)" : "EV: Above 400 kW (৳1,00,000 AIT)"}
                     </option>
                   </optgroup>
                 </select>
