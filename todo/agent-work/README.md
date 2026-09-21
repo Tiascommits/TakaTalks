@@ -102,7 +102,8 @@ from you — see `../my-work/` and `../needs-us-both/` for what does.
   requires a destructive `prisma migrate reset` and needs explicit human sign-off first.
   `npm run test:e2e` needs `PRISMA_USER_CONSENT_FOR_DANGEROUS_AI_ACTION` set when an agent
   invokes it, since `e2e/global-setup.ts` runs that reset.
-- The single video in `config/videos.ts` does not play — Facebook's embed returns "Video
-  unavailable" for its `/share/v/...` shortlink (and curl gets an HTTP 400). Pre-existing;
-  the e2e test only asserted the iframe existed, never that it loaded. Needs a canonical
-  permalink from a public post — see `../my-work/for_you.md`.
+- ~~The single video in `config/videos.ts` does not play~~ — resolved 2026-09-21.
+  `config/videos.ts` now holds three YouTube entries instead of the dead Facebook
+  `/share/v/...` shortlink, and the 2026-09-20 QA run records the embed tests passing.
+  Note the underlying test weakness still stands: the e2e test asserts the iframe exists,
+  not that the video inside it loaded, so a future dead link would pass again.

@@ -1,96 +1,120 @@
-# What's left for you (updated 2026-09-16, later same day)
+# What's left for you (updated 2026-09-21)
 
-Git works again on this machine, so everything that was stuck behind it is committed and
-pushed. Both `needs-us-both/` items are now done — bank annual-report URLs and the
-freelance tax rule (details at the bottom). The e2e suite has been run (42 passing) and the
-stray `"Your commit message here"` commit has been given a real message and force-pushed;
-tell the team to read `git_instructions.md` before their next `git pull`.
+Everything below needs you specifically — an account in your name, a key only you can
+generate, or a Vercel setting only you can see. Ordered so the slowest thing starts first.
 
-Everything below needs you specifically — an account in your name, or a link only you can
-get.
+Two things changed since the last pass: the broken Facebook video is gone (the `/videos`
+page now runs on three real YouTube entries, and the 2026-09-20 QA run has the embed
+tests passing), and analytics is now built and waiting on an account.
 
-## 1. The one video we have doesn't play — need a working URL (~2 min, yours)
+## Start here: the Vercel environment checklist
 
-The only entry in `web/src/config/videos.ts` is
-`https://www.facebook.com/share/v/19SFrZz1mm/`, and Facebook's embed player renders
-**"Video unavailable — This video may no longer exist, or you don't have permission to view
-it."** for it. Confirmed on both `/videos` and the new homepage reel; `curl` on that URL
-gets an HTTP 400 straight from Facebook.
+I can't see your Vercel project, so I can't tell which of these are already set. Three of
+them fail **silently** if they're missing — no error page, the feature just never
+happens — so they're worth eyeballing even if you think they're done.
 
-This is pre-existing, not new — the e2e test only asserted that an `<iframe>` was present,
-never that the video inside it loaded, so it passed the whole time.
+| Variable | If it's missing | Priority |
+|---|---|---|
+| `DATABASE_URL` | Nothing works. Obviously set, or the site would be down. | — |
+| `CRON_SECRET` | **All three cron jobs refuse every request.** Rate scrapes, maturity reminders and the monthly bank-health check silently never run. Verified in `src/lib/cron/auth.ts`: no secret → `false`, always. | **Check first** |
+| `SESSION_SECRET` (or `ADMIN_SECRET` as fallback) | In production the app **throws** rather than signing a session, so `/tracker` can't save anything. | **Check first** |
+| `NEXT_PUBLIC_APP_URL` | Magic-link emails build links off the request origin instead. Usually right, wrong behind a proxy or a preview URL. | Check |
+| `RESEND_API_KEY`, `EMAIL_FROM`, `ADMIN_EMAIL` | Email quietly no-ops. See item 2. | High |
+| `WHATSAPP_*` (4 vars) | WhatsApp quietly no-ops. See item 1. | Medium |
+| `YOUTUBE_API_KEY`, `YOUTUBE_CHANNEL_ID` | The auto-feed returns an empty list and logs an error. The three hand-curated videos still show, so the page looks fine — you just get no new uploads. See item 3. | Medium |
+| `NEXT_PUBLIC_GOATCOUNTER_CODE` | No analytics at all. See item 4. | Medium |
 
-Two likely causes, and I can't tell which from outside: the video is no longer public (or
-was deleted), or `/share/v/...` shortlinks simply aren't resolvable by Facebook's video
-plugin, which generally wants a canonical permalink like
-`facebook.com/<page>/videos/<id>` or `facebook.com/watch/?v=<id>`.
+Anything named `NEXT_PUBLIC_*` is baked in at build time, so setting it without
+redeploying does nothing.
 
-What I need from you: the **canonical permalink** for that video (open it on the page, use
-the post's own "Copy link", not the share sheet's short link), and confirmation the post's
-audience is Public. Paste it over the `url` in `config/videos.ts` and it'll work — or send
-it to me and I'll swap it in and verify the embed actually renders.
+## 1. Start WhatsApp Business verification — `whatsapp-business-api-setup.md` (yours)
 
-While you're there: the reel auto-advances only when there are **two or more** videos, so
-with one entry it sits still. Send me a handful of URLs and it'll animate as intended.
-Each video is one entry in that file.
+**Start this first even though it finishes last.** Meta's business verification takes
+days, and template approval adds another day or two on top. Nothing else here is blocked
+by it, which is exactly why it should be in flight while you do the rest. Unlocks
+WhatsApp reminders and phone-based account recovery.
 
 ## 2. Resend email setup — `email-provider-setup.md` (~30 min, yours)
 
-Unchanged, and now the single highest-leverage thing left: sign up, verify a sending
+The highest-leverage thing you can actually finish today: sign up, verify a sending
 domain, create an API key, set `RESEND_API_KEY` / `EMAIL_FROM` / `ADMIN_EMAIL`.
 Magic-link login and maturity reminders are fully built and silently no-op without it.
 
-## 3. Start WhatsApp Business verification — `whatsapp-business-api-setup.md` (yours)
+Note this one interacts with `CRON_SECRET` above: maturity reminders need *both* the
+email keys and a working cron job. Setting Resend alone won't produce a single reminder
+if the cron secret is missing.
 
-Unchanged. Worth starting today whatever else happens — Meta's business verification is
-the long pole (days), and template approval adds another day or two. Unlocks WhatsApp
-reminders and phone-based account recovery.
+## 3. Set the YouTube API keys in Vercel (~5 min, yours/dev's)
 
-## 4. Set YouTube API Keys in Vercel (~5 min, yours/dev's)
+The `/videos` page pulls your latest uploads via the YouTube Data API v3, cached with
+Next's ISR so you don't burn quota.
 
-We've added an automated YouTube feed to the `/videos` page. It fetches the latest uploads seamlessly via the YouTube Data API v3 and caches them (using Next.js ISR) so you don't hit API quotas.
+1. Add `YOUTUBE_API_KEY` and `YOUTUBE_CHANNEL_ID` to the Vercel project.
+2. **Don't commit the key.** `.env.example` has blank placeholders; I drafted an email
+   with the real keys for you to send your developer directly.
 
-**What needs to be done:**
-1. The developer with Vercel access needs to add two new Environment Variables to the production/preview deployment settings:
-   - `YOUTUBE_API_KEY`
-   - `YOUTUBE_CHANNEL_ID`
-2. **Do not commit the API key to git.** The local `.env.example` has blank placeholders. I have drafted an email with the actual keys that you can send directly to your developer.
+Without them the page degrades gracefully rather than breaking — the auto-feed is empty
+and the three curated videos in `src/config/videos.ts` still render — so this is a
+"missing feature", not an outage.
 
-## 5. Create the GoatCounter site and set one env var (~5 min, yours)
+## 4. Create the GoatCounter site and set one env var (~5 min, yours)
 
-The site has no analytics at all right now, so there is no way to tell which calculator
-anyone actually uses. GoatCounter is wired up and tested — it just needs an account,
-which has to be in your name.
+There's still no analytics, so there's no way to tell which calculator anyone actually
+uses. It's built and tested — it just needs an account in your name.
 
 1. Sign up at [goatcounter.com](https://www.goatcounter.com) and pick a site code. The
    code becomes the dashboard URL: `takatalks` → `https://takatalks.goatcounter.com`.
 2. In Vercel, add `NEXT_PUBLIC_GOATCOUNTER_CODE` = that code, on the **Production**
    environment only. Leaving it off Preview keeps test deploys out of the numbers.
-3. Redeploy. It's a `NEXT_PUBLIC_` variable, so it's baked in at build time — setting it
-   without redeploying does nothing.
+3. Redeploy, since it's baked in at build time.
 
-Until that variable is set, analytics is off: no script loads and no request is made.
-Nothing breaks either way, so there's no rush beyond wanting the numbers.
+Until it's set, analytics is off: no script loads and no request is made.
 
 **Why GoatCounter and not Google Analytics.** No cookies, no personal data, no
-cross-site tracking — it records path, referrer, browser and country, and that's it.
-That means no consent banner and no contradiction with the "calculated on your device,
-nothing is sent to our server" promise the calculators make. GA would undercut that
-claim on the one page where it matters most.
+cross-site tracking — path, referrer, browser and country, and that's it. So no consent
+banner, and no contradiction with the "calculated on your device, nothing is sent to our
+server" promise the calculators make. GA would undercut that claim on the one page where
+it matters most.
 
-**One thing to check:** goatcounter.com's hosted service is free for non-commercial use,
-and asks businesses to pay (a few dollars a month). Whether TakaTalks counts is your
-call — if it does, it's the paid plan or self-hosting. The code handles both: set
-`NEXT_PUBLIC_GOATCOUNTER_CODE` to a hostname instead of a site code and it points at your
-own instance.
+**One thing to decide:** goatcounter.com's hosted service is free for non-commercial use
+and asks businesses to pay a few dollars a month. Whether TakaTalks counts is your call —
+if it does, it's the paid plan or self-hosting. The code handles both: set
+`NEXT_PUBLIC_GOATCOUNTER_CODE` to a hostname instead of a site code to point at your own
+instance.
 
-Optional, later: ad blockers block `gc.zgo.at`, so some share of visits go uncounted.
-GoatCounter supports serving the script from your own domain to avoid that — worth doing
-only if the numbers start looking implausibly low.
+Optional, later: ad blockers block `gc.zgo.at`, so some visits go uncounted. GoatCounter
+can serve the script from your own domain to avoid that — only worth doing if the numbers
+start looking implausibly low.
+
+## 5. Spot-check the bank list decision — `needs-us-both/confirm-new-bank-list.md`
+
+Still open, and the only item here that needs your judgement rather than an account:
+confirm the two scraped adapters (AB Bank, National Bank) match what you see published,
+and decide on the three candidate banks that had no scrapeable source (BRAC, Dutch-Bangla,
+Islami Bank). No deadline, but the scorecard stays at nine banks until you do.
+
+## Not on this list, deliberately
+
+- **Publishing cadence and the CDN video migration** live in `next_steps.md` — strategy,
+  not setup, so they're tracked separately.
+- **`docs/Car.md`'s AIT claim** needs checking against the Income Tax Act 2023 before you
+  publish anything from it. The advance tax credit is real, but it only nets to zero when
+  your liability is at least the AIT amount. I didn't verify it against the Act, and this
+  repo has been bitten by unverified tax figures before.
 
 ---
 
-## Done without you this pass
+## Done without you — 2026-09-21 pass
+
+- **The broken video is fixed** — the old item 1 here (Facebook `/share/v/...` shortlink
+  rendering "Video unavailable") is gone. `src/config/videos.ts` now holds three real
+  YouTube entries, and the 2026-09-20 QA run records the embed tests passing. Nothing
+  needed from you; the request for a canonical Facebook permalink is withdrawn.
+- **GoatCounter analytics** — built, unit-tested and verified in a real browser (one
+  count per pageview across client-side navigation, the back button and a full reload).
+  Off until you set the env var; see item 4.
+
+## Done without you — 2026-09-16 pass
 
 - **Bank annual-report / DSE URLs** — `needs-us-both/bank-annual-report-urls.md` is done
   for 7 of the 9 configured banks; the URLs now live in `src/config/banks.ts`, so Module 5
