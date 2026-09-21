@@ -111,6 +111,16 @@ function clampHorizon(years: number): number {
   return Math.max(0.25, Math.min(30, Number.isFinite(years) ? years : 3));
 }
 
+/**
+ * The whole number of years each category's `totalMaturityValue` is projected
+ * over: the horizon rounded, kept inside the 1-20 years compareInstruments
+ * models. Exported so a screen quoting that maturity value (or a profit derived
+ * from it) can say which term it is for instead of the raw slider value.
+ */
+export function maturityTenureYears(horizonYears: number): number {
+  return Math.max(1, Math.min(20, Math.round(clampHorizon(horizonYears))));
+}
+
 function bestInCategory(
   items: InstrumentComparisonItem[],
   category: ReinvestCategoryId
@@ -163,7 +173,7 @@ export function computeReinvestSuggestion(params: {
   // compareInstruments' tenureYears only affects the maturity-value
   // projection (compounding period), not the rate itself, and it's only
   // meaningfully modeled 1-20 years there.
-  const tenureYears = Math.max(1, Math.min(20, Math.round(horizonYears)));
+  const tenureYears = maturityTenureYears(horizonYears);
   const compared = compareInstruments({ amount: reinvestAmount, tenureYears, hasPSR, inflationPct });
 
   let optimizer: ReturnType<typeof calculateOptimizer> | null = null;

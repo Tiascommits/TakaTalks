@@ -62,14 +62,14 @@ drives both the site nav and the homepage tool tabs — add a tool there, not in
 | Domain | Lib | Routes |
 |---|---|---|
 | Tax calculator + rebate optimizer | `src/lib/tax/` (`calculate.ts`, `optimizer.ts`), rules in `src/config/tax-rules-2025-26.ts` — review every national budget, nothing else should hardcode these numbers | `/calculator`, `/tax_basic_calculation` (fast income-only on-ramp, shares the same rules config) |
-| Income/investment tracker | `src/lib/tracker/` (anonymous session handling, `derive-tax-input.ts`) | `/tracker` |
+| Income/investment tracker | `src/lib/tracker/` (anonymous session handling, `derive-tax-input.ts`; `projection.ts`: per-investment and portfolio profit estimates, same TDS and compounding rules as `/instruments`) | `/tracker` |
 | Freelance/ITES exemption | `src/lib/freelance/` | `/freelance` |
 | Bank rate scorecard | `src/lib/rates/` (per-bank adapters + manual-seed fallback) | `/rates`, `/admin/rates` |
 | Bank health disclosures | `src/lib/bank-health/` (PDF extraction, confidence scoring) | `/rates` (public panel), `/admin/bank-health` (approval) |
 | Goal planner | `src/lib/goals/` | `/goals` |
 | Salary/offer comparator | `src/lib/salary/` | `/salary` |
 | Instrument real-yield matrix | `src/lib/instruments/` | `/instruments` |
-| Reinvestment suggestions (Phase 5) | `src/lib/reinvest/` (`suggest.ts`: deterministic category scoring, `log.ts`: persistence) | `/reinvest`, surfaced from `/tracker`'s maturity panel |
+| Reinvestment suggestions (Phase 5) | `src/lib/reinvest/` (`suggest.ts`: deterministic category scoring, `log.ts`: persistence); the consolidated-profit card combines it with `src/lib/tracker/projection.ts` | `/reinvest`, surfaced from `/tracker`'s maturity panel |
 | Car AIT and affordability | `src/lib/cars/` (`car-tax.ts`: BRTA advance income tax by engine cc / EV kW per Income Tax Act 2023 s.153 as amended by the Finance Act 2026; re-check the table whenever a Finance Act touches s.153) | `/cars` |
 | YouTube feed | `src/lib/videos/youtube.ts` (Data API v3, ISR-cached for an hour; needs `YOUTUBE_API_KEY` + `YOUTUBE_CHANNEL_ID`), hand-picked entries in `src/config/videos.ts` | `/videos` |
 | Zakat | `src/lib/zakat/` | `/zakat` |

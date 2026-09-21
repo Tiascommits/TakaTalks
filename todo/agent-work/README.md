@@ -114,8 +114,24 @@ from you — see `../my-work/` and `../needs-us-both/` for what does.
       `SESSION_SECRET`, `ADMIN_SECRET`, `YOUTUBE_API_KEY`, Resend/WhatsApp) are left for
       the owner on purpose; see `../../formenow.md`.
 
+- [x] Consolidated profit view (2026-09-22): profit per tracked investment and for the
+      whole portfolio on `/tracker`, and a consolidated figure (tracked profit + extra
+      after-tax profit from reinvesting) on `/reinvest`, for the top-ranked category and on
+      every category card. New pure module `src/lib/tracker/projection.ts` (16 tests), reusing
+      the `/instruments` TDS and compounding rules; `maturityTenureYears()` is now exported
+      from `suggest.ts` so the card can name the whole-year term the maturity value is
+      really projected over. Suggests categories only, never a named bank or product, per
+      `docs/product-notes.md`. Checked in the browser with sample data in English and
+      Bangla (a temporary route, since removed) because there is no local Postgres here;
+      the real data path (`prisma.investmentEntry.findMany` in `/reinvest`'s `page.tsx`)
+      is covered by types only, not exercised end to end.
+
 ## Known follow-ups, not blocking
 
+- `/reinvest`'s slider allows horizons under 1 year (min 0.5), but each category's maturity
+  value is projected over a minimum of 1 whole year (`maturityTenureYears`), so a 6-month
+  horizon shows 1-year figures. The consolidated card names the term it used, but the
+  slider range and the projection disagree. Pre-existing; not changed here.
 - Unverified and not touched: the calculator's "10% wealth surcharge for a second car"
   (`src/lib/cars/car-tax.ts`, `calculateMultiCarComparison`), and the salary-to-tax figures
   in `docs/Car.md`. Check them against the Act before anything is published from them.

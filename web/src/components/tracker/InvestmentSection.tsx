@@ -1,11 +1,13 @@
 "use client";
 
+import Link from "next/link";
 import { useId, useState } from "react";
 import { fmtTaka } from "@/lib/format";
 import { NumberField } from "@/components/ui/fields";
 import { INSTRUMENT_LABELS, INSTRUMENT_LABELS_EN, type InstrumentType, type InvestmentEntryDTO } from "./types";
 import { useLanguage } from "@/lib/i18n";
 import { MAX_AMOUNT_TAKA, MAX_LABEL_LENGTH, MAX_RATE_PCT, MAX_TERM_MONTHS } from "@/lib/tracker/limits";
+import { summarizePortfolio, type InvestmentProjection, type PortfolioSummary } from "@/lib/tracker/projection";
 
 const INSTRUMENTS = Object.keys(INSTRUMENT_LABELS) as InstrumentType[];
 
@@ -35,6 +37,8 @@ export function InvestmentSection({
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
+  const summary = summarizePortfolio(entries);
+  const projectionById = new Map(summary.projections.map((p) => [p.id, p]));
   const labelId = useId();
   const instrumentId = useId();
   const startDateId = useId();
@@ -108,6 +112,8 @@ export function InvestmentSection({
       {entries.length === 0 ? (
         <p className="text-sm text-muted mb-4">{t("No investments added yet.", "এখনো কোনো বিনিয়োগ যোগ করোনি।")}</p>
       ) : (
+        <>
+        {summary.count > 0 && <PortfolioSummaryCard summary={summary} t={t} />}
         <ul className="mb-4 divide-y divide-line">
           {entries.map((e) => (
             <li key={e.id} className="flex justify-between items-center py-2 text-sm">
@@ -126,6 +132,7 @@ export function InvestmentSection({
                     )}
                   </span>
                 )}
+                <ProfitLine projection={projectionById.get(e.id)} t={t} />
               </div>
               <div className="flex items-center gap-3">
                 <span className="font-mono">{fmtTaka(e.principalAmount)}</span>
@@ -160,6 +167,7 @@ export function InvestmentSection({
             </li>
           ))}
         </ul>
+        </>
       )}
 
       {error && (
@@ -248,5 +256,67 @@ export function InvestmentSection({
         </div>
       </form>
     </section>
+  );
+}
+
+type TFn = (en: string, bn: string) => string;
+
+function ProfitLine({ projection, t }: { projection: InvestmentProjection | undefined; t: TFn }) {
+  if (!projection || projection.instrumentType === "DONATION") return null;
+
+  const profit = fmtTaka(projection.netProfit);
+  let text: string;
+  if (projection.basis === "confirmed") {
+    text = t(`Actual profit ${profit}`, `প্রকৃত মুনাফা ${profit}`);
+  } else if (projection.taxModelled) {
+    text = t(
+      `Est. profit ${profit} after ${projection.tdsPct}% tax`,
+      `আনুমানিক মুনাফা ${profit} (${projection.tdsPct}% কর কেটে)`
+    );
+  } else {
+    text = t(
+      `Est. profit ${profit} (tax not modelled for this type)`,
+      `আনুমানিক মুনাফা ${profit} (এই ধরনের জন্য কর হিসাব করা হয়নি)`
+    );
+  }
+  if (projection.marketLinked) {
+    text += t(" · indicative, not guaranteed", " · আনুমানিক, নিশ্চিত নয়");
+  }
+
+  return <div className="text-[11px] text-green-deep mt-0.5">{text}</div>;
+}
+
+function PortfolioSummaryCard({ summary, t }: { summary: PortfolioSummary; t: TFn }) {
+  const stats = [
+    { label: t("Invested", "বিনিয়োগ"), value: fmtTaka(summary.totalPrincipal), accent: false },
+    { label: t("Est. profit", "আনুমানিক মুনাফা"), value: fmtTaka(summary.totalNetProfit), accent: true },
+    { label: t("Value at maturity", "মেয়াদপূর্তির মূল্য"), value: fmtTaka(summary.totalMaturityValue), accent: false },
+  ];
+
+  return (
+    <div className="bg-[#FAF9F5] border border-line p-3 mb-4">
+      <div className="grid grid-cols-3 gap-2 text-center">
+        {stats.map((s) => (
+          <div key={s.label}>
+            <div className="text-[10.5px] text-muted uppercase tracking-wide">{s.label}</div>
+            <div className={`font-mono font-semibold text-sm ${s.accent ? "text-green-deep" : ""}`}>{s.value}</div>
+          </div>
+        ))}
+      </div>
+      <p className="text-[11px] text-muted mt-2 leading-snug">
+        {t(
+          "Estimated from the rate and term you entered, after source tax, assuming you file a return (10% TDS on FDR). Real payouts you've confirmed count as actual profit. Not a guarantee of what any institution will pay.",
+          "আপনার দেওয়া রেট ও মেয়াদ থেকে আনুমানিক হিসাব, উৎসে কর কেটে, ধরে নেওয়া হয়েছে আপনি রিটার্ন দাখিল করেন (এফডিআরে ১০% কর)। নিশ্চিত করা প্রকৃত পেমেন্ট প্রকৃত মুনাফা হিসেবে ধরা হয়েছে। কোনো প্রতিষ্ঠান কত দেবে তার নিশ্চয়তা নয়।"
+        )}
+        {summary.anyTaxNotModelled &&
+          t(
+            " Some types are shown before tax.",
+            " কিছু ধরনের হিসাব কর ছাড়া দেখানো হয়েছে।"
+          )}
+      </p>
+      <Link href="/reinvest" className="inline-block text-xs font-medium text-green-deep underline mt-2">
+        {t("See where this money could work harder →", "এই টাকা আর কোথায় বেশি কাজ করতে পারে দেখুন →")}
+      </Link>
+    </div>
   );
 }

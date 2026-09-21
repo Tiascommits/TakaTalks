@@ -4,6 +4,7 @@ import { TrustBanner } from "@/components/calculator/TrustBanner";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUserId } from "@/lib/tracker/session";
 import { getReinvestContextForUser } from "@/lib/reinvest/log";
+import type { InvestmentEntryDTO } from "@/components/tracker/types";
 import type { TaxCalculationResult } from "@/lib/tax/types";
 
 export const metadata = {
@@ -25,12 +26,21 @@ export default async function ReinvestPage({
   let defaultHorizonYears = 3;
   let investmentLabel: string | null = null;
   let investmentEntryIdForClient: string | null = null;
+  let trackedInvestments: InvestmentEntryDTO[] = [];
 
   if (userId) {
     const ctx = await getReinvestContextForUser(userId);
     taxResult = ctx.taxResult;
     defaultAmount = ctx.defaultAmount;
     defaultHorizonYears = ctx.defaultHorizonYears;
+
+    // Their tracked investments feed the consolidated-profit card. Fetched here
+    // rather than added to ReinvestContext, which /api/reinvest/context returns as-is.
+    trackedInvestments = JSON.parse(
+      JSON.stringify(
+        await prisma.investmentEntry.findMany({ where: { userId }, orderBy: { maturityDate: "asc" } })
+      )
+    );
 
     if (investmentEntryId) {
       const inv = await prisma.investmentEntry.findUnique({ where: { id: investmentEntryId } });
@@ -53,6 +63,7 @@ export default async function ReinvestPage({
         taxResult={taxResult ? JSON.parse(JSON.stringify(taxResult)) : null}
         investmentEntryId={investmentEntryIdForClient}
         investmentLabel={investmentLabel}
+        trackedInvestments={trackedInvestments}
       />
     </>
   );

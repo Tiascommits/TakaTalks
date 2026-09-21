@@ -61,6 +61,33 @@ Net effect: the feature exists, but it's still "sourced data + transparent math"
 than "an AI told me where to put my money" — the distinction the advice-vs-math line
 exists to protect.
 
+## Consolidated profit view (2026-09-22)
+
+The request was: track investments, show the profit each will make, then suggest another
+place to put the money along with a consolidated profit figure. Most of that already
+existed (`/tracker` records principal, rate, term and maturity; `/reinvest` ranks where to
+reinvest), so it was built on top of those rather than as a second tracker. What was
+actually missing, and is now there:
+
+- **Profit per investment and for the portfolio** on `/tracker` (`src/lib/tracker/projection.ts`).
+  It uses the same TDS bands and compounding rules as `/instruments`, so the tracker,
+  the matrix and the ranking agree. A confirmed payout counts as real profit, not an
+  estimate. Only four instrument types (Sanchayapatra, govt bond, FDR, mutual fund) get a
+  tax figure; the rest are shown before tax and say so. A donation returns nothing and is
+  left out of the totals.
+- **A consolidated figure on `/reinvest`**: profit already tracked plus the extra
+  after-tax profit from putting the amount into a category, shown for the top-ranked
+  category in a summary card and for every category on its own card. Only the incremental
+  profit is added, so the payout being reinvested is not counted twice.
+
+**What is suggested is still a category, not a named place.** "Another place" means
+Sanchayapatra, Govt Bond/Sukuk, Bank FDR or Mutual Fund, never a specific bank, branch or
+fund. That is the advice-vs-math line above, and it stays in force: the profit figures are
+arithmetic on numbers the person typed, but picking a named institution would be a verdict.
+Naming a bank would be a separate, deliberate owner decision (the per-bank rate data in
+`/rates` exists, so it is technically easy; the regulatory exposure is the reason it is
+not done). Every profit figure is labelled an estimate, not a guarantee.
+
 ## Why the bank health/scorecard idea is higher-stakes than it first looked
 
 At the time of planning, Bangladesh's banking sector was in a documented stress period:

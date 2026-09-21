@@ -1,7 +1,10 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import { computeReinvestSuggestion, type ReinvestCategoryScore } from "@/lib/reinvest/suggest";
+import Link from "next/link";
+import { computeReinvestSuggestion, maturityTenureYears, type ReinvestCategoryScore } from "@/lib/reinvest/suggest";
+import { consolidateWithReinvestment, summarizePortfolio } from "@/lib/tracker/projection";
+import type { InvestmentEntryDTO } from "@/components/tracker/types";
 import type { TaxCalculationResult } from "@/lib/tax/types";
 import { fmtTaka } from "@/lib/format";
 import { NumberField } from "@/components/ui/fields";
@@ -19,12 +22,14 @@ export function ReinvestPlanner({
   taxResult,
   investmentEntryId,
   investmentLabel,
+  trackedInvestments,
 }: {
   initialAmount: number;
   initialHorizonYears: number;
   taxResult: TaxCalculationResult | null;
   investmentEntryId: string | null;
   investmentLabel: string | null;
+  trackedInvestments: InvestmentEntryDTO[];
 }) {
   const { t, lang } = useLanguage();
 
@@ -44,6 +49,29 @@ export function ReinvestPlanner({
     () => computeReinvestSuggestion({ reinvestAmount: amount, horizonYears, hasPSR, inflationPct, taxResult }),
     [amount, horizonYears, hasPSR, inflationPct, taxResult]
   );
+
+  // Profit the person is already on track to earn, so each category can show
+  // what their total would be if the money went there. See lib/tracker/projection.ts.
+  const portfolio = useMemo(
+    () => summarizePortfolio(trackedInvestments, { hasPSR }),
+    [trackedInvestments, hasPSR]
+  );
+  const termYears = maturityTenureYears(horizonYears);
+  const consolidatedByCategory = useMemo(
+    () =>
+      new Map(
+        result.categories.map((c) => [
+          c.category,
+          consolidateWithReinvestment(portfolio, {
+            amount: result.reinvestAmount,
+            maturityValue: c.totalMaturityValue,
+          }),
+        ])
+      ),
+    [result, portfolio]
+  );
+  const topCategory = result.categories[0];
+  const topConsolidated = consolidatedByCategory.get(topCategory.category);
 
   // When arriving from a specific tracked investment (tracker's maturity
   // panel or a reminder link), log the suggestion once against that
@@ -191,10 +219,63 @@ export function ReinvestPlanner({
         </div>
       </div>
 
+      {/* Consolidated profit: already tracked + reinvested in the top-ranked category */}
+      {portfolio.count > 0 && topConsolidated ? (
+        <div className="bg-card border border-green p-4.5 rounded-sm mb-4 shadow-xs">
+          <h2 className="font-serif font-semibold text-base text-green-deep mb-3">
+            {t("Your consolidated profit", "আপনার সম্মিলিত মুনাফা")}
+          </h2>
+          <dl className="text-sm space-y-1.5">
+            <div className="flex justify-between gap-3">
+              <dt>{t("Your tracked investments (real + estimated)", "আপনার ট্র্যাক করা বিনিয়োগ (প্রকৃত + আনুমানিক)")}</dt>
+              <dd className="font-mono shrink-0">{fmtTaka(topConsolidated.trackedProfit)}</dd>
+            </div>
+            <div className="flex justify-between gap-3">
+              <dt>
+                {t(
+                  `+ Reinvesting ${fmtTaka(result.reinvestAmount)} in ${topCategory.nameEn} for ${termYears} yr`,
+                  `+ ${fmtTaka(result.reinvestAmount)} ${topCategory.nameBn}-এ ${termYears} বছরের জন্য পুনঃবিনিয়োগ`
+                )}
+              </dt>
+              <dd className="font-mono shrink-0">{fmtTaka(topConsolidated.reinvestProfit)}</dd>
+            </div>
+            <div className="flex justify-between gap-3 pt-2 border-t border-line font-semibold">
+              <dt>{t("Consolidated profit", "সম্মিলিত মুনাফা")}</dt>
+              <dd className="font-mono text-green">{fmtTaka(topConsolidated.consolidatedProfit)}</dd>
+            </div>
+          </dl>
+          <p className="text-[11px] text-muted mt-3 leading-snug">
+            {t(
+              "After source tax. Tracked profit is what your investments earn over their own terms; the reinvestment line is the extra profit over the term shown at today's catalog rate for the top-ranked category, and every category below shows its own consolidated figure. Estimates from the numbers you entered, not a guarantee and not advice.",
+              "উৎসে কর কেটে। ট্র্যাক করা মুনাফা হলো আপনার বিনিয়োগগুলো নিজ নিজ মেয়াদে যা আয় করবে; পুনঃবিনিয়োগের লাইনটি হলো শীর্ষ র‍্যাংকের ক্যাটাগরিতে আজকের তালিকাভুক্ত হারে দেখানো মেয়াদে বাড়তি মুনাফা, আর নিচের প্রতিটি ক্যাটাগরি নিজস্ব সম্মিলিত সংখ্যা দেখায়। আপনার দেওয়া সংখ্যা থেকে আনুমানিক হিসাব, নিশ্চয়তা বা পরামর্শ নয়।"
+            )}
+            {portfolio.anyTaxNotModelled &&
+              t(" Some tracked types are counted before tax.", " ট্র্যাক করা কিছু ধরন কর ছাড়া ধরা হয়েছে।")}
+          </p>
+        </div>
+      ) : (
+        <div className="bg-[#FAF9F5] border border-line px-4 py-2.5 mb-4 text-xs text-muted">
+          {t(
+            "Track your investments to see a consolidated profit here: what you're already on track to earn, plus what reinvesting would add.",
+            "এখানে সম্মিলিত মুনাফা দেখতে আপনার বিনিয়োগ ট্র্যাক করুন: আপনি ইতিমধ্যে যা আয় করার পথে আছেন, আর পুনঃবিনিয়োগ কত যোগ করবে।"
+          )}{" "}
+          <Link href="/tracker" className="text-green-deep underline font-medium">
+            {t("Open the tracker →", "ট্র্যাকার খুলুন →")}
+          </Link>
+        </div>
+      )}
+
       {/* Ranked categories */}
       <div className="space-y-4">
         {result.categories.map((c, idx) => (
-          <CategoryCard key={c.category} score={c} rank={idx + 1} lang={lang} t={t} />
+          <CategoryCard
+            key={c.category}
+            score={c}
+            rank={idx + 1}
+            lang={lang}
+            t={t}
+            consolidatedProfit={portfolio.count > 0 ? consolidatedByCategory.get(c.category)?.consolidatedProfit ?? null : null}
+          />
         ))}
       </div>
 
@@ -243,11 +324,14 @@ function CategoryCard({
   rank,
   lang,
   t,
+  consolidatedProfit,
 }: {
   score: ReinvestCategoryScore;
   rank: number;
   lang: "en" | "bn";
   t: (en: string, bn: string) => string;
+  /** Tracked profit plus this category's reinvestment profit; null when nothing is tracked yet. */
+  consolidatedProfit: number | null;
 }) {
   const isTop = rank === 1;
   const reasons = lang === "bn" ? score.reasonsBn : score.reasonsEn;
@@ -323,6 +407,15 @@ function CategoryCard({
           {t("maturity value", "মেয়াদপূর্তির মূল্য")}: <span className="font-mono">{fmtTaka(score.totalMaturityValue)}</span>
         </span>
       </div>
+
+      {consolidatedProfit !== null && (
+        <div className="mt-2 text-[12px]">
+          <span className="text-muted">
+            {t("Consolidated with your tracked profit", "আপনার ট্র্যাক করা মুনাফাসহ সম্মিলিত")}:{" "}
+          </span>
+          <span className="font-mono font-semibold text-green-deep">{fmtTaka(consolidatedProfit)}</span>
+        </div>
+      )}
     </div>
   );
 }

@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { TAX_RULES } from "@/config/tax-rules-2025-26";
 import { calculateTax } from "@/lib/tax/calculate";
 import { EMPTY_TAX_INPUT, type TaxCalculatorInput } from "@/lib/tax/types";
-import { computeReinvestSuggestion, REINVEST_CATEGORY_IDS } from "./suggest";
+import { computeReinvestSuggestion, maturityTenureYears, REINVEST_CATEGORY_IDS } from "./suggest";
 
 // Known bank/product names that must never appear anywhere in the output —
 // this module scores instrument *categories* only (see docs/product-notes.md's
@@ -210,5 +210,24 @@ describe("computeReinvestSuggestion — reasoning text", () => {
       const mentioned = c.reasonsEn.some((r) => r.includes(pctStr)) || c.reasonsBn.some((r) => r.includes(pctStr));
       expect(mentioned).toBe(true);
     }
+  });
+});
+
+describe("maturityTenureYears", () => {
+  it("rounds the horizon to whole years and keeps it inside 1-20", () => {
+    expect(maturityTenureYears(0.5)).toBe(1);
+    expect(maturityTenureYears(2.4)).toBe(2);
+    expect(maturityTenureYears(2.5)).toBe(3);
+    expect(maturityTenureYears(25)).toBe(20);
+    expect(maturityTenureYears(Number.NaN)).toBe(3);
+  });
+
+  it("matches the term computeReinvestSuggestion projects each maturity value over", () => {
+    // Two horizons that round to the same whole year must give identical maturity values.
+    const a = computeReinvestSuggestion({ reinvestAmount: 500_000, horizonYears: 3.2, taxResult: null });
+    const b = computeReinvestSuggestion({ reinvestAmount: 500_000, horizonYears: 2.8, taxResult: null });
+    expect(maturityTenureYears(3.2)).toBe(maturityTenureYears(2.8));
+    const maturity = (r: typeof a) => Object.fromEntries(r.categories.map((c) => [c.category, c.totalMaturityValue]));
+    expect(maturity(a)).toEqual(maturity(b));
   });
 });
