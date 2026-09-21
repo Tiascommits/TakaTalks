@@ -3,6 +3,7 @@ import { Newsreader, Noto_Sans_Bengali, IBM_Plex_Mono } from "next/font/google";
 import "./globals.css";
 import { LanguageProvider } from "@/lib/i18n";
 import { SiteNav } from "@/components/SiteNav";
+import { Analytics } from "@/components/Analytics";
 
 const newsreader = Newsreader({
   variable: "--font-newsreader",
@@ -39,6 +40,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <SiteNav />
           <div className="flex-1 flex flex-col">{children}</div>
         </LanguageProvider>
+        <Analytics />
       </body>
     </html>
   );

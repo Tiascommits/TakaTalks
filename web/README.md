@@ -35,7 +35,9 @@ to show live data (see `src/lib/rates/`, `src/lib/bank-health/`, `src/lib/admin/
 1. Create two free Postgres databases (e.g. two Neon branches/databases) —
    one for prod, one throwaway one for e2e tests.
 2. In Vercel, import this GitHub repo, set the **Root Directory** to `web`.
-3. Add env vars in the Vercel project: `DATABASE_URL` (prod database).
+3. Add env vars in the Vercel project: `DATABASE_URL` (prod database), and
+   `NEXT_PUBLIC_GOATCOUNTER_CODE` if you want analytics (see below) — set that one on
+   the **production** environment only, so preview deploys don't skew the stats.
 4. Deploy. Vercel runs the `vercel-build` script (`prisma migrate deploy &&
    next build`), which applies any pending migrations to `DATABASE_URL`
    before building — no separate migration step needed on future pushes.
@@ -72,6 +74,36 @@ drives both the site nav and the homepage tool tabs — add a tool there, not in
 `TaxProfile`, `ReminderLog`, `Bank`, `RateSnapshot`, `ScrapeLog`, `BBAggregateRate`,
 `AnnualReportCheckLog`, `ExtractedFigure`, `AdminUser`, `AdminSession`, `AdminAuditLog`,
 `ReinvestSuggestion`.
+
+## Analytics
+
+Pageviews are counted by [GoatCounter](https://www.goatcounter.com): no cookies, no
+personal data, no cross-site tracking — it records path, referrer, browser and country
+and nothing else. That's the only kind of analytics this project's trust posture allows
+(`docs/feature-spec-tax-calculator.md` puts anything that logs the figures people type
+into the calculators explicitly out of scope), and it needs no consent banner.
+
+It is **off unless `NEXT_PUBLIC_GOATCOUNTER_CODE` is set**: with the variable unset the
+component renders nothing, no script is fetched and no request leaves the browser. Set it
+to your goatcounter.com site code (`takatalks` → `https://takatalks.goatcounter.com`), or
+to a hostname if you move to a custom domain or self-host. GoatCounter also ignores
+localhost on its own, so a stray local value won't pollute the stats either.
+
+| Piece | What it does |
+|---|---|
+| `src/lib/analytics/goatcounter.ts` | Pure `countEndpoint()` — turns the configured code/host into the `/count` URL, or `null` to stay off. Unit-tested, including rejecting anything that isn't a plain host. |
+| `src/components/Analytics.tsx` | Loads `count.js` (`afterInteractive`) and counts pageviews. |
+| `src/app/layout.tsx` | Mounts `<Analytics />` once, for the whole site. |
+
+The script's own count-on-load is turned off (`no_onload`) because the App Router
+navigates without reloading the page, so it would only ever see the first page of a
+visit; an effect on `usePathname` counts every path instead, the first one included.
+Verified in a real browser: one count per pageview across client-side navigation, the
+back button and a full reload, with no double-count on the initial load.
+
+To count a custom event later, call
+`window.goatcounter?.count?.({ path: "some-event", event: true })` from a client
+component — same script, no extra setup.
 
 ## Testing
 
