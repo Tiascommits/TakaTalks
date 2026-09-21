@@ -6,6 +6,22 @@ export type YouTubeVideo = {
   publishedAt: string;
 };
 
+type PlaylistThumbnail = { url: string };
+
+type PlaylistItem = {
+  snippet: {
+    title: string;
+    description: string;
+    publishedAt: string;
+    resourceId: { videoId: string };
+    thumbnails?: {
+      maxres?: PlaylistThumbnail;
+      high?: PlaylistThumbnail;
+      default?: PlaylistThumbnail;
+    };
+  };
+};
+
 export async function getLatestYouTubeVideos(maxResults = 6): Promise<YouTubeVideo[]> {
   const apiKey = process.env.YOUTUBE_API_KEY;
   const channelId = process.env.YOUTUBE_CHANNEL_ID;
@@ -29,15 +45,21 @@ export async function getLatestYouTubeVideos(maxResults = 6): Promise<YouTubeVid
       return [];
     }
 
-    const data = await response.json();
+    const data: { items: PlaylistItem[] } = await response.json();
 
-    return data.items.map((item: any) => ({
-      id: item.snippet.resourceId.videoId,
-      title: item.snippet.title,
-      description: item.snippet.description,
-      thumbnailUrl: item.snippet.thumbnails?.maxres?.url || item.snippet.thumbnails?.high?.url || item.snippet.thumbnails?.default?.url,
-      publishedAt: item.snippet.publishedAt,
-    }));
+    return data.items.flatMap((item) => {
+      const { thumbnails } = item.snippet;
+      const thumbnailUrl = thumbnails?.maxres?.url || thumbnails?.high?.url || thumbnails?.default?.url;
+      // Private and deleted videos come back without thumbnails; leave them out of the feed.
+      if (!thumbnailUrl) return [];
+      return [{
+        id: item.snippet.resourceId.videoId,
+        title: item.snippet.title,
+        description: item.snippet.description,
+        thumbnailUrl,
+        publishedAt: item.snippet.publishedAt,
+      }];
+    });
   } catch (error) {
     console.error("Error fetching YouTube videos:", error);
     return [];
