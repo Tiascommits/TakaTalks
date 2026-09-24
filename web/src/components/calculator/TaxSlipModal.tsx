@@ -16,7 +16,7 @@ export function TaxSlipModal({
   onClose: () => void;
   shareUrl: string;
 }) {
-  const { t, lang } = useLanguage();
+  const { t } = useLanguage();
   const [copied, setCopied] = useState(false);
 
   function copyLink() {

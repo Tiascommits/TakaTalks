@@ -174,7 +174,6 @@ export function calculateLoan(input: LoanCalculationInput): LoanCalculationResul
   const monthlySchedule: AmortizationMonth[] = [];
   let currentBalance = principal;
   let actualTotalInterest = 0;
-  let actualTotalPrepaid = 0;
   let monthCounter = 0;
 
   while (currentBalance > 0.01 && monthCounter < 600) {
@@ -200,7 +199,6 @@ export function calculateLoan(input: LoanCalculationInput): LoanCalculationResul
     }
 
     const actualPrincipalPaid = scheduledPrincipal + extraThisMonth;
-    actualTotalPrepaid += extraThisMonth;
     const closingBalance = Math.max(0, openingBalance - actualPrincipalPaid);
     const emiPaid = scheduledPrincipal + interestPart;
     const totalMonthPaid = emiPaid + extraThisMonth;

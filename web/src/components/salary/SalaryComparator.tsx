@@ -10,7 +10,7 @@ import { NumberField } from "@/components/ui/fields";
 import { useLanguage } from "@/lib/i18n";
 
 export function SalaryComparator() {
-  const { t, lang } = useLanguage();
+  const { t } = useLanguage();
 
   const [current, setCurrent] = useState<SalaryStructureInput>({
     label: "Current Job",

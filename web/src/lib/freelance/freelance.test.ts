@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { calculateFreelanceEarnings, ITES_CATEGORIES } from "./freelance";
+import { calculateFreelanceEarnings } from "./freelance";
 
 describe("Freelancer & ITES Remittance Engine", () => {
   it("calculates 0% tax for ITES inward remittance with banking FIRC and adds 2.5% cash incentive", () => {

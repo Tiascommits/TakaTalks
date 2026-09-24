@@ -31,6 +31,8 @@ export async function YouTubeFeed() {
             className="group flex flex-col bg-paper rounded-xs overflow-hidden border border-line shadow-xs hover:shadow-sm transition-all"
           >
             <div className="aspect-video relative overflow-hidden bg-black/5">
+              {/* YouTube thumbnails are dynamic remote CDN assets */}
+              {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={video.thumbnailUrl}
                 alt={video.title}

@@ -43,7 +43,6 @@ export function LoanCalculator() {
     [principal, tenureYears, interestRate, processingFeePct, enablePrepayment, extraMonthly, annualLumpSum]
   );
 
-  const interestPctOfPrincipal = principal > 0 ? (result.actualTotalInterestPaid / principal) * 100 : 0;
   const savedYears = Math.floor(result.monthsSaved / 12);
   const savedMonthsRemainder = result.monthsSaved % 12;
 

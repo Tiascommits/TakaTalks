@@ -35,7 +35,7 @@ export function ReinvestPlanner({
 
   const [amount, setAmount] = useState(initialAmount);
   const [horizonYears, setHorizonYears] = useState(
-    Math.round(Math.max(0.5, Math.min(20, initialHorizonYears)) * 2) / 2
+    Math.round(Math.max(1, Math.min(20, initialHorizonYears)))
   );
   const [hasPSR, setHasPSR] = useState(true);
   const [inflationPct, setInflationPct] = useState(8.5);
@@ -172,11 +172,11 @@ export function ReinvestPlanner({
             <input
               id="reinvest-horizon"
               type="range"
-              min={0.5}
+              min={1}
               max={20}
-              step={0.5}
+              step={1}
               value={horizonYears}
-              onChange={(e) => setHorizonYears(parseFloat(e.target.value))}
+              onChange={(e) => setHorizonYears(parseInt(e.target.value, 10))}
               className="w-full accent-green cursor-pointer"
             />
           </div>
