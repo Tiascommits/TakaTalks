@@ -14,7 +14,8 @@ stuff/
 ├── tax_watchdog_agent/     # ⚖️ NBR gazette & budget monitor, tax config updates, Vitest harness
 ├── repurpose_agent/        # 🔁 Multi-channel repurposing (Facebook Banglish posts, LinkedIn carousels)
 ├── community_agent/        # 💬 Comment triage, advice-vs-math compliance guardrails, FAQ scripts
-└── lifecycle_agent/        # 🔔 Maturity alerts (30/60/90 days), lazy money leaks, reinvestment sync
+├── lifecycle_agent/        # 🔔 Maturity alerts (30/60/90 days), lazy money leaks, reinvestment sync
+└── judge_agent/            # ⚖️ Autonomous gatekeeper on push to main (code health, tax rules, security, hygiene)
 ```
 
 ---
@@ -23,6 +24,7 @@ stuff/
 
 | Agent | Directory | Role & Mandate | Key Tools / Code Hook |
 |---|---|---|---|
+| **Judge Agent** | [`judge_agent/`](file:///Users/blackbird/INOVACE/TakaTalks/stuff/judge_agent/) | Autonomous gatekeeper triggered on every push to `main`; audits TypeScript, ESLint, Vitest, NBR tax laws, security, and hygiene. | `.github/workflows/judge.yml`, `tools/judge/judge.mjs` |
 | **Content Agent** | [`content_agent/`](file:///Users/blackbird/INOVACE/TakaTalks/stuff/content_agent/) | Crafts high-converting 30s, 60s, and 3min video scripts promoting TakaTalks' zero-signup tax calculator and bank comparison tools. | `01_SCRIPTS_30S_RAPID_HOOKS.md`, `05_CONTENT_CALENDAR_AND_HOOK_VAULT.md` |
 | **Rate Sentinel** | [`rate_sentinel_agent/`](file:///Users/blackbird/INOVACE/TakaTalks/stuff/rate_sentinel_agent/) | Scrapes and monitors commercial bank FDR/DPS rates daily; flags stale data; calculates true after-tax return (10% vs 15% TDS). | `web/src/app/rates`, `web/src/lib/rates/` |
 | **PDF Extractor** | [`pdf_extractor_agent/`](file:///Users/blackbird/INOVACE/TakaTalks/stuff/pdf_extractor_agent/) | Extracts audited Basel III indicators (CRAR, NPL %, Provisions) from bank annual report PDFs with human-in-the-loop admin verification. | `prompts/03-annual-report-extraction.md` |

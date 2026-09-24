@@ -1,2 +1,13 @@
+# OS artifacts
 .DS_Store
+**/.DS_Store
+Thumbs.db
+
+# Dev tooling
 .claude/
+judge-report.md
+
+# Node & Build artifacts
+node_modules/
+dist/
+build/
