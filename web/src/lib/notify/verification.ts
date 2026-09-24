@@ -43,6 +43,7 @@ async function mergeIntoExistingUser(fromUserId: string, intoUserId: string): Pr
   await prisma.$transaction([
     prisma.incomeEntry.updateMany({ where: { userId: fromUserId }, data: { userId: intoUserId } }),
     prisma.investmentEntry.updateMany({ where: { userId: fromUserId }, data: { userId: intoUserId } }),
+    prisma.reinvestSuggestion.updateMany({ where: { userId: fromUserId }, data: { userId: intoUserId } }),
   ]);
 
   const [fromProfile, intoProfile] = await Promise.all([

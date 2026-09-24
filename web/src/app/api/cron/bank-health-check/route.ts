@@ -36,6 +36,7 @@ export async function GET(request: Request) {
 
   const banks = await prisma.bank.findMany({
     where: whereClause,
+    orderBy: { updatedAt: "asc" },
     take: limit,
   });
 
@@ -45,6 +46,10 @@ export async function GET(request: Request) {
 
   for (const bank of banks) {
     checked++;
+    await prisma.bank.update({
+      where: { id: bank.id },
+      data: { updatedAt: new Date() },
+    }).catch(() => {});
     const result = await checkBankForNewReport(bank);
     if (result.status !== "new_doc") continue;
 
