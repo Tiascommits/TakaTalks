@@ -125,6 +125,17 @@ from you — see `../my-work/` and `../needs-us-both/` for what does.
       Bangla (a temporary route, since removed) because there is no local Postgres here;
       the real data path (`prisma.investmentEntry.findMany` in `/reinvest`'s `page.tsx`)
       is covered by types only, not exercised end to end.
+- [ ] System One's Jev integration (TypeSafe AI, scoped in `../system-one-jev.md`):
+      - [ ] Phase 1: Bank Annual Report PDF selection & section gate (`src/lib/bank-health/fetch-reports.ts`,
+            `extract-figures.ts`). Replace fragile `pickAnnualReportLink` regex heuristics with Jev
+            `Choice` and `Noul` primitives. Run in shadow-mode alongside existing regex first.
+      - [ ] Phase 2: Rate scraper anomaly verification (`src/lib/rates/run-scrape.ts`). Validate
+            extracted deposit rates vs loan rates, tenure brackets, and plausibility score before
+            persisting or surfacing in admin digest.
+      - [ ] Phase 3: Bank SMS & transaction event classification for `/tracker` (bridge to KhorochPati.ai).
+            Parse multi-bank transaction SMS into structured payout / debit events with confidence gating.
+      - [ ] Phase 4: Fast-track intent router on `/` hero search (<100ms routing to `/salary`,
+            `/calculator`, `/goals`, `/reinvest`).
 
 ## Known follow-ups, not blocking
 

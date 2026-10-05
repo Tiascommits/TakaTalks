@@ -41,6 +41,7 @@ keep a copy in a password manager). Use **Config** for public values.
 | `WHATSAPP_REMINDER_TEMPLATE_NAME` | Name of your approved reminder template | Config · Production |
 | `WHATSAPP_OTP_TEMPLATE_NAME` | Name of your approved OTP template | Config · Production |
 | `WHATSAPP_ADMIN_DIGEST_TEMPLATE_NAME` | Optional, same place | Config · Production |
+| `TYPESAFE_API_KEY` | TypeSafe AI API key (for System One's Jev integration; see `todo/system-one-jev.md`) | Secret · Production + Preview |
 
 Generate each secret with this, once per secret, so every value is different:
 
