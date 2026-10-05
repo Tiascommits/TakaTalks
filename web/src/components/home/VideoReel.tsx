@@ -6,12 +6,13 @@ import { useLanguage } from "@/lib/i18n";
 import { VIDEOS } from "@/config/videos";
 
 // The homepage only ever features one clip, so pick the landscape one —
-// a portrait short would letterbox badly at full page width.
+// a portrait short would letterbox badly beside the hero text.
 const FEATURED = VIDEOS.find((v) => v.width > v.height) ?? VIDEOS[0];
 
 /**
- * Full-width featured video. Autoplays (muted, so the browser allows it)
- * once it's mostly in view, and pauses again once it scrolls off-screen.
+ * The featured video, sized to sit beside the homepage hero text. Autoplays
+ * (muted, so the browser allows it) once it's mostly in view, and pauses
+ * again once it scrolls off-screen.
  */
 export function VideoReel() {
   const { t } = useLanguage();
@@ -38,69 +39,43 @@ export function VideoReel() {
   }, []);
 
   return (
-    <section className="bg-green-deep text-paper py-8 sm:py-12">
-      <div className="max-w-[1160px] mx-auto px-5">
-        <div className="flex items-end justify-between gap-4 mb-5">
-          <div>
-            <p className="font-mono text-[10px] tracking-wider text-gold mb-1.5">
-              {t("WATCH", "দেখুন")}
-            </p>
-            <h2 className="font-serif font-bold text-xl sm:text-2xl leading-tight">
-              {t("Watch the video, then run your own numbers", "ভিডিও দেখুন, তারপর নিজের হিসাব করুন")}
-            </h2>
-          </div>
+    <div className="w-full">
+      <div
+        className="w-full rounded-sm overflow-hidden border border-line bg-black/80 shadow-md"
+        style={{ aspectRatio: `${FEATURED.width} / ${FEATURED.height}` }}
+      >
+        {FEATURED.platform === "local" ? (
+          <video
+            ref={videoRef}
+            src={FEATURED.url}
+            muted
+            loop
+            playsInline
+            controls
+            preload="metadata"
+            className="w-full h-full object-cover"
+          />
+        ) : (
+          <iframe
+            src={FEATURED.url}
+            className="w-full h-full"
+            allow="autoplay; encrypted-media; picture-in-picture; web-share"
+            allowFullScreen
+            loading="lazy"
+            title={t(FEATURED.title.en, FEATURED.title.bn)}
+          />
+        )}
+      </div>
 
-          <Link
-            href="/videos"
-            className="hidden sm:block shrink-0 font-mono text-[10px] tracking-wider text-gold hover:underline"
-          >
-            {t("SEE ALL VIDEOS →", "সব ভিডিও →")}
-          </Link>
-        </div>
-
-        <div
-          className="w-full rounded-sm overflow-hidden border border-paper/15 bg-black/20"
-          style={{ aspectRatio: `${FEATURED.width} / ${FEATURED.height}` }}
-        >
-          {FEATURED.platform === "local" ? (
-            <video
-              ref={videoRef}
-              src={FEATURED.url}
-              muted
-              loop
-              playsInline
-              controls
-              preload="metadata"
-              className="w-full h-full object-cover"
-            />
-          ) : (
-            <iframe
-              src={FEATURED.url}
-              className="w-full h-full"
-              allow="autoplay; encrypted-media; picture-in-picture; web-share"
-              allowFullScreen
-              loading="lazy"
-              title={t(FEATURED.title.en, FEATURED.title.bn)}
-            />
-          )}
-        </div>
-
-        <div className="mt-4">
-          <h3 className="font-serif font-semibold text-sm">
-            {t(FEATURED.title.en, FEATURED.title.bn)}
-          </h3>
-          <p className="text-xs text-paper/70 leading-relaxed mt-0.5">
-            {t(FEATURED.description.en, FEATURED.description.bn)}
-          </p>
-        </div>
-
+      <div className="mt-2 flex items-baseline justify-between gap-3">
+        <p className="text-xs text-muted truncate">{t(FEATURED.title.en, FEATURED.title.bn)}</p>
         <Link
           href="/videos"
-          className="sm:hidden mt-4 block text-center font-mono text-[10px] tracking-wider text-gold hover:underline"
+          className="shrink-0 font-mono text-[10px] tracking-wider text-green hover:underline"
         >
           {t("SEE ALL VIDEOS →", "সব ভিডিও →")}
         </Link>
       </div>
-    </section>
+    </div>
   );
 }

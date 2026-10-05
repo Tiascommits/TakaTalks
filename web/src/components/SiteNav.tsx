@@ -108,6 +108,7 @@ export function SiteNav() {
   }, [toolsOpen]);
 
   const demoActive = pathname === "/videos";
+  const vizActive = pathname.startsWith("/viz");
 
   return (
     <nav className="bg-green-deep text-paper border-b-4 border-gold relative z-40">
@@ -142,6 +143,15 @@ export function SiteNav() {
         </div>
 
         <Link
+          href="/viz"
+          className={`hidden md:block text-sm transition-colors ${
+            vizActive ? "text-gold" : "hover:text-gold"
+          }`}
+        >
+          {t("Visualizers", "ভিজ্যুয়ালাইজার")}
+        </Link>
+
+        <Link
           href="/videos"
           className={`hidden md:block text-sm transition-colors ${
             demoActive ? "text-gold" : "hover:text-gold"
@@ -171,6 +181,13 @@ export function SiteNav() {
           id="mobile-nav-menu"
           className="md:hidden border-t border-paper/20 px-5 py-4 flex flex-col gap-4 max-h-[75vh] overflow-y-auto"
         >
+          <Link
+            href="/viz"
+            onClick={() => setMenuOpen(false)}
+            className="text-sm font-semibold hover:text-gold transition-colors"
+          >
+            {t("Visualizers", "ভিজ্যুয়ালাইজার")}
+          </Link>
           <Link
             href="/videos"
             onClick={() => setMenuOpen(false)}

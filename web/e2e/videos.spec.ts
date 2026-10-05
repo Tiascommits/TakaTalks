@@ -24,16 +24,10 @@ test.describe("Videos (/videos)", () => {
 test.describe("Homepage video reel (/)", () => {
   test("shows the reel with a real embed and links through to the videos page", async ({ page }) => {
     await page.goto("/");
-    await expect(
-      page.getByRole("heading", {
-        name: /Watch the video, then run your own numbers|ভিডিও দেখুন, তারপর নিজের হিসাব করুন/,
-      })
-    ).toBeVisible();
-
     // The reel embeds the actual video, not placeholder art.
     await expect(page.locator("video, iframe").first()).toBeVisible();
 
-    // The reel renders two "see all" links (header and footer), copy is "SEE ALL VIDEOS →" / "সব ভিডিও →".
+    // The reel's "see all" link, copy is "SEE ALL VIDEOS →" / "সব ভিডিও →".
     await page.getByRole("link", { name: /see all videos|সব ভিডিও/i }).first().click();
     await expect(page).toHaveURL(/\/videos/);
   });

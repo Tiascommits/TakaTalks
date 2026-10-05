@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useLanguage } from "@/lib/i18n";
 import { VideoReel } from "@/components/home/VideoReel";
 import { ToolTabs } from "@/components/home/ToolTabs";
+import { VizStrip } from "@/components/home/VizStrip";
 
 const TRUST_POINTS = [
   {
@@ -34,45 +35,49 @@ export default function Home() {
 
   return (
     <div className="flex-1 flex flex-col">
-      {/* Hero — kept short enough that the tool picker below is reachable
-          on a phone without a long scroll. */}
-      <section className="px-5 pt-10 pb-8 sm:pt-14 sm:pb-12 bg-gradient-to-b from-[#FAF9F5] to-paper">
-        <div className="max-w-2xl mx-auto text-center">
-          <span className="inline-block font-mono text-[10px] sm:text-xs tracking-wider text-gold border border-gold/40 px-2.5 py-0.5 rounded-xs mb-3">
-            {t("PERSONAL FINANCE FOR BANGLADESH", "বাংলাদেশের জন্য পার্সোনাল ফাইন্যান্স")}
-          </span>
-          <h1 className="font-serif font-bold text-[1.75rem] leading-[1.15] sm:text-4xl text-green-deep mb-3">
-            {t(
-              "Your Money, In Your Hands — Powered by Math",
-              "তোমার টাকার পূর্ণ নিয়ন্ত্রণ — নিখুঁত গাণিতিক হিসাব"
-            )}
-          </h1>
-          <p className="text-sm sm:text-base text-[#444] leading-relaxed mb-6 max-w-xl mx-auto">
-            {t(
-              "Tax, salary, savings and loan calculators built on Bangladesh's actual rules — with the source for every number.",
-              "বাংলাদেশের প্রকৃত নিয়মে তৈরি কর, বেতন, সঞ্চয় ও ঋণের ক্যালকুলেটর — প্রতিটি সংখ্যার সূত্রসহ।"
-            )}
-          </p>
-          <div className="flex flex-col sm:flex-row gap-3 sm:justify-center">
-            <Link
-              href="/calculator"
-              className="bg-green-deep text-paper px-6 py-3 font-medium hover:bg-green transition-colors rounded-xs shadow-xs"
-            >
-              {t("Estimate my tax", "আমার কর হিসাব করুন")}
-            </Link>
-            <Link
-              href="/videos"
-              className="border border-green-deep text-green-deep px-6 py-3 font-medium hover:bg-[#EFF6F1] transition-colors rounded-xs"
-            >
-              {t("Watch the demo", "ডেমো দেখুন")}
-            </Link>
+      {/* Hero — text beside the featured video on wide screens, stacked on
+          phones, kept short so the tool picker is reachable without a long scroll. */}
+      <section className="px-5 pt-8 pb-6 sm:pt-12 sm:pb-8 bg-gradient-to-b from-[#FAF9F5] to-paper">
+        <div className="max-w-[1160px] mx-auto grid gap-8 md:grid-cols-[minmax(0,1fr)_minmax(0,1.1fr)] md:items-center">
+          <div className="text-center md:text-left">
+            <span className="inline-block font-mono text-[10px] sm:text-xs tracking-wider text-gold border border-gold/40 px-2.5 py-0.5 rounded-xs mb-3">
+              {t("PERSONAL FINANCE FOR BANGLADESH", "বাংলাদেশের জন্য পার্সোনাল ফাইন্যান্স")}
+            </span>
+            <h1 className="font-serif font-bold text-[1.75rem] leading-[1.15] sm:text-4xl text-green-deep mb-3">
+              {t(
+                "Your Money, In Your Hands — Powered by Math",
+                "তোমার টাকার পূর্ণ নিয়ন্ত্রণ — নিখুঁত গাণিতিক হিসাব"
+              )}
+            </h1>
+            <p className="text-sm sm:text-base text-[#444] leading-relaxed mb-6 max-w-xl mx-auto md:mx-0">
+              {t(
+                "Tax, salary, savings and loan calculators built on Bangladesh's actual rules — with the source for every number.",
+                "বাংলাদেশের প্রকৃত নিয়মে তৈরি কর, বেতন, সঞ্চয় ও ঋণের ক্যালকুলেটর — প্রতিটি সংখ্যার সূত্রসহ।"
+              )}
+            </p>
+            <div className="flex flex-col sm:flex-row gap-3 sm:justify-center md:justify-start">
+              <Link
+                href="/calculator"
+                className="bg-green-deep text-paper px-6 py-3 font-medium hover:bg-green transition-colors rounded-xs shadow-xs"
+              >
+                {t("Estimate my tax", "আমার কর হিসাব করুন")}
+              </Link>
+              <Link
+                href="/videos"
+                className="border border-green-deep text-green-deep px-6 py-3 font-medium hover:bg-[#EFF6F1] transition-colors rounded-xs"
+              >
+                {t("Watch the demo", "ডেমো দেখুন")}
+              </Link>
+            </div>
           </div>
+
+          <VideoReel />
         </div>
       </section>
 
-      <VideoReel />
-
       <ToolTabs />
+
+      <VizStrip />
 
       <section className="border-t border-line bg-card/60">
         <div className="max-w-[1160px] mx-auto px-5 py-8 grid gap-5 sm:grid-cols-3">

@@ -21,7 +21,7 @@ export function ToolTabs() {
   const tools = toolsInCategory(active);
 
   return (
-    <section className="max-w-[1160px] mx-auto px-5 py-10 sm:py-14 w-full">
+    <section className="max-w-[1160px] mx-auto px-5 pt-4 pb-6 sm:pt-6 sm:pb-8 w-full">
       <div className="text-center mb-6">
         <h2 className="font-serif font-bold text-xl sm:text-2xl text-green-deep">
           {t("What are you working out today?", "আজ কী হিসাব করতে চান?")}
