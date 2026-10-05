@@ -188,13 +188,14 @@ export const loadingCar: VizDef = {
     // LOADING… 42%
     let y = vy + vh + 110;
     const loadingLabel = g.pct >= 1 ? t("DOWNLOAD COMPLETE", "ডাউনলোড সম্পূর্ণ") : t("LOADING…", "লোড হচ্ছে…");
-    text(ctx, loadingLabel, stage.x, y - 14, { size: 30, weight: 500, family: "mono", color: theme.muted });
+    text(ctx, loadingLabel, stage.x, y - 14, { size: 30, weight: 500, family: "mono", color: theme.muted, maxW: stage.w * 0.4 });
     text(ctx, fmtPct(g.pct, lang), stage.x + stage.w, y, {
       size: 120,
       weight: 700,
       family: "serif",
       color: theme.accent,
       align: "right",
+      maxW: stage.w * 0.55,
     });
 
     // Segmented progress bar, retro installer style.
@@ -215,6 +216,7 @@ export const loadingCar: VizDef = {
       weight: 500,
       family: "mono",
       color: theme.muted,
+      maxW: stage.w * 0.42,
     });
 
     const line = tierLine(g.pct, [
@@ -231,7 +233,7 @@ export const loadingCar: VizDef = {
       weight: 600,
       color: theme.ink,
       align: "right",
-      maxW: stage.w * 0.62,
+      maxW: stage.w * 0.54,
     });
 
     goalStats(p, { x: stage.x, y: y + 40, w: stage.w, h: 140 }, g);

@@ -198,7 +198,9 @@ export function text(ctx: CanvasRenderingContext2D, str: string, x: number, y: n
   const weight = o.weight ?? 400;
   ctx.font = font(weight, size, o.family);
   if (o.maxW) {
-    while (size > 8 && ctx.measureText(str).width > o.maxW) {
+    // Aim a little under the limit: measured and drawn widths can disagree
+    // (Safari can measure with the web font but draw with a wider fallback).
+    while (size > 8 && ctx.measureText(str).width > o.maxW * 0.94) {
       size -= 1;
       ctx.font = font(weight, size, o.family);
     }
@@ -208,7 +210,10 @@ export function text(ctx: CanvasRenderingContext2D, str: string, x: number, y: n
   ctx.fillStyle = o.color;
   ctx.textAlign = o.align ?? "left";
   ctx.textBaseline = o.baseline ?? "alphabetic";
-  ctx.fillText(str, x, y);
+  // Passing maxWidth makes the browser itself squeeze the text if it would still
+  // overflow with whatever font it actually draws — the hard guarantee.
+  if (o.maxW) ctx.fillText(str, x, y, o.maxW);
+  else ctx.fillText(str, x, y);
   ctx.restore();
   return size;
 }
@@ -288,7 +293,7 @@ export function statRow(
       family: "mono",
       color: it.highlight ? theme.onAccent : theme.muted,
       align: "center",
-      maxW: w - 24,
+      maxW: w - 32,
       alpha: it.highlight ? 0.85 : 1,
     });
     text(ctx, it.value, x + w / 2, box.y + box.h * 0.78, {
@@ -297,7 +302,7 @@ export function statRow(
       family: "serif",
       color: fg,
       align: "center",
-      maxW: w - 24,
+      maxW: w - 32,
     });
   });
 }

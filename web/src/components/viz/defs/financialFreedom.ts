@@ -183,7 +183,14 @@ export const financialFreedom: VizDef = {
     ctx.beginPath();
     ctx.arc(me.x, me.y, cell * 0.32, 0, Math.PI * 2);
     ctx.fill();
-    text(ctx, t("ME", "আমি"), me.x, me.y + 7, { size: 20, weight: 700, family: "sans", color: "#fff", align: "center" });
+    text(ctx, t("ME", "আমি"), me.x, me.y + 7, {
+      size: 20,
+      weight: 700,
+      family: "sans",
+      color: "#fff",
+      align: "center",
+      maxW: cell * 0.5,
+    });
 
     // Stats
     const age = num(s, "age");

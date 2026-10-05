@@ -134,6 +134,7 @@ export const matirBank: VizDef = {
       family: "serif",
       color: "#fff",
       align: "center",
+      maxW: R * 1.6,
     });
     text(ctx, t("FULL", "ভরেছে"), cx, cy + R * 0.42, {
       size: 26,
