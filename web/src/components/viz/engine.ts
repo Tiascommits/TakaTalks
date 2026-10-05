@@ -171,7 +171,10 @@ export function loadAssets(): Promise<void> {
     img.src = "/logo-mark.png";
   });
 
-  assetsPromise = Promise.all([...fontLoads, logoLoad]).then(() => undefined);
+  assetsPromise = Promise.all([...fontLoads, logoLoad]).then(() => {
+    // Widths measured with fallback fonts before the web fonts arrived are stale.
+    widthCache.clear();
+  });
   return assetsPromise;
 }
 
@@ -193,27 +196,55 @@ export type TextOpts = {
   alpha?: number;
 };
 
+let measurer: HTMLSpanElement | null = null;
+const widthCache = new Map<string, number>();
+
+/**
+ * Width of `str` in the context's current font. Safari's canvas measureText
+ * reports ~0 for text that needs a fallback font (e.g. "৳" inside a Latin
+ * face), which breaks centring and shrink-to-fit — so measure with DOM layout,
+ * which gets font fallback right in every browser, and take the larger of the two.
+ */
+export function measure(ctx: CanvasRenderingContext2D, str: string): number {
+  const key = `${ctx.font}\u0000${str}`;
+  const hit = widthCache.get(key);
+  if (hit !== undefined) return hit;
+  if (!measurer) {
+    measurer = document.createElement("span");
+    measurer.setAttribute("aria-hidden", "true");
+    measurer.style.cssText = "position:absolute;left:-99999px;top:0;visibility:hidden;white-space:pre;";
+    document.body.appendChild(measurer);
+  }
+  measurer.style.font = ctx.font;
+  measurer.textContent = str;
+  const w = Math.max(measurer.getBoundingClientRect().width, ctx.measureText(str).width);
+  if (widthCache.size > 4000) widthCache.clear();
+  widthCache.set(key, w);
+  return w;
+}
+
 export function text(ctx: CanvasRenderingContext2D, str: string, x: number, y: number, o: TextOpts): number {
   let size = o.size;
   const weight = o.weight ?? 400;
   ctx.font = font(weight, size, o.family);
+  let width = measure(ctx, str);
   if (o.maxW) {
-    // Aim a little under the limit: measured and drawn widths can disagree
-    // (Safari can measure with the web font but draw with a wider fallback).
-    while (size > 8 && ctx.measureText(str).width > o.maxW * 0.94) {
+    while (size > 8 && width > o.maxW * 0.96) {
       size -= 1;
       ctx.font = font(weight, size, o.family);
+      width = measure(ctx, str);
     }
   }
+  // Align by hand from our own measurement rather than trusting textAlign,
+  // which uses the canvas's (in Safari, wrong) width.
+  const align = o.align ?? "left";
+  const dx = align === "center" ? -width / 2 : align === "right" || align === "end" ? -width : 0;
   ctx.save();
   ctx.globalAlpha = o.alpha ?? 1;
   ctx.fillStyle = o.color;
-  ctx.textAlign = o.align ?? "left";
+  ctx.textAlign = "left";
   ctx.textBaseline = o.baseline ?? "alphabetic";
-  // Passing maxWidth makes the browser itself squeeze the text if it would still
-  // overflow with whatever font it actually draws — the hard guarantee.
-  if (o.maxW) ctx.fillText(str, x, y, o.maxW);
-  else ctx.fillText(str, x, y);
+  ctx.fillText(str, x + dx, y);
   ctx.restore();
   return size;
 }
@@ -225,7 +256,7 @@ export function wrap(ctx: CanvasRenderingContext2D, str: string, maxW: number, m
   let line = "";
   for (const w of words) {
     const next = line ? `${line} ${w}` : w;
-    if (ctx.measureText(next).width <= maxW || !line) line = next;
+    if (measure(ctx, next) <= maxW || !line) line = next;
     else {
       lines.push(line);
       line = w;
@@ -469,7 +500,7 @@ export function renderPoster(ctx: CanvasRenderingContext2D, input: RenderInput):
   ctx.globalAlpha = 0.6;
   const mark = "takatalks.com/viz";
   ctx.font = font(500, 19, "mono");
-  const mw = ctx.measureText(mark).width;
+  const mw = measure(ctx, mark);
   text(ctx, mark, W - pad, footY, { size: 19, weight: 500, family: "mono", color: theme.muted, align: "right" });
   if (logo) ctx.drawImage(logo, W - pad - mw - 30, footY - 19, 22, 22);
   ctx.restore();

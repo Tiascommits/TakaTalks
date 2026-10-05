@@ -6,7 +6,7 @@ import {
   progress,
   realReturnPct,
 } from "@/lib/viz/math";
-import { fillRound, font, statRow, text, type Poster, type VizDef, type VizState } from "../engine";
+import { fillRound, font, measure, statRow, text, type Poster, type VizDef, type VizState } from "../engine";
 import { num } from "./common";
 
 function calc(s: VizState) {
@@ -30,7 +30,7 @@ function cellCenter(n: number, x0: number, y0: number, cell: number) {
 function pill(p: Poster, label: string, x: number, y: number, bg: string, fg: string) {
   const { ctx } = p;
   ctx.font = font(600, 17);
-  const w = ctx.measureText(label).width + 18;
+  const w = measure(ctx, label) + 18;
   fillRound(ctx, { x: x - w / 2, y: y - 15, w, h: 28 }, 14, bg);
   text(ctx, label, x, y + 5, { size: 17, weight: 600, color: fg, align: "center" });
 }
