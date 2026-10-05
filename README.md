@@ -97,6 +97,8 @@ Hand these to Claude Code **in order**. Each one assumes the previous module exi
 | 4 | Life goal planner (car, flat, education, retirement) | Built in `web/` (`/goals`) |
 | 4 | Salary offer analyzer & net take-home benchmark | Built in `web/` (`/salary`) |
 | 4 | Real yield matrix (Sanchayapatra vs FDR vs Sukuk) | Built in `web/` (`/instruments`) |
+| 6 | Money habit tracker & guide (micro-spend regulation) | Built in `web/` (`/habits`) — unit cost × frequency for subscriptions, data packs, delivery, rides and card spend, with user-set monthly caps and comparisons against alternatives the person prices themselves |
+| 6 | Financial freedom (FIRE) calculator & roadmap | Built in `web/` (`/freedom`) — lifestyle-based corpus, inflation on both sides, existing passive income netted off, corpus allocation by role, and a year-by-year roadmap with a coast marker |
 | 5 | Smart reinvestment optimizer | Built in `web/` (`/reinvest`, and surfaced from `/tracker`'s maturity flow), ahead of the original "needs real usage data" gate — see `docs/product-notes.md` for why that was safe: it's deterministic category-level scoring, not an LLM verdict, and stays on the math side of the advice-vs-math line |
 
 ## A few things to keep true as this grows

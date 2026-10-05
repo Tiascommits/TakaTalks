@@ -133,6 +133,18 @@ export const TOOLS: Tool[] = [
     },
   },
   {
+    href: "/habits",
+    category: "earn",
+    icon: "🧋",
+    tag: { en: "SMALL SPENDS, REAL TOTAL", bn: "ছোট খরচ, আসল হিসাব" },
+    title: { en: "Money Habit Tracker & Guide", bn: "মানি হ্যাবিট ট্র্যাকার ও গাইড" },
+    navLabel: { en: "Habit Tracker", bn: "অভ্যাস ট্র্যাকার" },
+    desc: {
+      en: "Data packs, delivery, rides, subscriptions — set a cap on each, see the yearly cost, and what the gap becomes if saved.",
+      bn: "ডেটা প্যাক, ডেলিভারি, রাইড, সাবস্ক্রিপশন — প্রতিটির সীমা ঠিক করুন, বছরের খরচ দেখুন, আর সঞ্চয় করলে তা কত হতো জানুন।",
+    },
+  },
+  {
     href: "/instruments",
     category: "save",
     icon: "📊",
@@ -178,6 +190,18 @@ export const TOOLS: Tool[] = [
     desc: {
       en: "Model car, flat, child education, or retirement milestones adjusted for Bangladesh inflation.",
       bn: "গাড়ি, ফ্ল্যাটের ডাউনপেমেন্ট, উচ্চশিক্ষা বা আগাম অবসরের বাস্তবসম্মত সঞ্চয় লক্ষ্য নির্ধারণ করুন।",
+    },
+  },
+  {
+    href: "/freedom",
+    category: "save",
+    icon: "🏝️",
+    tag: { en: "YOUR FREEDOM NUMBER", bn: "স্বাধীনতার অঙ্ক" },
+    title: { en: "Financial Freedom Calculator & Roadmap", bn: "আর্থিক স্বাধীনতা ক্যালকুলেটর ও রোডম্যাপ" },
+    navLabel: { en: "Financial Freedom", bn: "আর্থিক স্বাধীনতা" },
+    desc: {
+      en: "The corpus the life you actually want needs — after inflation, after the rent you already collect — with an allocation and a year-by-year roadmap.",
+      bn: "আপনি যে জীবন চান তার জন্য প্রয়োজনীয় মূলধন — মূল্যস্ফীতি ও বিদ্যমান ভাড়ার আয় হিসাবে ধরে — সাথে মূলধন ভাগ ও বছরভিত্তিক রোডম্যাপ।",
     },
   },
   {

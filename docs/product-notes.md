@@ -154,3 +154,87 @@ KhorochPati.ai's passive SMS-based expense tracking are solving adjacent problem
 transaction data automatically). Worth deciding whether TakaTalks's tracker sits on top of
 whatever pipe KhorochPati.ai builds, rather than building bank-SMS parsing twice under two
 brands.
+
+## Money habits and the financial-freedom roadmap (2026-10-05)
+
+Two features the product owner asked for by voice note, built together because they are the
+two ends of the same question — where the money leaks out, and what it is supposed to add up
+to.
+
+### `/habits` — money habit tracker & guide
+
+The ask: track the micro-to-mini spends people repeat without noticing (subscriptions, mobile
+data top-ups, food delivery, ride sharing, daily small spends, card purchases), and nudge
+people toward better habits — including concrete suggestions like "a bigger internet bundle
+would be cheaper than the packs you keep buying" or "your budget is holding, but consider
+cooking at home more often".
+
+Why it is a separate tool rather than part of `/tracker`: `/tracker` records discrete amounts
+(an income that arrived, a deposit that matures on a date). A habit has no amount to record —
+it has a unit cost and a frequency, and the number that matters is the product nobody computes
+in their head.
+
+**How the nudges stay on the math side of the line above.** The suggestions the owner
+described are genuinely useful, but "switch to that package" or "that restaurant is cheaper"
+would be the app shopping on someone's behalf with prices it cannot verify. So every
+comparison is anchored to a number the person supplies themselves:
+
+- the monthly cap is theirs, and OVER_CAP / NEAR_CAP only compare their spend to their limit
+- BUNDLE_CHEAPER needs them to type what one month-long pack costs; the tool does the
+  multiplication (`8 × ৳49 = ৳392` against a `৳299` bundle), it does not look the pack up
+- SELF_SERVE_GAP needs them to type what the same thing costs done themselves, and offers
+  swapping *half* the occurrences, not giving the habit up
+- LOW_USE / UNUSED_SUBSCRIPTION divides their own cost by their own usage count
+
+No operator, restaurant, app or bank is named anywhere in the output, and a test asserts it.
+Headline saving takes the **largest** nudge per habit, never the sum, so two nudges describing
+the same taka from different angles cannot inflate the figure. The identified saving is then
+compounded at the same net DPS benchmark `/goals` uses, so the two tools agree.
+
+**Persistence.** This is the first tool on the site that keeps state between visits — a habit
+list that forgets is useless. It is kept in `localStorage` via an external store
+(`src/lib/habits/store.ts`), the same `useSyncExternalStore` shape as the saved language, so
+nothing reaches a server and the trust position holds. The banner on the page says so, and
+says that clearing browser data clears the list.
+
+**Not built:** scheduled email/WhatsApp nudges. The existing notification pipeline is tied to
+a `User` row and verified contact details, so push reminders would mean an account, consent
+plumbing and a cron job — a deliberate, separate decision rather than something to add
+quietly to a no-signup client-side tool. Every nudge today is in-app.
+
+### `/freedom` — financial freedom calculator & roadmap
+
+The ask: go beyond the existing retirement number — let people set their own inflation rate,
+model the life they actually want afterwards (stop entirely, light work, travel, move to the
+village, stay home), count passive income they already have (flat rent, shop rent), show how
+the corpus should be deployed (a safe floor versus a small business they could afford to lose),
+and give a milestone timeline from their current age to their target age.
+
+It is a new tool rather than an extension of `/goals`' `RETIREMENT_FIRE` preset because that
+preset asks "what monthly DPS reaches a number you already picked", and all four of the things
+above are about deriving the number itself.
+
+Decisions worth remembering:
+
+- **Inflation is counted twice**: it inflates the bill at the freedom age, and it erodes the
+  return while the corpus is being spent. A negative real return is reported as negative, and
+  the "never touch the principal" figure is withheld (`null`) rather than shown as a very large
+  but misleading number.
+- **Two numbers, not one**: a depleting corpus that lands at zero at the plan-until age (the
+  headline, and what the roadmap targets) and a perpetual one. The depleting one is honest
+  about the fact that most people do not need to fund eternity.
+- **Light-work income only counts for the lifestyle that includes it**, so switching to "stop
+  entirely" cannot silently keep crediting income the person just gave up.
+- **Each passive source carries its own growth rate**, because a rent raised slower than
+  inflation quietly shrinks as a share of the bill.
+- **The allocation describes roles, not products**: liquid buffer, income floor, growth,
+  venture. The carve order is the substance — buffer and floor first, so the venture slice can
+  only be funded from genuine surplus, and it is capped at a fifth of the corpus however high
+  the appetite slider goes. A total loss there still leaves every essential bill paid. No bank
+  or fund is named; a test asserts it.
+- **"Can I get there sooner" re-prices the number at every candidate age.** A later freedom
+  costs more per month but funds fewer years, so comparing a projected balance against a number
+  computed for a different age would quietly flatter the answer.
+- **Coast age is measured against what they actually save**, not the required amount. On the
+  required path the money is needed right up to the last month by construction, so coasting
+  against it would always report the freedom age and tell them nothing.

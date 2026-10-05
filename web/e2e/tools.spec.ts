@@ -137,6 +137,76 @@ test.describe("Zakat Calculator (/zakat)", () => {
   });
 });
 
+test.describe("Money Habit Tracker (/habits)", () => {
+  test("loads with starter habits, totals them, and reacts to a cap being set", async ({ page }) => {
+    await page.goto("/habits");
+    await expect(page.getByText(/মানি হ্যাবিট ট্র্যাকার|Money Habit Tracker/).first()).toBeVisible();
+    await noGarbageOnPage(page);
+
+    // The starter set is multiplied out into a monthly and a yearly total.
+    await expect(page.getByText(/প্রকৃত মোট|THE REAL TOTAL/)).toBeVisible();
+    await expect(page.getByText(/বারো মাসে:|Over twelve months:/)).toBeVisible();
+
+    // A bundle price cheaper than repeat top-ups produces a comparison nudge.
+    await expect(page.getByText(/একবারে কেনা সস্তা|in one go is cheaper/).first()).toBeVisible();
+
+    // Adding a habit from a category appends a card.
+    const before = await page.getByRole("button", { name: /Remove habit|অভ্যাস সরান/ }).count();
+    await page.getByRole("button", { name: /প্রতিদিনের খুচরা খরচ|Daily small spends/ }).click();
+    await expect(page.getByRole("button", { name: /Remove habit|অভ্যাস সরান/ })).toHaveCount(before + 1);
+    await noGarbageOnPage(page);
+  });
+
+  test("keeps the list across a reload, since a tracker is useless if it forgets", async ({ page }) => {
+    await page.goto("/habits");
+    const removeButtons = page.getByRole("button", { name: /Remove habit|অভ্যাস সরান/ });
+    const before = await removeButtons.count();
+
+    await removeButtons.first().click();
+    await expect(removeButtons).toHaveCount(before - 1);
+
+    await page.reload();
+    await expect(page.getByRole("button", { name: /Remove habit|অভ্যাস সরান/ })).toHaveCount(before - 1);
+    await noGarbageOnPage(page);
+  });
+});
+
+test.describe("Financial Freedom Calculator (/freedom)", () => {
+  test("loads cleanly, switches lifestyle, and re-prices the freedom number", async ({ page }) => {
+    await page.goto("/freedom");
+    await expect(
+      page.getByText(/আর্থিক স্বাধীনতা ক্যালকুলেটর|Financial Freedom Calculator/).first()
+    ).toBeVisible();
+    await noGarbageOnPage(page);
+
+    await expect(page.getByText(/আপনার স্বাধীনতার অঙ্ক|YOUR FREEDOM NUMBER/)).toBeVisible();
+    await expect(page.getByText(/মূলধন থেকে আসতে হবে|The corpus must produce/)).toBeVisible();
+    await expect(page.getByText(/প্রতি মাসে সঞ্চয়|Save every month/)).toBeVisible();
+
+    // Moving to the village is a cheaper life, so the number has to fall.
+    const numberCard = page.locator("div.bg-green-deep").filter({ hasText: /স্বাধীনতার অঙ্ক|FREEDOM NUMBER/ });
+    const fullStop = await numberCard.locator("div.text-2xl").innerText();
+    await page.getByRole("button", { name: /গ্রামে বা মফস্বলে|Move to the village/ }).click();
+    await expect(numberCard.locator("div.text-2xl")).not.toHaveText(fullStop);
+    await noGarbageOnPage(page);
+  });
+
+  test("subtracts a passive income source and shows the corpus allocation and roadmap", async ({ page }) => {
+    await page.goto("/freedom");
+
+    await page.getByRole("button", { name: /উৎস যোগ করুন|Add source/ }).click();
+    await expect(page.getByText(/বাদ প্যাসিভ আয়|Less passive income/)).toBeVisible();
+
+    await expect(page.getByText(/মূলধন জমা হলে|How the corpus gets split/)).toBeVisible();
+    await expect(page.getByText(/আয়ের ভিত্তি|Income floor/).first()).toBeVisible();
+    // By role, not by text: the page header mentions the roadmap too.
+    await expect(
+      page.getByRole("heading", { name: /বছরভিত্তিক রোডম্যাপ|Year-by-year roadmap/ })
+    ).toBeVisible();
+    await noGarbageOnPage(page);
+  });
+});
+
 test.describe("Homepage tool picker (/)", () => {
   // The homepage deliberately shows one category of tools at a time rather
   // than all nine at once, so the whole page stays about a screen tall on a
@@ -159,11 +229,15 @@ test.describe("Homepage tool picker (/)", () => {
     await page.getByRole("tab", { name: /আয়|^Earn$/ }).click();
     await expect(page.getByText(/স্যালারি অফার ও ইন-হ্যান্ড পে|Salary Offer/)).toBeVisible();
     await expect(page.getByText(/ইনকাম ও ইনভেস্টমেন্ট ট্র্যাকার|Income & Investment/)).toBeVisible();
+    await expect(page.getByText(/মানি হ্যাবিট ট্র্যাকার ও গাইড|Money Habit Tracker & Guide/)).toBeVisible();
 
     await page.getByRole("tab", { name: /সঞ্চয়|^Save$/ }).click();
     await expect(page.getByText(/সঞ্চয় স্কিম তুলনামূলক ম্যাট্রিক্স|Real Yield Matrix/)).toBeVisible();
     await expect(page.getByText(/ব্যাংক রেট ও স্বাস্থ্য স্কোরকার্ড|Bank Rates/)).toBeVisible();
     await expect(page.getByText(/ভবিষ্যৎ লক্ষ্য ও অবসর প্ল্যানার|Life Goal/)).toBeVisible();
+    await expect(
+      page.getByText(/আর্থিক স্বাধীনতা ক্যালকুলেটর ও রোডম্যাপ|Financial Freedom Calculator & Roadmap/)
+    ).toBeVisible();
 
     await page.getByRole("tab", { name: /ঋণ ও যাকাত|Borrow & Give/ }).click();
     await expect(page.getByText(/লোন ও গৃহঋণ ইএমআই প্ল্যানার|Loan & Home EMI/)).toBeVisible();
