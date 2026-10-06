@@ -142,16 +142,6 @@ function CalculatorFormInner({ initial }: { initial?: Partial<TaxCalculatorInput
               currency={false}
               {...n("disabledChildren")}
             />
-            <div className="pt-5">
-              <CheckField
-                label={t(
-                  "First-time filer (min tax ৳1,000 — common convention; statutory is ৳3k-৳5k)",
-                  "প্রথমবার করদাতা (min tax ৳১,০০০ — প্রচলিত চর্চা; আইনে এলাকাভেদে ৳৩,০০০-৳৫,০০০)"
-                )}
-                checked={input.firstTimeFiler}
-                onChange={(b) => setInput({ ...input, firstTimeFiler: b })}
-              />
-            </div>
           </div>
         </Fieldset>
 

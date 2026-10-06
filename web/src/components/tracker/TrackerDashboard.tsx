@@ -70,7 +70,6 @@ export function TrackerDashboard({
   const [savingProfile, setSavingProfile] = useState(false);
   const categoryId = useId();
   const disabledChildrenId = useId();
-  const firstTimeFilerId = useId();
 
   async function addIncome(e: NewIncome): Promise<boolean> {
     const res = await fetch("/api/income", {
@@ -194,18 +193,6 @@ export function TrackerDashboard({
               }
               className="w-full px-2.5 py-2 border border-line bg-[#FCFBF8] text-sm"
             />
-          </div>
-          <div className="flex items-center gap-2">
-            <input
-              id={firstTimeFilerId}
-              type="checkbox"
-              checked={profile.firstTimeFiler}
-              onChange={(e) => setProfile({ ...profile, firstTimeFiler: e.target.checked })}
-              className="w-auto"
-            />
-            <label htmlFor={firstTimeFilerId} className="text-sm">
-              {t("First-time filer", "প্রথমবার করদাতা")}
-            </label>
           </div>
         </div>
         <button

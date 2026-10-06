@@ -3,11 +3,16 @@ import { notFound } from "next/navigation";
 import { VIZ_LIST, getVizMeta } from "@/lib/viz/registry";
 import { VizStudio } from "@/components/viz/VizStudio";
 
+type VizPageProps = {
+  params: Promise<{ slug: string }>;
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+};
+
 export function generateStaticParams() {
   return VIZ_LIST.map((v) => ({ slug: v.slug }));
 }
 
-export async function generateMetadata({ params }: PageProps<"/viz/[slug]">): Promise<Metadata> {
+export async function generateMetadata({ params }: VizPageProps): Promise<Metadata> {
   const { slug } = await params;
   const meta = getVizMeta(slug);
   if (!meta) return {};
@@ -21,7 +26,7 @@ export async function generateMetadata({ params }: PageProps<"/viz/[slug]">): Pr
   };
 }
 
-export default async function VizPage({ params, searchParams }: PageProps<"/viz/[slug]">) {
+export default async function VizPage({ params, searchParams }: VizPageProps) {
   const { slug } = await params;
   if (!getVizMeta(slug)) notFound();
   const raw = await searchParams;

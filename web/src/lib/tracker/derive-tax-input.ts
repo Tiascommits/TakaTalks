@@ -95,7 +95,6 @@ export function deriveTaxInputFromTracker(
   if (profile) {
     input.categoryId = CATEGORY_CODE_TO_ID[profile.category] ?? "general";
     input.disabledChildren = profile.disabledChildren;
-    input.firstTimeFiler = profile.firstTimeFiler;
     input.netWealth = profile.netWealth;
     input.multiCar = profile.multiCar;
     input.bigHouse = profile.bigHouse;
