@@ -197,12 +197,6 @@ describe("calculateTax — minimum tax", () => {
     expect(r.minApplied).toBe(true);
   });
 
-  it("applies the reduced first-time-filer minimum tax", () => {
-    const r = calculateTax(
-      input({ businessAnnual: 450000, invStockAnnual: 100000, firstTimeFiler: true })
-    );
-    expect(r.taxAfterRebate).toBe(TAX_RULES.minTaxFirstTime);
-  });
 
   it("applies location-specific statutory minimum tax for non-Dhaka/Ctg locations", () => {
     const otherCity = calculateTax(
@@ -312,7 +306,6 @@ describe("calculateTax — weird / adversarial input", () => {
     const kitchenSink = input({
       categoryId: "third_gender",
       disabledChildren: 4,
-      firstTimeFiler: true,
       basicMonthly: 5000000,
       allowanceMonthly: 2000000,
       bonusAnnual: 10000000,

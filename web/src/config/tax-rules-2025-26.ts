@@ -78,7 +78,6 @@ export const TAX_RULES = {
   dpsCap: 120000, // per year
 
   minTaxByLocation: MIN_TAX_BY_LOCATION,
-  minTaxFirstTime: 1000,
   minTaxRegular: 5000,
 
   // Freelance / IT-enabled export-service income: confirmed 2026-09-16

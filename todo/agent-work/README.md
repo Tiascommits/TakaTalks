@@ -137,6 +137,25 @@ from you — see `../my-work/` and `../needs-us-both/` for what does.
       - [ ] Phase 4: Fast-track intent router on `/` hero search (<100ms routing to `/salary`,
             `/calculator`, `/goals`, `/reinvest`).
 
+- [x] Judge Agent failures on `8c9dc54` fixed (2026-10-07). (1) `tsc` failed in CI only:
+      `src/app/viz/[slug]/page.tsx` used Next's global `PageProps<...>`, which exists only
+      after `next build`/`next dev` generates `.next/types`, so a fresh checkout couldn't see
+      it. Replaced with explicit prop types, matching `tracker/page.tsx`. (2) Removed the
+      non-statutory ৳1,000 first-time-filer minimum tax (`minTaxFirstTime`). The minimum
+      floor is now purely location-based (৳5k/৳4k/৳3k), `firstTimeFiler` is gone from
+      `TaxCalculatorInput`, and the checkbox is gone from `/calculator` and `/tracker`.
+      Judge passes locally: 0 errors, 0 warnings, 312 tests.
+- [ ] Drop the now-unused `firstTimeFiler` column: `prisma/schema.prisma` (TaxProfile),
+      `/api/profile` route, `TaxProfileDTO` in `src/components/tracker/types.ts`, and the
+      default in `TrackerDashboard.tsx`. Needs a Prisma migration.
+- [ ] `tools/tax-calculator/v4-rebate-optimizer.html` still applies `minTaxFirstTime: 1000`
+      (line ~497, used at ~590). Remove it the same way, or mark the prototype as retired.
+      The judge only checks `web/`, so it won't flag this.
+- [ ] `/calculator` layout check: with the first-time-filer checkbox removed, the "disabled
+      children" field sits alone in a `grid-cols-2` row at half width
+      (`CalculatorForm.tsx`, profile fieldset). Look at it in the browser and make it
+      full width if it looks off.
+
 ## Known follow-ups, not blocking
 
 - `/reinvest`'s slider allows horizons under 1 year (min 0.5), but each category's maturity

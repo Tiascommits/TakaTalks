@@ -119,11 +119,10 @@ test.describe("Calculator — weird / adversarial input", () => {
     await noGarbageOnPage(page);
   });
 
-  test("checking first-time-filer and every net-wealth flag at once still renders cleanly", async ({
+  test("checking every net-wealth flag at once still renders cleanly", async ({
     page,
   }) => {
     await page.goto("/calculator");
-    await page.getByLabel(/প্রথমবার করদাতা/).check();
     await page.getByLabel("ব্যবসা / পেশার নেট মুনাফা (annual)").fill("450000");
     await page.getByRole("button", { name: /significant সম্পদ/ }).click();
     await page.getByLabel(/একাধিক গাড়ি আছে/).check();

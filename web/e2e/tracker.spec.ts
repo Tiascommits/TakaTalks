@@ -89,7 +89,6 @@ test.describe("Tracker — normal cases", () => {
   test("saving the tax profile persists across a reload", async ({ page }) => {
     await page.goto("/tracker");
     await page.getByLabel("প্রতিবন্ধী সন্তান সংখ্যা").fill("2");
-    await page.getByLabel(/প্রথমবার করদাতা/).check();
     await Promise.all([
       page.waitForResponse((res) => res.url().includes("/api/profile") && res.request().method() === "PUT"),
       page.getByRole("button", { name: "প্রোফাইল সেভ করো" }).click(),
@@ -97,7 +96,6 @@ test.describe("Tracker — normal cases", () => {
 
     await page.reload();
     await expect(page.getByLabel("প্রতিবন্ধী সন্তান সংখ্যা")).toHaveValue("2");
-    await expect(page.getByLabel(/প্রথমবার করদাতা/)).toBeChecked();
   });
 });
 
