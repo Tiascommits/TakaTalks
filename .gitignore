@@ -4,7 +4,8 @@
 Thumbs.db
 
 # Dev tooling
-.claude/
+.claude/*
+!.claude/skills/
 judge-report.md
 
 # Node & Build artifacts
