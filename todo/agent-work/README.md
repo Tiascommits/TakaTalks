@@ -145,16 +145,26 @@ from you — see `../my-work/` and `../needs-us-both/` for what does.
       floor is now purely location-based (৳5k/৳4k/৳3k), `firstTimeFiler` is gone from
       `TaxCalculatorInput`, and the checkbox is gone from `/calculator` and `/tracker`.
       Judge passes locally: 0 errors, 0 warnings, 312 tests.
-- [ ] Drop the now-unused `firstTimeFiler` column: `prisma/schema.prisma` (TaxProfile),
+- [x] Drop the now-unused `firstTimeFiler` column: `prisma/schema.prisma` (TaxProfile),
       `/api/profile` route, `TaxProfileDTO` in `src/components/tracker/types.ts`, and the
       default in `TrackerDashboard.tsx`. Needs a Prisma migration.
-- [ ] `tools/tax-calculator/v4-rebate-optimizer.html` still applies `minTaxFirstTime: 1000`
+- [x] `tools/tax-calculator/v4-rebate-optimizer.html` still applies `minTaxFirstTime: 1000`
       (line ~497, used at ~590). Remove it the same way, or mark the prototype as retired.
       The judge only checks `web/`, so it won't flag this.
-- [ ] `/calculator` layout check: with the first-time-filer checkbox removed, the "disabled
+- [x] `/calculator` layout check: with the first-time-filer checkbox removed, the "disabled
       children" field sits alone in a `grid-cols-2` row at half width
       (`CalculatorForm.tsx`, profile fieldset). Look at it in the browser and make it
       full width if it looks off.
+
+      Done 2026-10-08: column dropped (migration `20261008120000_drop_first_time_filer`),
+      v4 prototype now uses the regular ৳5,000 floor only, and the disabled-children field
+      is full width.
+- [x] Video hosting (2026-10-08): the `.mp4`s were already gone (ef1f778) and every entry in
+      `config/videos.ts` is YouTube. Removed the dead `"local"` platform, and fixed the
+      homepage `VideoReel`, which put the raw `youtube.com/watch` URL in an iframe (YouTube
+      refuses to be framed that way, so the player was blank). It now uses the shared
+      `VideoEmbed`. The old `.mp4`s are still in git history (~32 MB pack); shrinking that
+      would need a history rewrite, which is not done.
 
 ## Known follow-ups, not blocking
 
