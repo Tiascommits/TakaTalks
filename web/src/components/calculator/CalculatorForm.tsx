@@ -136,7 +136,7 @@ function CalculatorFormInner({ initial }: { initial?: Partial<TaxCalculatorInput
               ]}
             />
           </div>
-          <div className="grid grid-cols-2 gap-2.5 mt-2">
+          <div className="mt-2">
             <NumberField
               label={t("Number of disabled children (each +৳50,000 tax-free)", "প্রতিবন্ধী সন্তান সংখ্যা (each +৳50,000 tax-free)")}
               currency={false}

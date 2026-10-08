@@ -373,14 +373,9 @@
           <option value="550000">মুক্তিযোদ্ধা / জুলাই যোদ্ধা — ৳5,50,000</option>
         </select>
       </div>
-      <div class="grid2">
-        <div class="field">
-          <label>প্রতিবন্ধী সন্তান সংখ্যা (each +৳50,000 tax-free)</label>
-          <input type="number" id="disabledChildren" value="0" min="0">
-        </div>
-        <div class="field">
-          <div class="checkline" style="margin-top:22px;"><input type="checkbox" id="firstTime"><label for="firstTime" style="margin:0;">প্রথমবার করদাতা (first-time, min tax ৳1,000)</label></div>
-        </div>
+      <div class="field">
+        <label>প্রতিবন্ধী সন্তান সংখ্যা (each +৳50,000 tax-free)</label>
+        <input type="number" id="disabledChildren" value="0" min="0">
       </div>
     </fieldset>
 
@@ -494,7 +489,6 @@ const TAX_RULES = {
   sharesFundExemption: 5000000,     // 50 lakh
   sharedGroupCap: 500000,           // sanchay+bond+MF combined
   dpsCap: 120000,                   // per year
-  minTaxFirstTime: 1000,
   minTaxRegular: 5000,
   surchargeThresholds: [
     {above: 500000000, rate: 0.35},
@@ -540,7 +534,6 @@ function slabTax(amount){
 function computeTax(){
   const taxFree = parseFloat(document.getElementById('category').value)
                 + num('disabledChildren') * 50000;
-  const firstTime = document.getElementById('firstTime').checked;
 
   // Income heads
   const grossSalary = (num('basic') + num('allowance')) * 12 + num('bonus') + num('employerPF') * 12;
@@ -587,7 +580,7 @@ function computeTax(){
 
   let taxAfterRebate = Math.max(0, grossTax - rebate);
 
-  const minFloor = firstTime ? TAX_RULES.minTaxFirstTime : TAX_RULES.minTaxRegular;
+  const minFloor = TAX_RULES.minTaxRegular;
   let minApplied = false;
   const totalIncomeAll = slabBase + sharesFundGain + cgAfter5 + cgGold;
   if(totalIncomeAll > taxFree && taxAfterRebate < minFloor){
@@ -623,7 +616,7 @@ function computeTax(){
     rebate3pct, rebate10pct, rebate,
     taxAfterRebate, minApplied, minFloor,
     surchargeRate, surchargeAmt, totalLiability,
-    ait, netPayable, taxFree, firstTime, totalIncomeAll
+    ait, netPayable, taxFree, totalIncomeAll
   };
 }
 

@@ -61,7 +61,6 @@ export function TrackerDashboard({
     initialProfile ?? {
       category: "GENERAL",
       disabledChildren: 0,
-      firstTimeFiler: false,
       netWealth: 0,
       multiCar: false,
       bigHouse: false,

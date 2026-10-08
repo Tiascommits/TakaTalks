@@ -23,7 +23,7 @@ export async function GET() {
 
 export async function PUT(request: Request) {
   const body = await request.json().catch(() => null);
-  const { category, disabledChildren, firstTimeFiler, netWealth, multiCar, bigHouse } = body ?? {};
+  const { category, disabledChildren, netWealth, multiCar, bigHouse } = body ?? {};
 
   const validCategory: TaxpayerCategory | undefined =
     typeof category === "string" && VALID_CATEGORIES.includes(category as TaxpayerCategory)
@@ -32,7 +32,6 @@ export async function PUT(request: Request) {
   const cleanDisabledChildren =
     disabledChildren !== undefined ? nonNegativeInt(disabledChildren, 0) : undefined;
   const cleanNetWealth = netWealth !== undefined ? nonNegativeNumber(netWealth, 0) : undefined;
-  const cleanFirstTimeFiler = typeof firstTimeFiler === "boolean" ? firstTimeFiler : undefined;
   const cleanMultiCar = typeof multiCar === "boolean" ? multiCar : undefined;
   const cleanBigHouse = typeof bigHouse === "boolean" ? bigHouse : undefined;
 
@@ -43,7 +42,6 @@ export async function PUT(request: Request) {
       userId,
       category: validCategory ?? "GENERAL",
       disabledChildren: cleanDisabledChildren ?? 0,
-      firstTimeFiler: cleanFirstTimeFiler ?? false,
       netWealth: cleanNetWealth ?? 0,
       multiCar: cleanMultiCar ?? false,
       bigHouse: cleanBigHouse ?? false,
@@ -51,7 +49,6 @@ export async function PUT(request: Request) {
     update: {
       ...(validCategory !== undefined ? { category: validCategory } : {}),
       ...(cleanDisabledChildren !== undefined ? { disabledChildren: cleanDisabledChildren } : {}),
-      ...(cleanFirstTimeFiler !== undefined ? { firstTimeFiler: cleanFirstTimeFiler } : {}),
       ...(cleanNetWealth !== undefined ? { netWealth: cleanNetWealth } : {}),
       ...(cleanMultiCar !== undefined ? { multiCar: cleanMultiCar } : {}),
       ...(cleanBigHouse !== undefined ? { bigHouse: cleanBigHouse } : {}),

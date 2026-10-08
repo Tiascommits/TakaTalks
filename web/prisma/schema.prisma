@@ -145,7 +145,6 @@ model TaxProfile {
   user              User             @relation(fields: [userId], references: [id], onDelete: Cascade)
   category          TaxpayerCategory @default(GENERAL)
   disabledChildren  Int              @default(0)
-  firstTimeFiler    Boolean          @default(false)
 
   netWealth         Float            @default(0)
   multiCar          Boolean          @default(false)
