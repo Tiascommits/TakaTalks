@@ -3,7 +3,7 @@
 import { useId, useMemo, useState } from "react";
 import { fmtTaka } from "@/lib/format";
 import { calculateAfterTaxReturn } from "@/lib/rates/after-tax";
-import { DEPOSIT_INSURANCE_COVER_BDT, MARGINAL_TAX_RATE_OPTIONS } from "@/config/rate-monitoring";
+import { DEPOSIT_INSURANCE_COVER_BDT, FDR_SOURCE_TAX } from "@/config/rate-monitoring";
 import type { BankTypeCode, BBAggregateRateDTO, CurrentRateRowDTO } from "./types";
 import { useLanguage } from "@/lib/i18n";
 
@@ -22,6 +22,8 @@ type SortDirection = "asc" | "desc";
 function pct(n: number): string {
   return n.toFixed(2) + "%";
 }
+
+const pctOf = (rate: number) => `${Math.round(rate * 100)}%`;
 
 function fmtDate(iso: string | null): string {
   if (!iso) return "—";
@@ -42,7 +44,7 @@ export function RateScorecard({
 
   const [amount, setAmount] = useState(100000);
   const [termMonths, setTermMonths] = useState<number>(12);
-  const [taxRate, setTaxRate] = useState<number>(0.1);
+  const [taxRate, setTaxRate] = useState<number>(FDR_SOURCE_TAX.withPsr);
   const [sortColumn, setSortColumn] = useState<SortColumn>("bank");
   const [sortDirection, setSortDirection] = useState<SortDirection>("asc");
 
@@ -163,7 +165,7 @@ export function RateScorecard({
           </div>
           <div>
             <label htmlFor={taxId} className="block text-xs text-[#555] mb-1">
-              {t("Your marginal/AIT tax rate (estimate)", "তোমার marginal/AIT tax rate (estimate)")}
+              {t("Source tax the bank deducts", "ব্যাংক যে উৎসে কর কাটবে")}
             </label>
             <select
               id={taxId}
@@ -171,14 +173,21 @@ export function RateScorecard({
               onChange={(e) => setTaxRate(parseFloat(e.target.value))}
               className="w-full px-2.5 py-2 border border-line bg-[#FCFBF8] text-sm"
             >
-              {MARGINAL_TAX_RATE_OPTIONS.map((r) => (
-                <option key={r} value={r}>
-                  {r === 0 ? t("0% (below tax-free limit)", "0% (tax-free সীমার নিচে)") : `${Math.round(r * 100)}%`}
-                </option>
-              ))}
+              <option value={FDR_SOURCE_TAX.withPsr}>
+                {pctOf(FDR_SOURCE_TAX.withPsr)} {t("— I can show proof of return (PSR)", "— রিটার্ন জমার প্রমাণ (PSR) আছে")}
+              </option>
+              <option value={FDR_SOURCE_TAX.withoutPsr}>
+                {pctOf(FDR_SOURCE_TAX.withoutPsr)} {t("— no proof of return", "— রিটার্ন জমার প্রমাণ নেই")}
+              </option>
             </select>
           </div>
         </div>
+        <p className="text-xs text-muted mt-2.5">
+          {t(
+            "Net interest is what is left after the bank's source tax. Your tax return settles the final tax on this interest.",
+            "নীট সুদ = ব্যাংকের উৎসে কর কাটার পর যা থাকে। এই সুদের চূড়ান্ত কর ঠিক হয় আপনার আয়কর রিটার্নে।"
+          )}
+        </p>
       </fieldset>
 
       <fieldset className="border border-line bg-card px-4 pt-4 pb-4.5">

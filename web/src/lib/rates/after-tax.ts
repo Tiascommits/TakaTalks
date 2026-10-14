@@ -1,12 +1,10 @@
 /**
  * Deterministic after-tax return math — the one automated calculation the
  * prompt allows here, since it's arithmetic, not a judgment call about which
- * bank is safer. Marginal tax rate is a direct input rather than derived
- * from a full tax-profile run: FDR/DPS interest is commonly deducted as
- * source tax (AIT) rather than taxed strictly at the slab-marginal rate,
- * and TAX_RULES (src/config/tax-rules-2025-26.ts) doesn't model an AIT
- * rate, so this doesn't guess one — the person picks their own rate, same
- * as the reference demo (tools/fdr-comparison/fdr-dps-comparison.html).
+ * bank is safer. `taxRate` is the source tax the bank deducts from the
+ * interest (see FDR_SOURCE_TAX in src/config/rate-monitoring.ts), which is
+ * what actually lands in the account; the depositor's return settles the
+ * final tax on it.
  */
 export type AfterTaxResult = {
   grossInterest: number;
@@ -19,11 +17,11 @@ export function calculateAfterTaxReturn(
   principal: number,
   annualRatePct: number,
   termMonths: number,
-  marginalTaxRate: number
+  taxRate: number
 ): AfterTaxResult {
   const years = termMonths / 12;
   const grossInterest = principal * (annualRatePct / 100) * years;
-  const taxAmount = grossInterest * marginalTaxRate;
+  const taxAmount = grossInterest * taxRate;
   const netInterest = grossInterest - taxAmount;
   const effectiveAfterTaxRatePct =
     principal > 0 && years > 0 ? (netInterest / years / principal) * 100 : 0;
