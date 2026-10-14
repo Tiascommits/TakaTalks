@@ -7,6 +7,8 @@ import { deriveTaxInputFromTracker } from "@/lib/tracker/derive-tax-input";
 
 export const metadata = {
   title: "আয়কর এস্টিমেটর + রিবেট অপটিমাইজার — TakaTalks",
+  description:
+    "Estimate your Bangladesh income tax for income year 2025-26 (assessment year 2026-27) and see how much more to invest for the full rebate. No signup.",
 };
 
 export default async function CalculatorPage() {

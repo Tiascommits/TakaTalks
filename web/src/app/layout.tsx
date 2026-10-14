@@ -27,9 +27,14 @@ const plexMono = IBM_Plex_Mono({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://www.takatalks.com"),
   title: "TakaTalks — আয়কর ও বিনিয়োগ ট্র্যাকার",
   description:
     "Personal finance tools for a Bangladesh audience: tax calculator, rebate optimizer, and income/investment tracker.",
+  // No title or description here: Next copies each page's own into the og: and
+  // twitter: tags, and the image comes from app/opengraph-image.tsx. A page
+  // that sets its own `openGraph` replaces this whole object, image included.
+  openGraph: { siteName: "TakaTalks", type: "website" },
 };
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
