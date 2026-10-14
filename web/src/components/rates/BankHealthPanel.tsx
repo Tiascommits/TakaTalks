@@ -25,7 +25,7 @@ function latestByField(row: BankHealthRow) {
 export function BankHealthPanel({ rows }: { rows: BankHealthRow[] }) {
   const { t } = useLanguage();
   const [filter, setFilter] = useState<"ALL" | "CAR_COMPLIANT" | "LOW_NPL">("ALL");
-  const notAvailable = t("not disclosed / not extracted", "প্রকাশিত/extract করা হয়নি");
+  const notAvailable = t("not disclosed / not extracted", "প্রকাশ বা সংগ্রহ হয়নি");
 
   const filteredRows = useMemo(() => {
     if (filter === "ALL") return rows;
@@ -44,10 +44,10 @@ export function BankHealthPanel({ rows }: { rows: BankHealthRow[] }) {
   }, [rows, filter]);
 
   return (
-    <fieldset className="border border-line bg-card px-4 pt-4 pb-4.5">
+    <fieldset className="min-w-0 border border-line bg-card px-4 pt-4 pb-4.5">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-2.5">
         <legend className="font-serif font-semibold text-[15.5px] text-green-deep px-1.5">
-          {t("Bank health (from audited annual reports)", "Bank health (audited annual report থেকে)")}
+          {t("Bank health (from audited annual reports)", "ব্যাংকের আর্থিক অবস্থা (নিরীক্ষিত বার্ষিক প্রতিবেদন থেকে)")}
         </legend>
 
         <div className="flex items-center gap-1.5 self-start sm:self-auto">
@@ -90,8 +90,8 @@ export function BankHealthPanel({ rows }: { rows: BankHealthRow[] }) {
 
       <p className="text-xs text-muted mb-3">
         {t(
-          `These figures come from each bank's own audited annual report, dated by fiscal year — they can be a year or more old, and are not the same as the live rates above. Bangladesh Bank's minimum CRAR requirement is ${CRAR_REGULATORY_MINIMUM_PCT}%. No composite score or ranking is computed here — just the disclosed numbers, side by side.`,
-          `এই figures গুলো bank er নিজের audited annual report থেকে, fiscal year অনুযায়ী dated — এক বছর বা তার বেশি পুরনো হতে পারে, উপরের live rate এর মতো না। Bangladesh Bank er minimum CRAR requirement ${CRAR_REGULATORY_MINIMUM_PCT}%. এখানে কোনো composite score বা ranking নেই — শুধু disclosed number গুলো পাশাপাশি।`
+          `These figures come from each bank's own audited annual report, dated by fiscal year — they can be a year or more old, so they are not as current as the rates above. Bangladesh Bank's minimum CRAR requirement is ${CRAR_REGULATORY_MINIMUM_PCT}%. No composite score or ranking is computed here — just the disclosed numbers, side by side.`,
+          `এই সংখ্যাগুলো প্রতিটি ব্যাংকের নিজস্ব নিরীক্ষিত বার্ষিক প্রতিবেদন থেকে নেওয়া, অর্থবছর অনুযায়ী — এক বছর বা তার বেশি পুরনো হতে পারে, তাই উপরের রেটের মতো হালনাগাদ নয়। বাংলাদেশ ব্যাংকের ন্যূনতম CRAR ${CRAR_REGULATORY_MINIMUM_PCT}%। এখানে কোনো সম্মিলিত স্কোর বা র‍্যাংকিং নেই — শুধু প্রকাশিত সংখ্যাগুলো পাশাপাশি।`
         )}
       </p>
 
@@ -130,7 +130,7 @@ export function BankHealthPanel({ rows }: { rows: BankHealthRow[] }) {
                             target="_blank"
                             rel="noopener noreferrer"
                             className="underline decoration-dotted"
-                            title={t(`FY${f.fiscalYear}, audited — source`, `FY${f.fiscalYear}, audited — source`)}
+                            title={t(`FY${f.fiscalYear}, audited — source`, `অর্থবছর ${f.fiscalYear}, নিরীক্ষিত — সূত্র`)}
                           >
                             {f.numericValue !== null ? `${f.numericValue}%` : f.rawValue} (FY{f.fiscalYear})
                           </a>

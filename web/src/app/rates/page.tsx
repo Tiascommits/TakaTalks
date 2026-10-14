@@ -43,7 +43,7 @@ export default async function RatesPage() {
 
       {/* Same rule for bank health: only figures an admin has approved, else nothing. */}
       {bankHealthRows.some((r) => r.figures.length > 0) && (
-        <div className="max-w-[1160px] mx-auto px-5 mb-16">
+        <div className="w-full max-w-[1160px] mx-auto px-5 mb-16">
           <BankHealthPanel rows={JSON.parse(JSON.stringify(bankHealthRows))} />
         </div>
       )}

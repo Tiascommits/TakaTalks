@@ -64,7 +64,7 @@ test.describe("Bank rate scorecard — with seeded rates", () => {
 
     await page.goto("/rates");
     await expect(page.getByText(/Deposit protection|আমানত সুরক্ষা/)).toBeVisible();
-    await expect(page.getByText(/self-reported by banks|self-report করে/)).toBeVisible();
+    await expect(page.getByText(/self-reported by banks|ব্যাংক নিজে প্রকাশ করে/)).toBeVisible();
     await expect(page.getByText("AB Bank PLC")).toBeVisible();
     await expect(page.getByText("Sonali Bank PLC")).toBeVisible();
     // Manual seed figures carry their source's date, never today's.
@@ -74,8 +74,11 @@ test.describe("Bank rate scorecard — with seeded rates", () => {
     const text = await page.locator("body").innerText();
     expect(text).not.toMatch(/best bank|top pick|সেরা ব্যাংক/i);
 
-    await page.getByRole("columnheader", { name: /Gross rate|মোট হার/ }).click();
-    await page.getByRole("columnheader", { name: /Gross rate|মোট হার/ }).click();
+    const sortByRate = page.getByRole("button", { name: /Gross rate|মোট হার/ });
+    await sortByRate.click();
+    await expect(page.getByRole("columnheader", { name: /Gross rate|মোট হার/ })).toHaveAttribute("aria-sort", "ascending");
+    await sortByRate.click();
+    await expect(page.getByRole("columnheader", { name: /Gross rate|মোট হার/ })).toHaveAttribute("aria-sort", "descending");
     await page.getByLabel(/Deposit amount|জমা রাখার পরিমাণ/).fill("200000");
     await noGarbageOnPage(page);
   });

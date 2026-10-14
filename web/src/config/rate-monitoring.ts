@@ -13,9 +13,12 @@ export const FDR_TERMS_MONTHS = [3, 6, 12] as const;
 // flagged in the admin digest as worth a human look.
 export const SIGNIFICANT_CHANGE_THRESHOLD_PCT = 0.25;
 
-// Bangladesh's Deposit Protection Act (2026): per-depositor, per-bank cover,
-// only triggered on formal liquidation. Shown in a permanent, non-dismissible
-// panel above the scorecard per the prompt.
+// Deposit Protection Ordinance 2025 (replaced the Bank Deposit Insurance Act
+// 2000): per-depositor, per-bank cover, paid on liquidation or resolution.
+// Checked 2026-10-15: UNB, 23 Nov 2025 (ordinance promulgated; payout on
+// liquidation or resolution); Dhaka Tribune, "Max Tk2 lakh to be returned
+// upon bank, NBFI closure". Shown in a permanent, non-dismissible panel
+// above the scorecard per the prompt.
 export const DEPOSIT_INSURANCE_COVER_BDT = 200_000;
 
 // Source tax (TDS) a bank deducts from an individual's FDR interest: Income

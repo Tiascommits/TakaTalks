@@ -10,7 +10,7 @@ export function RatesEmptyState() {
   const { t } = useLanguage();
 
   return (
-    <div className="max-w-[1160px] mx-auto px-5 mt-6 mb-16">
+    <div className="w-full max-w-[1160px] mx-auto px-5 mt-6 mb-16">
       <section className="border border-line bg-card px-4 py-5 max-w-[720px]">
         <h2 className="font-serif font-semibold text-lg text-green-deep mb-2">
           {t("Bank rates are not being collected yet", "ব্যাংকের রেট এখনো সংগ্রহ করা হচ্ছে না")}
