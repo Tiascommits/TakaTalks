@@ -152,8 +152,8 @@ function VerifyContent() {
 
       <p className="text-xs text-slate-400 mt-6">
         {t(
-          "Calculations and data stay on your device. Only email and maturity dates are securely synchronized.",
-          "হিসাব ও ডেটা তোমার ডিভাইসেই থাকে। শুধু ইমেইল আর মেয়াদ পূর্তির তারিখ নিরাপদে সিঙ্ক হয়।"
+          "This signs in this browser. Entries saved in another browser stay there; to link them, ask for a link from that browser and open it there.",
+          "এটা এই ব্রাউজারে লগইন করায়। অন্য ব্রাউজারে সেভ করা তথ্য সেখানেই থাকে; সেগুলো যুক্ত করতে ওই ব্রাউজার থেকে লিংক চেয়ে সেখানেই খোলো।"
         )}
       </p>
     </div>

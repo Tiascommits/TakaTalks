@@ -100,12 +100,13 @@ test.describe("Phone OTP guessing limit (/api/account/verify)", () => {
   });
 });
 
-async function seedEmailLink(email: string) {
-  const user = await prisma.user.create({ data: {} });
+/** `requesterId` is the account that asked for the link; a new anonymous one if omitted. */
+async function seedEmailLink(email: string, requesterId?: string) {
+  const userId = requesterId ?? (await prisma.user.create({ data: {} })).id;
   const token = randomBytes(32).toString("hex");
   await prisma.verificationToken.create({
     data: {
-      userId: user.id,
+      userId,
       channel: "EMAIL",
       destination: email,
       token,
@@ -154,5 +155,38 @@ test.describe("Magic-link confirmation screen", () => {
     await page.goto("/account/verify?token=not-a-real-token");
     await expect(page.getByRole("button", { name: /নিশ্চিত করো ও ট্র্যাকারে যাও/ })).toBeVisible();
     await expect(page.getByTestId("verify-target")).toHaveCount(0);
+  });
+});
+
+const income = (label: string) => ({ label, source: "salary", amount: 1000, frequency: "MONTHLY" });
+
+test.describe("Magic-link account fixation", () => {
+  test("a link the attacker requested for the victim's email never shares the attacker's account", async ({
+    request: attacker,
+    page,
+  }) => {
+    const victim = page.request; // separate cookie jar from `attacker`
+    const email = `victim.${Date.now()}@example.com`;
+    const tag = randomBytes(4).toString("hex");
+
+    // 1. The attacker gets an anonymous account by saving something...
+    expect((await attacker.post("/api/income", { data: income(`attacker ${tag}`) })).status()).toBe(201);
+    const attackerId = (await prisma.incomeEntry.findFirstOrThrow({ where: { label: `attacker ${tag}` } })).userId;
+    // 2. ...and asks for a login link to the victim's email (seeded: email sending is off in tests).
+    const token = await seedEmailLink(email, attackerId);
+
+    // 3. The victim, who already saved something anonymously, confirms the genuine link.
+    expect((await victim.post("/api/income", { data: income(`victim before ${tag}`) })).status()).toBe(201);
+    expect((await victim.post("/api/account/verify", { data: { token } })).status()).toBe(200);
+
+    const owner = await prisma.user.findUniqueOrThrow({ where: { email }, include: { incomeEntries: true } });
+    expect(owner.id).not.toBe(attackerId);
+    expect(owner.incomeEntries.map((e) => e.label)).toEqual([`victim before ${tag}`]);
+    expect((await prisma.user.findUniqueOrThrow({ where: { id: attackerId } })).email).toBeNull();
+
+    // 4. What the victim saves next stays invisible to the attacker.
+    expect((await victim.post("/api/income", { data: income(`victim after ${tag}`) })).status()).toBe(201);
+    const seen = (await (await attacker.get("/api/income")).json()).entries.map((e: { label: string }) => e.label);
+    expect(seen).toEqual([`attacker ${tag}`]);
   });
 });
