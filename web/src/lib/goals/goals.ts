@@ -1,3 +1,5 @@
+import { DEFAULT_INFLATION_PCT } from "@/config/inflation";
+
 /**
  * Mathematical models and inflation-adjusted projections for Bangladeshi life goals
  * and retirement planning.
@@ -57,7 +59,7 @@ export const GOAL_PRESETS: Record<GoalCategory, GoalPreset> = {
     titleBn: "ফ্ল্যাট বা জমির ডাউনপেমেন্ট",
     defaultAmount: 3_500_000,
     defaultYears: 5,
-    defaultInflationPct: 8.5,
+    defaultInflationPct: DEFAULT_INFLATION_PCT,
     icon: "🏢",
     descriptionEn: "20-30% initial downpayment + registration costs for buying an apartment or plot.",
     descriptionBn: "ফ্ল্যাট বা প্লট কেনার ২০-৩০% প্রাথমিক ডাউনপেমেন্ট এবং রেজিস্ট্রেশন খরচ।",
@@ -90,7 +92,7 @@ export const GOAL_PRESETS: Record<GoalCategory, GoalPreset> = {
     titleBn: "অবসর / আর্থিক স্বাধীনতা (FIRE)",
     defaultAmount: 15_000_000,
     defaultYears: 15,
-    defaultInflationPct: 8.5,
+    defaultInflationPct: DEFAULT_INFLATION_PCT,
     icon: "🏖️",
     descriptionEn: "Long-term nest egg generating passive interest to cover monthly living expenses.",
     descriptionBn: "দীর্ঘমেয়াদী সঞ্চয় যা অবসরে প্রতি মাসে নিশ্চিন্তে সংসারের খরচ যোগাবে।",
@@ -101,7 +103,7 @@ export const GOAL_PRESETS: Record<GoalCategory, GoalPreset> = {
     titleBn: "কাস্টম ভবিষ্যৎ লক্ষ্য",
     defaultAmount: 1_000_000,
     defaultYears: 3,
-    defaultInflationPct: 8.5,
+    defaultInflationPct: DEFAULT_INFLATION_PCT,
     icon: "🎯",
     descriptionEn: "Plan any personal financial milestone with custom inflation & tenure.",
     descriptionBn: "যেকোনো নির্দিষ্ট আর্থিক লক্ষ্য কাস্টম মেয়াদ ও মূল্যস্ফীতি দিয়ে প্ল্যান করুন।",
@@ -150,7 +152,7 @@ export function calculateGoalPlan({
   category = "CUSTOM",
   presentCost,
   targetYears,
-  inflationPct = 8.5,
+  inflationPct = DEFAULT_INFLATION_PCT,
   existingSavings = 0,
 }: {
   category?: GoalCategory;
@@ -161,7 +163,7 @@ export function calculateGoalPlan({
 }): GoalPlanResult {
   const safeCost = Math.max(0, Number.isFinite(presentCost) ? presentCost : 0);
   const safeYears = Math.max(1, Math.min(40, Number.isFinite(targetYears) ? targetYears : 1));
-  const safeInflation = Math.max(0, Math.min(25, Number.isFinite(inflationPct) ? inflationPct : 8.5)) / 100;
+  const safeInflation = Math.max(0, Math.min(25, Number.isFinite(inflationPct) ? inflationPct : DEFAULT_INFLATION_PCT)) / 100;
   const safeSavings = Math.max(0, Number.isFinite(existingSavings) ? existingSavings : 0);
 
   // Future target adjusted for Bangladesh inflation

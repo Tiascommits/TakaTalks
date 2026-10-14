@@ -30,6 +30,7 @@ import {
 import { calculateOptimizer } from "@/lib/tax/optimizer";
 import { TAX_RULES } from "@/config/tax-rules-2025-26";
 import type { TaxCalculationResult } from "@/lib/tax/types";
+import { DEFAULT_INFLATION_PCT } from "@/config/inflation";
 
 export type ReinvestCategoryId = "SANCHAYAPATRA" | "GOVT_BOND" | "BANK_DEPOSIT" | "MUTUAL_FUND";
 
@@ -167,7 +168,7 @@ export function computeReinvestSuggestion(params: {
   const reinvestAmount = clampAmount(params.reinvestAmount);
   const horizonYears = clampHorizon(params.horizonYears);
   const hasPSR = params.hasPSR ?? true;
-  const inflationPct = Math.max(0, Number.isFinite(params.inflationPct) ? params.inflationPct! : 8.5);
+  const inflationPct = Math.max(0, Number.isFinite(params.inflationPct) ? params.inflationPct! : DEFAULT_INFLATION_PCT);
 
   // compareInstruments' tenureYears only affects the maturity-value
   // projection (compounding period), not the rate itself, and it's only

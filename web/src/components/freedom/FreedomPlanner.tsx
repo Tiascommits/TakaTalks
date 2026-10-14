@@ -11,6 +11,7 @@ import {
 import { fmtTaka } from "@/lib/format";
 import { NumberField } from "@/components/ui/fields";
 import { useLanguage } from "@/lib/i18n";
+import { DEFAULT_INFLATION_PCT } from "@/config/inflation";
 
 const LIFESTYLE_IDS = Object.keys(LIFESTYLE_PRESETS) as FreedomLifestyle[];
 
@@ -79,7 +80,7 @@ export function FreedomPlanner() {
   const [planUntilAge, setPlanUntilAge] = useState(80);
   const [monthlyExpenseToday, setMonthlyExpenseToday] = useState(60_000);
   const [lightWorkIncomeToday, setLightWorkIncomeToday] = useState(0);
-  const [inflationPct, setInflationPct] = useState(8.5);
+  const [inflationPct, setInflationPct] = useState(DEFAULT_INFLATION_PCT);
   const [preFreedomReturnPct, setPreFreedomReturnPct] = useState(9);
   const [postFreedomReturnPct, setPostFreedomReturnPct] = useState(8);
   const [existingCorpus, setExistingCorpus] = useState(500_000);
