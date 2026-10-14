@@ -5,7 +5,7 @@ import { calculateSalaryBreakdown, compareSalaries } from "./salary";
 
 describe("Salary Offer Analyzer (Income Tax Act 2023)", () => {
   it("computes the statutory 1/3 exemption capped at ৳5 lakh (KPMG Bangladesh Tax 2026 p45)", () => {
-    // High salary where 1/3 would exceed 4.5 lakh
+    // High salary where 1/3 would exceed 5 lakh
     const high = calculateSalaryBreakdown({
       label: "Senior Role",
       monthlyBasic: 150_000,
@@ -21,7 +21,7 @@ describe("Salary Offer Analyzer (Income Tax Act 2023)", () => {
   });
 
   it("computes 1/3 exemption when below the ৳5 lakh cap", () => {
-    // Moderate salary where 1/3 is below 4.5 lakh
+    // Moderate salary where 1/3 is below 5 lakh
     const mod = calculateSalaryBreakdown({
       label: "Junior Role",
       monthlyBasic: 30_000,
