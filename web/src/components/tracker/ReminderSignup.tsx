@@ -67,6 +67,8 @@ export function ReminderSignup({
     switch (code) {
       case "too_soon":
         return t("Please wait a minute before requesting another code.", "আরেকটা কোড চাইতে এক মিনিট অপেক্ষা করো।");
+      case "too_many_requests":
+        return t("Too many requests. Please wait a few minutes and try again.", "অনেকবার চাওয়া হয়েছে। কয়েক মিনিট পরে আবার চেষ্টা করো।");
       case "too_many_attempts":
         return t("Too many wrong codes. Please request a new one.", "অনেকবার ভুল কোড দেওয়া হয়েছে। নতুন কোড চেয়ে নাও।");
       case "invalid":

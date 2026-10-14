@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { clientIp, overLimit, tooManyRequests } from "@/lib/rate-limit";
 import { getOrCreateUserId } from "@/lib/tracker/session";
 import { getReinvestContextForUser, logReinvestSuggestion } from "@/lib/reinvest/log";
 
@@ -14,6 +15,7 @@ import { getReinvestContextForUser, logReinvestSuggestion } from "@/lib/reinvest
  * (that's still reserved for turning on email/WhatsApp reminders).
  */
 export async function POST(request: Request) {
+  if (await overLimit("write", clientIp(request))) return tooManyRequests();
   const body = await request.json().catch(() => null);
   const reinvestAmount = body?.reinvestAmount;
   const horizonYears = body?.horizonYears;

@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { IncomeFrequency } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
+import { clientIp, overLimit, tooManyRequests } from "@/lib/rate-limit";
 import { getCurrentUserId, getOrCreateUserId } from "@/lib/tracker/session";
 import { MAX_AMOUNT_TAKA, MAX_LABEL_LENGTH, MAX_SOURCE_LENGTH } from "@/lib/tracker/limits";
 
@@ -18,6 +19,7 @@ export async function GET() {
 const VALID_FREQUENCIES = Object.values(IncomeFrequency);
 
 export async function POST(request: Request) {
+  if (await overLimit("write", clientIp(request))) return tooManyRequests();
   const body = await request.json().catch(() => null);
   const { label, source, amount, frequency } = body ?? {};
 
