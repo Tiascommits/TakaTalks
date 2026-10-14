@@ -4,7 +4,7 @@ const { prisma } = vi.hoisted(() => ({
   prisma: {
     bank: { upsert: vi.fn(), findMany: vi.fn() },
     scrapeLog: { create: vi.fn() },
-    rateSnapshot: { create: vi.fn() },
+    rateSnapshot: { create: vi.fn(), findFirst: vi.fn() },
     $transaction: vi.fn(),
   },
 }));
@@ -30,5 +30,14 @@ describe("runScrape", () => {
       expect(data.scrapedAt).toBeInstanceOf(Date);
       expect(data.scrapedAt).toEqual(SEED_AS_OF);
     }
+  });
+
+  it("stores a dated seed figure once, not again on every run", async () => {
+    prisma.rateSnapshot.findFirst.mockResolvedValue({ id: "already-stored" });
+    await runScrape();
+    expect(prisma.rateSnapshot.create).not.toHaveBeenCalled();
+    expect(prisma.scrapeLog.create).toHaveBeenCalledWith({
+      data: { bankId: "b1", success: true, ratesFound: 3 },
+    });
   });
 });

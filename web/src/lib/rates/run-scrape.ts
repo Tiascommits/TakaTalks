@@ -47,11 +47,22 @@ export async function runScrape(): Promise<RunScrapeSummary> {
 
     try {
       const rates = await adapter.scrape();
+      // A dated (manual) figure is stored once; re-storing it every day would
+      // pile up identical rows that all count as "latest".
+      const toStore: typeof rates = [];
+      for (const r of rates) {
+        const stored =
+          r.asOf &&
+          (await prisma.rateSnapshot.findFirst({
+            where: { bankId: bank.id, instrument: r.instrument, termMonths: r.termMonths, ratePct: r.ratePct, scrapedAt: r.asOf },
+          }));
+        if (!stored) toStore.push(r);
+      }
       await prisma.$transaction([
         prisma.scrapeLog.create({
           data: { bankId: bank.id, success: true, ratesFound: rates.length },
         }),
-        ...rates.map((r) =>
+        ...toStore.map((r) =>
           prisma.rateSnapshot.create({
             data: {
               bankId: bank.id,

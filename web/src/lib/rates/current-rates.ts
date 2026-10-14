@@ -19,6 +19,11 @@ export type CurrentRateRow = {
   unverified: boolean;
 };
 
+const FDR_SNAPSHOTS = {
+  instrument: "FDR" as RateInstrument,
+  termMonths: { in: [...FDR_TERMS_MONTHS] },
+};
+
 /**
  * One row per active bank per tracked FDR term, even when nothing has ever
  * been scraped for it — the scorecard shows "not available" rather than
@@ -29,20 +34,28 @@ export async function getCurrentFdrRates(): Promise<CurrentRateRow[]> {
   const banks = await prisma.bank.findMany({
     where: { active: true },
     orderBy: { name: "asc" },
-    include: {
-      rateSnapshots: {
-        where: { instrument: "FDR" as RateInstrument, termMonths: { in: [...FDR_TERMS_MONTHS] } },
-        orderBy: { scrapedAt: "desc" },
-      },
-      scrapeLogs: { orderBy: { attemptedAt: "desc" }, take: 1 },
-    },
+    include: { scrapeLogs: { orderBy: { attemptedAt: "desc" }, take: 1 } },
   });
+
+  // Only the newest snapshot per bank and term: the table gains rows every
+  // day, so reading the full history would slow this page without bound.
+  const latest = await prisma.rateSnapshot.groupBy({
+    by: ["bankId", "termMonths"],
+    where: FDR_SNAPSHOTS,
+    _max: { scrapedAt: true },
+  });
+  const latestKeys = latest.flatMap((l) =>
+    l._max.scrapedAt ? [{ bankId: l.bankId, termMonths: l.termMonths, scrapedAt: l._max.scrapedAt }] : []
+  );
+  const snapshots = latestKeys.length
+    ? await prisma.rateSnapshot.findMany({ where: { ...FDR_SNAPSHOTS, OR: latestKeys } })
+    : [];
 
   const rows: CurrentRateRow[] = [];
   for (const bank of banks) {
     const latestLog = bank.scrapeLogs[0] ?? null;
     for (const termMonths of FDR_TERMS_MONTHS) {
-      const snapshot = bank.rateSnapshots.find((s) => s.termMonths === termMonths) ?? null;
+      const snapshot = snapshots.find((s) => s.bankId === bank.id && s.termMonths === termMonths) ?? null;
       rows.push({
         bankShortCode: bank.shortCode,
         bankName: bank.name,
