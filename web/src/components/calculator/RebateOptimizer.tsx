@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect } from "react";
 import { fmtTaka } from "@/lib/format";
 import { TAX_RULES } from "@/config/tax-rules-2025-26";
 import type { OptimizerResult, OptimizerSuggestion } from "@/lib/tax/types";
@@ -30,6 +31,10 @@ function suggestionNote(s: OptimizerSuggestion, t: (en: string, bn: string) => s
 
 export function RebateOptimizer({ opt }: { opt: OptimizerResult }) {
   const { t } = useLanguage();
+  // Demand signal, same rules as "tax-calculate" in CalculatorForm.
+  useEffect(() => {
+    if (opt.hasTaxableIncome) window.goatcounter?.count?.({ path: "tax-optimizer-shown", event: true });
+  }, [opt.hasTaxableIncome]);
 
   if (!opt.hasTaxableIncome) return null;
 

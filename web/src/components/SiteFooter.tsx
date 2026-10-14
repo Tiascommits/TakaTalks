@@ -15,6 +15,14 @@ export function SiteFooter() {
         <Link href="/terms" className="underline hover:text-green-deep">
           {t("Terms of use", "ব্যবহারের শর্তাবলি")}
         </Link>
+        <a
+          href="https://github.com/Tiascommits/TakaTalks/issues"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="underline hover:text-green-deep"
+        >
+          {t("Feedback?", "মতামত?")}
+        </a>
       </div>
     </footer>
   );
