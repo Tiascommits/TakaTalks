@@ -1,9 +1,8 @@
-import type { TaxLocation } from "@/config/tax-rules-2025-26";
-
 export interface TaxCalculatorInput {
   categoryId: string;
   disabledChildren: number;
-  location?: TaxLocation;
+  /** Filing a return for the first time: the lower new-taxpayer minimum tax applies. */
+  firstTimeFiler?: boolean;
 
   // Salary (monthly unless noted)
   basicMonthly: number;
@@ -53,7 +52,7 @@ export interface TaxCalculatorInput {
 export const EMPTY_TAX_INPUT: TaxCalculatorInput = {
   categoryId: "general",
   disabledChildren: 0,
-  location: "dhaka_ctg",
+  firstTimeFiler: false,
   basicMonthly: 0,
   allowanceMonthly: 0,
   bonusAnnual: 0,
@@ -158,5 +157,7 @@ export interface OptimizerResult {
   investmentNeeded: number;
   suggestions: OptimizerSuggestion[];
   alreadyAtMax: boolean;
+  /** The minimum tax, not the 3%/cap ceiling, is what limits the saving. */
+  cappedByMinimumTax: boolean;
   hasTaxableIncome: boolean;
 }

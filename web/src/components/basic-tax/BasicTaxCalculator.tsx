@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
-import { TAXPAYER_CATEGORIES } from "@/config/tax-rules-2025-26";
+import { TAX_RULES, TAXPAYER_CATEGORIES } from "@/config/tax-rules-2025-26";
 import { calculateBasicTax, EMPTY_BASIC_TAX_INPUT, type BasicTaxInput } from "@/lib/tax/basic";
 import { fmtTaka } from "@/lib/format";
 import { NumberField, SelectField } from "@/components/ui/fields";
@@ -66,8 +66,8 @@ export function BasicTaxCalculator() {
           />
           <label htmlFor="is-salary" className="text-xs text-ink cursor-pointer select-none">
             {t(
-              "This is salary income (apply 1/3 statutory exemption, max ৳4,50,000)",
-              "এটি চাকরির বেতন আয় (১/৩ অংশ সংবিধিবদ্ধ কর অব্যাহতি, সর্বোচ্চ ৳৪,৫০,০০০)"
+              `This is salary income (apply 1/3 statutory exemption, max ${fmtTaka(TAX_RULES.salaryExemptionCap)})`,
+              `এটি চাকরির বেতন আয় (১/৩ অংশ সংবিধিবদ্ধ কর অব্যাহতি, সর্বোচ্চ ${fmtTaka(TAX_RULES.salaryExemptionCap)})`
             )}
           </label>
         </div>
@@ -96,7 +96,7 @@ export function BasicTaxCalculator() {
             {result.salaryExemption > 0 && (
               <>
                 <Row
-                  label={t("Statutory salary exemption (1/3, max ৳4.5L)", "সংবিধিবদ্ধ চাকরি অব্যাহতি (১/৩ অংশ, সর্বোচ্চ ৳৪.৫ লাখ)")}
+                  label={t(`Statutory salary exemption (1/3, max ${fmtTaka(TAX_RULES.salaryExemptionCap)})`, `সংবিধিবদ্ধ চাকরি অব্যাহতি (১/৩ অংশ, সর্বোচ্চ ${fmtTaka(TAX_RULES.salaryExemptionCap)})`)}
                   value={`−${fmtTaka(result.salaryExemption)}`}
                   variant="sub"
                 />

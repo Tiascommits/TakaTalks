@@ -13,7 +13,9 @@
  * - Bangladesh Bank circulars on foreign inward remittance cash incentives (export subsidy).
  */
 
-import { TAX_RULES, TAXPAYER_CATEGORIES } from "@/config/tax-rules-2025-26";
+import { TAXPAYER_CATEGORIES } from "@/config/tax-rules-2025-26";
+import { calculateTax } from "@/lib/tax/calculate";
+import { EMPTY_TAX_INPUT } from "@/lib/tax/types";
 
 export type CurrencyCode = "USD" | "EUR" | "GBP" | "BDT";
 
@@ -158,17 +160,11 @@ export function calculateFreelanceEarnings(
     taxPayableBDT = 0;
   } else {
     // Non-exempt or domestic remittance: taxed under regular slabs
+    // Same engine as /calculator, so the minimum tax applies here too.
     taxableIncomeBDT = grossBDT;
-    const taxableAboveTaxFree = Math.max(0, taxableIncomeBDT - taxFreeLimit);
-    let remaining = taxableAboveTaxFree;
-    let slabTotal = 0;
-    for (const s of TAX_RULES.slabs) {
-      if (remaining <= 0) break;
-      const chunk = Math.min(remaining, s.amt);
-      slabTotal += chunk * s.rate;
-      remaining -= chunk;
-    }
-    taxPayableBDT = Math.round(slabTotal);
+    taxPayableBDT = Math.round(
+      calculateTax({ ...EMPTY_TAX_INPUT, categoryId: cat.id, otherIncomeAnnual: grossBDT }).totalLiability
+    );
   }
 
   const netInHandBDT = grossBDT + cashIncentiveBDT - taxPayableBDT;

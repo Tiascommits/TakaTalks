@@ -15,9 +15,13 @@ export const BHORI_TO_GRAMS = 11.664;
 export const GOLD_NISAB_BHORI = 7.5;
 export const SILVER_NISAB_BHORI = 52.5;
 
-// Approximate market rates in Bangladesh (BAJUS 2024-2025 benchmarks)
-export const DEFAULT_GOLD_PER_BHORI = 138_000;
-export const DEFAULT_SILVER_PER_BHORI = 2_100;
+// BAJUS prices from 13 Oct 2026, 10am, 22-carat, VAT included (Dhaka Tribune and bdnews24,
+// 13 Oct 2026). Prices change several times a month, so the UI makes the person confirm
+// today's price before showing a verdict.
+export const DEFAULT_GOLD_PER_BHORI = 228_031;
+export const DEFAULT_SILVER_PER_BHORI = 4_199;
+export const METAL_PRICES_AS_OF = "2026-10-13";
+export const METAL_PRICES_SOURCE = "BAJUS 22-carat";
 
 export type NisabStandard = "silver" | "gold";
 

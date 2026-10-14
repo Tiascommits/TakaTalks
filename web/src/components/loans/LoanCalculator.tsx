@@ -3,7 +3,10 @@
 import { useMemo, useState } from "react";
 import {
   calculateLoan,
+  BB_AVG_LENDING_RATE,
+  EXCISE_DUTY_AS_OF,
   LOAN_PRESETS,
+  LOAN_PRESETS_AS_OF,
   type LoanPreset,
 } from "@/lib/loans/loans";
 import { fmtTaka } from "@/lib/format";
@@ -78,6 +81,12 @@ export function LoanCalculator() {
             );
           })}
         </div>
+        <p className="text-[11px] text-muted mt-2">
+          {t(
+            `Preset rates are examples (set ${LOAN_PRESETS_AS_OF}), not bank quotes. ${BB_AVG_LENDING_RATE.source}'s average lending rate across all banks was ${BB_AVG_LENDING_RATE.ratePct}% in ${BB_AVG_LENDING_RATE.month}. Ask your bank for its current rate.`,
+            `প্রিসেটের হারগুলো উদাহরণ (${LOAN_PRESETS_AS_OF} তারিখে বসানো), কোনো ব্যাংকের কোট নয়। ${BB_AVG_LENDING_RATE.month}-এ সব ব্যাংকের গড় ঋণ সুদহার ছিল ${BB_AVG_LENDING_RATE.ratePct}% (বাংলাদেশ ব্যাংক)। আপনার ব্যাংকের বর্তমান হার জেনে নিন।`
+          )}
+        </p>
       </div>
 
       {/* Main Grid */}
@@ -301,7 +310,7 @@ export function LoanCalculator() {
             </h4>
             <div className="space-y-2 text-xs">
               <div className="flex justify-between">
-                <span className="text-muted">{t("Bank Processing Fee (0.5%):", "ব্যাংক প্রসেসিং ফি:")}</span>
+                <span className="text-muted">{t(`Bank Processing Fee (${processingFeePct}%):`, "ব্যাংক প্রসেসিং ফি:")}</span>
                 <span className="font-mono">{fmtTaka(result.processingFee)}</span>
               </div>
               <div className="flex justify-between">
@@ -309,7 +318,7 @@ export function LoanCalculator() {
                 <span className="font-mono">{fmtTaka(result.processingFeeVAT)}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-muted">{t("NBR Excise Duty (Loan account):", "এনবিআর আবগারি শুল্ক (Excise Duty):")}</span>
+                <span className="text-muted">{t(`NBR Excise Duty (bands as of ${EXCISE_DUTY_AS_OF}):`, `এনবিআর আবগারি শুল্ক (${EXCISE_DUTY_AS_OF} অনুযায়ী):`)}</span>
                 <span className="font-mono">{fmtTaka(result.estimatedExciseDuty)}</span>
               </div>
               <div className="flex justify-between border-t border-line/60 pt-1.5 font-semibold text-green-deep">

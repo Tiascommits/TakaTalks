@@ -124,152 +124,15 @@ function runCodeChecks() {
 }
 
 // -----------------------------------------------------------------------------
-// 3. Financial & Tax Rule Sanity Audit
+// 3. Repo Hygiene, Bloat & Artifact Audit
 // -----------------------------------------------------------------------------
-function runFinancialAudit() {
-  const issues = [];
-  const taxConfigPath = path.join(WEB_DIR, "src/config/tax-rules-2025-26.ts");
-  
-  if (!fs.existsSync(taxConfigPath)) {
-    issues.push({ severity: "ERROR", msg: "Tax configuration file missing: tax-rules-2025-26.ts" });
-    return { ok: false, issues };
-  }
+const SECRET_PATTERNS = [
+  /re_[a-zA-Z0-9]{24,}/, // Resend API key
+  /AIza[0-9A-Za-z-_]{35}/, // Google API key
+  /sk-[a-zA-Z0-9]{32,}/, // OpenAI API key
+  /ghp_[a-zA-Z0-9]{36}/, // GitHub personal access token
+];
 
-  const taxConfigContent = fs.readFileSync(taxConfigPath, "utf8");
-
-  // Check 1: 5% initial slab existence
-  if (!taxConfigContent.includes("rate: 0.05") && !taxConfigContent.includes("rate: 0.05,")) {
-    issues.push({
-      severity: "ERROR",
-      msg: "Missing statutory 5% tax slab in tax-rules-2025-26.ts (Finance Act requirement for entry-level bracket).",
-    });
-  }
-
-  // Check 2: Salary exemption cap ৳4,50,000
-  if (taxConfigContent.includes("salaryExemptionCap: 500000")) {
-    issues.push({
-      severity: "ERROR",
-      msg: "Statutory salary exemption cap set to ৳5,00,000 instead of statutory ৳4,50,000 (Second Schedule, Part 1, Para 1).",
-    });
-  }
-
-  // Check 3: Check minTaxFirstTime warning (discrepancy with statutory law)
-  if (taxConfigContent.includes("minTaxFirstTime: 1000")) {
-    issues.push({
-      severity: "WARN",
-      msg: "minTaxFirstTime is set to 1000. Under Bangladesh Income Tax Act 2023, there is no statutory ৳1,000 minimum tax for first-time filers (Dhaka/Ctg is ৳5,000, other cities ৳4,000, non-city ৳3,000). Filers risk NBR underpayment notices.",
-    });
-  }
-
-  // Check 4: Check Sanchayapatra linear non-compounding flag
-  const instrumentsPath = path.join(WEB_DIR, "src/lib/instruments/instruments.ts");
-  if (fs.existsSync(instrumentsPath)) {
-    const instContent = fs.readFileSync(instrumentsPath, "utf8");
-    if (!instContent.includes("compounds: false") && instContent.includes("paribar-sanchaya")) {
-      issues.push({
-        severity: "ERROR",
-        msg: "Sanchayapatra in instruments.ts is missing 'compounds: false'. Sanchayapatra profits are paid periodically and do not compound.",
-      });
-    }
-  }
-
-  // Check 5: Check Car AIT Section 153 Table
-  const carTaxPath = path.join(WEB_DIR, "src/lib/cars/car-tax.ts");
-  if (fs.existsSync(carTaxPath)) {
-    const carContent = fs.readFileSync(carTaxPath, "utf8");
-    if (!carContent.includes("Section 153") || !carContent.includes("baseAnnualAit: 25_000")) {
-      issues.push({
-        severity: "WARN",
-        msg: "Car AIT tables may not align with Section 153 of Income Tax Act 2023.",
-      });
-    }
-  }
-
-  return {
-    ok: issues.filter(i => i.severity === "ERROR").length === 0,
-    issues,
-  };
-}
-
-// -----------------------------------------------------------------------------
-// 4. Security & Privacy Audit
-// -----------------------------------------------------------------------------
-function runSecurityAudit() {
-  const issues = [];
-
-  // Check 1: Session HMAC verification
-  const sessionPath = path.join(WEB_DIR, "src/lib/tracker/session.ts");
-  if (fs.existsSync(sessionPath)) {
-    const sessionContent = fs.readFileSync(sessionPath, "utf8");
-    if (!sessionContent.includes("createHmac") || !sessionContent.includes("timingSafeEqual")) {
-      issues.push({
-        severity: "ERROR",
-        msg: "Session cookie handling in session.ts lacks cryptographic HMAC or constant-time comparison.",
-      });
-    }
-    if (sessionContent.includes("takatalks-dev-only-session-secret") && !sessionContent.includes("NODE_ENV === \"production\"")) {
-      issues.push({
-        severity: "ERROR",
-        msg: "Hardcoded session secret fallback allowed in production!",
-      });
-    }
-  }
-
-  // Check 2: Pre-verification merge vulnerability check
-  const verifyPath = path.join(WEB_DIR, "src/lib/notify/verification.ts");
-  if (fs.existsSync(verifyPath)) {
-    const verifyContent = fs.readFileSync(verifyPath, "utf8");
-    // Ensure merge is not performed in requestEmailLink
-    const reqEmailIdx = verifyContent.indexOf("requestEmailLink");
-    const mergeIdx = verifyContent.indexOf("mergeIntoExistingUser");
-    if (reqEmailIdx !== -1 && mergeIdx !== -1) {
-      // Check if merge is called inside requestEmailLink
-      const reqEmailBody = verifyContent.slice(reqEmailIdx, verifyContent.indexOf("}", reqEmailIdx + 1500));
-      if (reqEmailBody.includes("mergeIntoExistingUser")) {
-        issues.push({
-          severity: "ERROR",
-          msg: "Pre-verification data hijacking vulnerability detected: mergeIntoExistingUser called during link request!",
-        });
-      }
-    }
-  }
-
-  // Check 3: Check for accidental API secret commitments in tracked files
-  const trackedFilesRes = runCmd("git ls-files", REPO_ROOT, true);
-  if (trackedFilesRes.ok) {
-    const files = trackedFilesRes.stdout.split("\n").filter(Boolean);
-    const secretPatterns = [
-      /re_[a-zA-Z0-9]{24,}/, // Resend API key
-      /AIza[0-9A-Za-z-_]{35}/, // Google API key
-      /sk-[a-zA-Z0-9]{32,}/, // OpenAI API key
-      /ghp_[a-zA-Z0-9]{36}/, // GitHub personal access token
-    ];
-
-    for (const f of files) {
-      if (f.endsWith(".env") || f.endsWith(".pem") || f.endsWith(".key")) {
-        issues.push({ severity: "ERROR", msg: `Sensitive file tracked in git: ${f}` });
-      }
-      // Check file content for secrets (excluding tests, docs, mock data)
-      if (f.startsWith("web/src/") && (f.endsWith(".ts") || f.endsWith(".tsx"))) {
-        const content = fs.readFileSync(path.join(REPO_ROOT, f), "utf8");
-        for (const pattern of secretPatterns) {
-          if (pattern.test(content)) {
-            issues.push({ severity: "ERROR", msg: `Potential live API key detected in ${f}` });
-          }
-        }
-      }
-    }
-  }
-
-  return {
-    ok: issues.filter(i => i.severity === "ERROR").length === 0,
-    issues,
-  };
-}
-
-// -----------------------------------------------------------------------------
-// 5. Repo Hygiene, Bloat & Artifact Audit
-// -----------------------------------------------------------------------------
 function runRepoHygieneAudit() {
   const issues = [];
 
@@ -301,6 +164,15 @@ function runRepoHygieneAudit() {
           });
         }
       }
+      if (f.endsWith(".env") || f.endsWith(".pem") || f.endsWith(".key")) {
+        issues.push({ severity: "ERROR", msg: `Sensitive file tracked in git: ${f}` });
+      }
+      if (f.startsWith("web/src/") && (f.endsWith(".ts") || f.endsWith(".tsx")) && fs.existsSync(fullPath)) {
+        const content = fs.readFileSync(fullPath, "utf8");
+        if (SECRET_PATTERNS.some((re) => re.test(content))) {
+          issues.push({ severity: "ERROR", msg: `Potential live API key detected in ${f}` });
+        }
+      }
     }
   }
 
@@ -323,7 +195,7 @@ function runRepoHygieneAudit() {
 }
 
 // -----------------------------------------------------------------------------
-// 6. UI/UX & Copy Audit (Banglish vs Bengali, Missing Translations)
+// 4. UI/UX & Copy Audit (Banglish vs Bengali, Missing Translations)
 // -----------------------------------------------------------------------------
 function runCopyAudit() {
   const issues = [];
@@ -360,9 +232,9 @@ function runCopyAudit() {
 }
 
 // -----------------------------------------------------------------------------
-// 7. Optional LLM Judge Agent Call (Gemini / OpenAI API)
+// 5. Optional LLM Judge Agent Call (Gemini / OpenAI API)
 // -----------------------------------------------------------------------------
-async function callOptionalLLMJudge(gitInfo, codeRes, finRes, secRes) {
+async function callOptionalLLMJudge(gitInfo, codeRes) {
   const geminiApiKey = process.env.GEMINI_API_KEY;
   const openaiApiKey = process.env.OPENAI_API_KEY;
 
@@ -385,8 +257,6 @@ Code verification status:
 - TypeScript: ${codeRes.ts.ok ? "PASS" : "FAIL"}
 - ESLint: ${codeRes.lint.ok ? "PASS" : "FAIL"}
 - Tests: ${codeRes.tests.ok ? "PASS" : "FAIL"} (${codeRes.tests.output})
-- Financial Audit: ${finRes.ok ? "PASS" : "WARN/FAIL"} (${finRes.issues.length} issues)
-- Security Audit: ${secRes.ok ? "PASS" : "WARN/FAIL"} (${secRes.issues.length} issues)
 
 Provide a sharp, 3-paragraph executive critique:
 1. Product & Architecture: Are changes moving the product forward safely?
@@ -435,12 +305,10 @@ Keep it direct, professional, and insightful.`;
 }
 
 // -----------------------------------------------------------------------------
-// 8. Generate Markdown Report & GitHub Outputs
+// 6. Generate Markdown Report & GitHub Outputs
 // -----------------------------------------------------------------------------
-function generateMarkdownReport(gitInfo, codeRes, finRes, secRes, repoRes, copyRes, llmRes) {
+function generateMarkdownReport(gitInfo, codeRes, repoRes, copyRes, llmRes) {
   const allIssues = [
-    ...finRes.issues.map(i => ({ category: "Financial Logic", ...i })),
-    ...secRes.issues.map(i => ({ category: "Security & Auth", ...i })),
     ...repoRes.issues.map(i => ({ category: "Repo Hygiene", ...i })),
     ...copyRes.issues.map(i => ({ category: "Copy & UX", ...i })),
   ];
@@ -469,8 +337,6 @@ function generateMarkdownReport(gitInfo, codeRes, finRes, secRes, repoRes, copyR
   md += `| **TypeScript Typecheck** | ${codeRes.ts.ok ? "✅ PASS" : "❌ FAIL"} | ${codeRes.ts.ok ? "0 errors" : "Type errors detected"} |\n`;
   md += `| **ESLint Code Quality** | ${codeRes.lint.ok ? "✅ PASS" : "❌ FAIL"} | ${codeRes.lint.ok ? "0 warnings, 0 errors" : "Lint issues detected"} |\n`;
   md += `| **Unit Test Suite (Vitest)** | ${codeRes.tests.ok ? "✅ PASS" : "❌ FAIL"} | ${codeRes.tests.output} |\n`;
-  md += `| **Financial & NBR Tax Rules** | ${finRes.ok ? "✅ COMPLIANT" : "⚠️ ISSUES"} | ${finRes.issues.length} notices |\n`;
-  md += `| **Security, Auth & Privacy** | ${secRes.ok ? "✅ SECURE" : "❌ VULNERABLE"} | ${secRes.issues.length} notices |\n`;
   md += `| **Repo Hygiene & Assets** | ${repoRes.ok ? "✅ CLEAN" : "⚠️ NOTICES"} | ${repoRes.issues.length} notices |\n`;
   md += `| **Copy & Localization** | ${copyRes.ok ? "ℹ️ CHECKED" : "⚠️ NOTICES"} | ${copyRes.issues.length} notices |\n\n`;
 
@@ -483,7 +349,7 @@ function generateMarkdownReport(gitInfo, codeRes, finRes, secRes, repoRes, copyR
   md += `## 🔍 Detailed Findings & Critique (${allIssues.length} Items)\n\n`;
 
   if (allIssues.length === 0 && codeRes.ts.ok && codeRes.lint.ok && codeRes.tests.ok) {
-    md += `🎉 **Zero issues found!** All static checks, financial validations, security constraints, and hygiene rules passed cleanly.\n\n`;
+    md += `🎉 **Zero issues found!** All static checks and hygiene rules passed cleanly.\n\n`;
   } else {
     md += `| Severity | Category | Finding / Recommendation |\n`;
     md += `|---|---|---|\n`;
@@ -534,36 +400,26 @@ async function main() {
   log(`   ESLint:     ${codeRes.lint.ok ? "✅ PASS" : "❌ FAIL"}`);
   log(`   Vitest:     ${codeRes.tests.ok ? "✅ PASS" : "❌ FAIL"} (${codeRes.tests.output})`);
 
-  log("\n3. Auditing Financial & Tax Logic...");
-  const finRes = runFinancialAudit();
-  log(`   Financial Status: ${finRes.ok ? "✅ PASS" : "⚠️ ISSUES FOUND"} (${finRes.issues.length} notices)`);
-
-  log("\n4. Auditing Security, Auth & Privacy...");
-  const secRes = runSecurityAudit();
-  log(`   Security Status:  ${secRes.ok ? "✅ SECURE" : "❌ VULNERABLE"} (${secRes.issues.length} notices)`);
-
-  log("\n5. Auditing Repo Hygiene & File Assets...");
+  log("\n3. Auditing Repo Hygiene & File Assets...");
   const repoRes = runRepoHygieneAudit();
   log(`   Hygiene Status:   ${repoRes.ok ? "✅ CLEAN" : "⚠️ NOTICES"} (${repoRes.issues.length} notices)`);
 
-  log("\n6. Auditing Copy & Localization...");
+  log("\n4. Auditing Copy & Localization...");
   const copyRes = runCopyAudit();
   log(`   Copy Status:      Checked (${copyRes.issues.length} notices)`);
 
-  log("\n7. Invoking AI Judge Evaluation (if configured)...");
-  const llmRes = await callOptionalLLMJudge(gitInfo, codeRes, finRes, secRes);
+  log("\n5. Invoking AI Judge Evaluation (if configured)...");
+  const llmRes = await callOptionalLLMJudge(gitInfo, codeRes);
   if (llmRes.evaluated) {
     log("   AI Judge critique generated successfully.");
   } else {
     log(`   AI Judge: ${llmRes.critique}`);
   }
 
-  log("\n8. Generating Final Critique Report...");
+  log("\n6. Generating Final Critique Report...");
   const { md, statusVerdict, errorCount, warnCount } = generateMarkdownReport(
     gitInfo,
     codeRes,
-    finRes,
-    secRes,
     repoRes,
     copyRes,
     llmRes

@@ -6,11 +6,11 @@ import type { OptimizerResult, OptimizerSuggestion } from "@/lib/tax/types";
 import { useLanguage } from "@/lib/i18n";
 
 const INSTRUMENT_LABEL: Record<OptimizerSuggestion["instrumentId"], { en: string; bn: string }> = {
-  sanchay_group: { en: "Sanchaypatra / Govt Bond / Mutual Fund", bn: "সঞ্চয়পত্র / Govt Bond / Mutual Fund" },
+  sanchay_group: { en: "Sanchaypatra / Govt Bond", bn: "সঞ্চয়পত্র / Govt Bond" },
   dps: { en: "DPS", bn: "DPS" },
   uncapped: {
-    en: "PF / DSE Stock / Life insurance / Donation",
-    bn: "PF / DSE Stock / জীবন বীমা / দাতব্য দান",
+    en: "Mutual fund / PF / DSE Stock / Life insurance / Donation",
+    bn: "মিউচুয়াল ফান্ড / PF / DSE Stock / জীবন বীমা / দাতব্য দান",
   },
 };
 
@@ -47,10 +47,15 @@ export function RebateOptimizer({ opt }: { opt: OptimizerResult }) {
       {opt.alreadyAtMax ? (
         <>
           <p className="text-sm text-green-deep font-semibold py-2.5">
-            {t(
-              "✓ You're already getting the maximum rebate — 3% of income or ৳7.5 lakh, whichever is lower. Investing more won't lower your tax further.",
-              "✓ তুমি ইতিমধ্যে সর্বোচ্চ rebate পাচ্ছো — আয়ের 3% বা ৳৭.৫ লাখ, যেটা কম। আর invest করলেও tax কমবে না।"
-            )}
+            {opt.cappedByMinimumTax
+              ? t(
+                  "✓ Your tax is already at the minimum tax. Investing more won't lower it.",
+                  "✓ তোমার কর ইতিমধ্যে ন্যূনতম করে আছে। আর invest করলেও tax কমবে না।"
+                )
+              : t(
+                  "✓ You're already getting the maximum rebate — 3% of income or ৳7.5 lakh, whichever is lower. Investing more won't lower your tax further.",
+                  "✓ তুমি ইতিমধ্যে সর্বোচ্চ rebate পাচ্ছো — আয়ের 3% বা ৳৭.৫ লাখ, যেটা কম। আর invest করলেও tax কমবে না।"
+                )}
           </p>
           <ProgressBar pct={100} current={fmtTaka(opt.maxRebate)} max={fmtTaka(opt.maxRebate)} />
         </>
@@ -66,6 +71,14 @@ export function RebateOptimizer({ opt }: { opt: OptimizerResult }) {
                 `মোট ${fmtTaka(opt.additionalInvestmentNeeded)} বেশি invest করলে, tax এতটুকু কমবে`
               )}
             </div>
+            {opt.cappedByMinimumTax && (
+              <div className="text-xs text-[#7A5A10] mt-1">
+                {t(
+                  "Capped: your tax can't go below the minimum tax.",
+                  "সীমিত: ন্যূনতম করের নিচে tax নামবে না।"
+                )}
+              </div>
+            )}
           </div>
 
           <ProgressBar

@@ -120,27 +120,15 @@ export function FreelanceCalculator() {
               </div>
 
               {/* Foreign Amount */}
-              <div>
-                <label className="block text-xs text-[#555] mb-1 font-medium">
-                  {t(
-                    `Inward Foreign Amount (${CURRENCY_SYMBOLS[currency]})`,
-                    `প্রাপ্ত বৈদেশিক মুদ্রা (${CURRENCY_SYMBOLS[currency]})`
-                  )}
-                </label>
-                <div className="relative">
-                  <span className="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 text-sm text-muted font-mono">
-                    {CURRENCY_SYMBOLS[currency]}
-                  </span>
-                  <input
-                    type="number"
-                    min={0}
-                    value={foreignAmount || ""}
-                    onChange={(e) => setForeignAmount(parseFloat(e.target.value) || 0)}
-                    placeholder="0"
-                    className="w-full pl-8 pr-3 py-2 border border-line bg-[#FCFBF8] text-sm font-mono focus:outline-none focus:border-green focus:ring-2 focus:ring-green/30"
-                  />
-                </div>
-              </div>
+              <NumberField
+                label={t(
+                  `Inward Foreign Amount (${CURRENCY_SYMBOLS[currency]})`,
+                  `প্রাপ্ত বৈদেশিক মুদ্রা (${CURRENCY_SYMBOLS[currency]})`
+                )}
+                currency={false}
+                value={foreignAmount}
+                onChange={setForeignAmount}
+              />
 
               {/* Exchange Rate Bar */}
               <div className="bg-[#FAF9F5] border border-line/80 p-3 rounded-xs flex justify-between items-center text-xs">

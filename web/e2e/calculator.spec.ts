@@ -75,6 +75,24 @@ test.describe("Calculator — normal cases", () => {
     await expect(page.getByText(/ইতিমধ্যে সর্বোচ্চ rebate/)).toBeVisible();
     await noGarbageOnPage(page);
   });
+
+  test("a first return pays the ৳1,000 new-taxpayer minimum instead of ৳5,000", async ({ page }) => {
+    await page.goto("/calculator");
+    await page.getByLabel("ব্যবসা / পেশার নেট মুনাফা (annual)").fill("405000");
+    const payable = page.getByText("পরিশোধযোগ্য কর").locator("..");
+    await expect(payable).toContainText("5,000");
+    await page.getByLabel(/এটা আমার প্রথম রিটার্ন/).check();
+    await expect(payable).toContainText("1,000");
+    await noGarbageOnPage(page);
+  });
+
+  test("optimizer promises no saving when the minimum tax already applies", async ({ page }) => {
+    await page.goto("/calculator");
+    await page.getByLabel("ব্যবসা / পেশার নেট মুনাফা (annual)").fill("400001");
+    await expect(page.getByText(/ইতিমধ্যে ন্যূনতম করে আছে/)).toBeVisible();
+    await expect(page.getByText(/বাঁচাতে পারো/)).toHaveCount(0);
+    await noGarbageOnPage(page);
+  });
 });
 
 test.describe("Calculator — weird / adversarial input", () => {
@@ -109,6 +127,16 @@ test.describe("Calculator — weird / adversarial input", () => {
     const basic = page.getByLabel("মূল বেতন (Basic, monthly)");
     await basic.fill("40000");
     await basic.fill("");
+    await noGarbageOnPage(page);
+  });
+
+  test("Bangla digits typed on a Bangla keyboard are read as numbers", async ({ page }) => {
+    await page.goto("/calculator");
+    await page.getByLabel("ব্যবসা / পেশার নেট মুনাফা (annual)").fill("৫০০০০০");
+    const slabBaseLine = page.getByText("মোট স্লাব-ভিত্তিক আয়").locator("..");
+    await expect(slabBaseLine).toContainText("5,00,000");
+    // 1,00,000 above the 4,00,000 threshold at 10% (no 5% band)
+    await expect(page.getByText("স্লাব কর", { exact: true }).locator("..")).toContainText("10,000");
     await noGarbageOnPage(page);
   });
 

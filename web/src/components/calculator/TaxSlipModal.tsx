@@ -3,6 +3,7 @@
 import { useState } from "react";
 import type { TaxCalculationResult } from "@/lib/tax/types";
 import { fmtTaka } from "@/lib/format";
+import { TAX_RULES } from "@/config/tax-rules-2025-26";
 import { useLanguage } from "@/lib/i18n";
 
 export function TaxSlipModal({
@@ -73,7 +74,7 @@ export function TaxSlipModal({
               TakaTalks — {t("Income Tax Estimation Slip", "আয়কর হিসাব বিবরণী")}
             </h2>
             <p className="text-xs text-muted font-mono mt-0.5">
-              {t("Assessment Year 2025–2026", "করবর্ষ ২০২৫–২০২৬")} • {t("Client-Side Calculation", "ডিভাইসে প্রস্তুতকৃত")}
+              {t(TAX_RULES.yearLabel.en, TAX_RULES.yearLabel.bn)} • {t("Client-Side Calculation", "ডিভাইসে প্রস্তুতকৃত")}
             </p>
           </div>
 

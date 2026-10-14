@@ -22,8 +22,8 @@ export function ZakatHeader() {
         </h1>
         <p className="max-w-[720px] text-sm text-[#DCE6DD]">
           {t(
-            "Calculate your exact 2.5% Zakat under Hanafi fiqh with current Bangladesh gold/silver prices. Covers bank savings, FDR, Sanchayapatra, DSE stocks, business inventory, and non-halal bank interest purification.",
-            "বাংলাদেশ জুয়েলার্স অ্যাসোসিয়েশন (BAJUS) এর বর্তমান স্বর্ণ ও রৌপ্যের নিসাব অনুযায়ী যাকাত হিসাব করুন। সঞ্চয়পত্র, ব্যাংক এফডিআর, শেয়ারের যাকাত এবং ব্যাংক সুদের পরিশুদ্ধির স্বয়ংক্রিয় ও গোপনীয় হিসাব।"
+            "Calculate 2.5% Zakat under Hanafi fiqh using today's gold and silver price, which you confirm. Covers bank savings, FDR, Sanchayapatra, DSE stocks, business inventory, and non-halal bank interest purification.",
+            "আজকের সোনা ও রূপার দাম (যা আপনি যাচাই করবেন) দিয়ে নিসাব ধরে যাকাত হিসাব করুন। সঞ্চয়পত্র, ব্যাংক এফডিআর, শেয়ারের যাকাত এবং ব্যাংক সুদের পরিশুদ্ধির স্বয়ংক্রিয় ও গোপনীয় হিসাব।"
           )}
         </p>
       </div>

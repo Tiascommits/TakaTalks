@@ -55,6 +55,9 @@ test.describe("Real Yield Instrument Matrix (/instruments)", () => {
 
     // Verify top instruments are listed
     await expect(page.getByText(/পরিবার সঞ্চয়পত্র|Paribar Sanchayapatra/).first()).toBeVisible();
+    await expect(page.getByText(/বাংলাদেশ সঞ্চয়পত্র|Bangladesh Sanchayapatra/).first()).toBeVisible();
+    // Every outside rate carries its date
+    await expect(page.getByText(/হার ও উৎসে কর 2026-07-02 অনুযায়ী|Rate and source tax as of 2026-07-02/).first()).toBeVisible();
     await expect(page.getByText(/ট্রেজারি বন্ড|Treasury Bonds/).first()).toBeVisible();
     await expect(page.getByText(/ব্যাংক ফিক্সড ডিপোজিট|Commercial Bank Fixed Deposit/).first()).toBeVisible();
 
@@ -96,6 +99,8 @@ test.describe("Loan & Home EMI Accelerator (/loans)", () => {
   test("loads cleanly, calculates EMI, toggles presets, and computes prepayment savings", async ({ page }) => {
     await page.goto("/loans");
     await expect(page.getByText(/লোন ও গৃহঋণ ইএমআই ক্যালকুলেটর|Loan & Home EMI Calculator/)).toBeVisible();
+    // Preset rates are labelled as examples next to a dated Bangladesh Bank benchmark
+    await expect(page.getByText(/11\.83%/).first()).toBeVisible();
     await noGarbageOnPage(page);
 
     // Verify monthly EMI is shown
@@ -127,6 +132,12 @@ test.describe("Zakat Calculator (/zakat)", () => {
     // Verify Nisab threshold banner
     await expect(page.getByText(/প্রযোজ্য নিসাব সীমা:|Active Nisab Threshold:/)).toBeVisible();
     await expect(page.getByText(/বাৎসরিক সম্পদ পরিশুদ্ধি|ANNUAL PURIFICATION/).first()).toBeVisible();
+
+    // Dated default prices: no verdict until today's price is confirmed
+    await expect(page.getByText(/2026-10-13/).first()).toBeVisible();
+    await expect(page.getByText(/আগে উপরে আজকের সোনা ও রূপার দাম যাচাই করুন|Check today's gold and silver price above first/)).toBeVisible();
+    await page.getByLabel(/আজকের সোনা ও রূপার দাম যাচাই করেছি|I've checked today's gold and silver price/).check();
+    await expect(page.getByText(/নিসাব সীমার নিচে|Below Nisab Threshold/)).toBeVisible();
 
     // Switch to Gold Nisab
     await page.getByRole("button", { name: /স্বর্ণ নিসাব|Gold Nisab/ }).click();

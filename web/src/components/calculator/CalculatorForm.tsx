@@ -3,7 +3,7 @@
 import { Suspense, useMemo, useState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { TAXPAYER_CATEGORIES, type TaxLocation } from "@/config/tax-rules-2025-26";
+import { TAX_RULES, TAXPAYER_CATEGORIES } from "@/config/tax-rules-2025-26";
 import { calculateTax } from "@/lib/tax/calculate";
 import { calculateOptimizer } from "@/lib/tax/optimizer";
 import { EMPTY_TAX_INPUT, type TaxCalculatorInput } from "@/lib/tax/types";
@@ -12,6 +12,7 @@ import { TaxBreakdown } from "./TaxBreakdown";
 import { RebateOptimizer } from "./RebateOptimizer";
 import { TaxSlipModal } from "./TaxSlipModal";
 import { useLanguage } from "@/lib/i18n";
+import { fmtTaka, toAsciiDigits } from "@/lib/format";
 
 function field<K extends keyof TaxCalculatorInput>(
   input: TaxCalculatorInput,
@@ -34,7 +35,7 @@ function parseSharedLinkPatch(params: URLSearchParams): Partial<TaxCalculatorInp
   const parseNum = (k: string) => {
     const v = params.get(k);
     if (v) {
-      const n = parseFloat(v);
+      const n = parseFloat(toAsciiDigits(v));
       if (Number.isFinite(n) && n > 0) return n;
     }
     return undefined;
@@ -50,6 +51,7 @@ function parseSharedLinkPatch(params: URLSearchParams): Partial<TaxCalculatorInp
   // Shared alongside the amount: without it a shared link would show
   // exempt freelance income as fully taxed.
   if (params.get("freelanceBank") === "1") patch.freelanceBankTransferCompliant = true;
+  if (params.get("first") === "1") patch.firstTimeFiler = true;
   const ait = parseNum("ait"); if (ait !== undefined) patch.aitPaid = ait;
   const cat = params.get("cat"); if (cat) patch.categoryId = cat;
 
@@ -89,6 +91,7 @@ function CalculatorFormInner({ initial }: { initial?: Partial<TaxCalculatorInput
     if (input.freelanceAnnual) params.set("freelance", String(input.freelanceAnnual));
     if (input.freelanceAnnual && input.freelanceBankTransferCompliant) params.set("freelanceBank", "1");
     if (input.aitPaid) params.set("ait", String(input.aitPaid));
+    if (input.firstTimeFiler) params.set("first", "1");
     if (input.categoryId && input.categoryId !== "general") params.set("cat", input.categoryId);
     const qs = params.toString();
     return `${window.location.origin}/calculator${qs ? `?${qs}` : ""}`;
@@ -115,27 +118,6 @@ function CalculatorFormInner({ initial }: { initial?: Partial<TaxCalculatorInput
               label: `${t(c.labelEn, c.label)} — Tax-free ৳${c.taxFreeLimit.toLocaleString("en-IN")}`,
             }))}
           />
-          <div className="mt-2.5">
-            <SelectField
-              label={t("Tax Location / Jurisdiction", "কর অঞ্চল / ভৌগোলিক অবস্থান")}
-              value={input.location ?? "dhaka_ctg"}
-              onChange={(v) => setInput({ ...input, location: v as TaxLocation })}
-              options={[
-                {
-                  value: "dhaka_ctg",
-                  label: `${t("Dhaka & Chattogram City Corporation", "ঢাকা ও চট্টগ্রাম সিটি কর্পোরেশন")} — ${t("Min Tax ৳5,000", "ন্যূনতম কর ৳৫,০০০")}`,
-                },
-                {
-                  value: "other_city",
-                  label: `${t("Other City Corporations", "অন্যান্য সিটি কর্পোরেশন")} — ${t("Min Tax ৳4,000", "ন্যূনতম কর ৳৪,০০০")}`,
-                },
-                {
-                  value: "non_city",
-                  label: `${t("Non-City / District / Upazila areas", "সিটি কর্পোরেশন বহির্ভূত এলাকা / জেলা")} — ${t("Min Tax ৳3,000", "ন্যূনতম কর ৳৩,০০০")}`,
-                },
-              ]}
-            />
-          </div>
           <div className="mt-2">
             <NumberField
               label={t("Number of disabled children (each +৳50,000 tax-free)", "প্রতিবন্ধী সন্তান সংখ্যা (each +৳50,000 tax-free)")}
@@ -143,13 +125,21 @@ function CalculatorFormInner({ initial }: { initial?: Partial<TaxCalculatorInput
               {...n("disabledChildren")}
             />
           </div>
+          <CheckField
+            label={t(
+              `This is my first tax return (minimum tax ${fmtTaka(TAX_RULES.minTaxNewTaxpayer)} instead of ${fmtTaka(TAX_RULES.minTax)})`,
+              `এটা আমার প্রথম রিটার্ন (ন্যূনতম কর ${fmtTaka(TAX_RULES.minTax)}-এর বদলে ${fmtTaka(TAX_RULES.minTaxNewTaxpayer)})`
+            )}
+            checked={Boolean(input.firstTimeFiler)}
+            onChange={(b) => setInput({ ...input, firstTimeFiler: b })}
+          />
         </Fieldset>
 
         <Fieldset
           legend={t("2. Salary income", "২. বেতন আয় (Salary income)")}
           note={t(
-            "Standard exemption = ⅓ of gross salary income or ৳4,50,000, whichever is lower.",
-            "Standard exemption = ⅓ of gross salary income বা ৳৪,৫০,০০০, যেটা কম।"
+            `Standard exemption = ⅓ of gross salary income or ${fmtTaka(TAX_RULES.salaryExemptionCap)}, whichever is lower.`,
+            `Standard exemption = ⅓ of gross salary income বা ${fmtTaka(TAX_RULES.salaryExemptionCap)}, যেটা কম।`
           )}
         >
           <div className="grid grid-cols-2 gap-2.5">
@@ -237,8 +227,8 @@ function CalculatorFormInner({ initial }: { initial?: Partial<TaxCalculatorInput
         <Fieldset
           legend={t("5. Investment (rebate eligible)", "৫. বিনিয়োগ (Investment — rebate eligible)")}
           note={t(
-            "Sanchaypatra + Govt securities + Mutual fund share a ৳5 lakh/year cap. DPS is capped at ৳1,20,000/year.",
-            "Sanchaypatra + Govt securities + Mutual fund মিলে বছরে ৫ লাখ শেয়ার্ড cap। DPS বছরে ৳1,20,000 পর্যন্ত।"
+            `Sanchaypatra + Govt securities share a ${fmtTaka(TAX_RULES.sharedGroupCap)}/year cap. Mutual funds have no cap. DPS is capped at ${fmtTaka(TAX_RULES.dpsCap)}/year.`,
+            `সঞ্চয়পত্র + সরকারি সিকিউরিটিজ মিলে বছরে ${fmtTaka(TAX_RULES.sharedGroupCap)} শেয়ার্ড cap। মিউচুয়াল ফান্ডে cap নেই। DPS বছরে ${fmtTaka(TAX_RULES.dpsCap)} পর্যন্ত।`
           )}
         >
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
