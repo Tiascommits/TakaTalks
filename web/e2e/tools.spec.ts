@@ -55,6 +55,9 @@ test.describe("Real Yield Instrument Matrix (/instruments)", () => {
 
     // Verify top instruments are listed
     await expect(page.getByText(/পরিবার সঞ্চয়পত্র|Paribar Sanchayapatra/).first()).toBeVisible();
+    await expect(page.getByText(/বাংলাদেশ সঞ্চয়পত্র|Bangladesh Sanchayapatra/).first()).toBeVisible();
+    // Every outside rate carries its date
+    await expect(page.getByText(/হার ও উৎসে কর 2026-07-02 অনুযায়ী|Rate and source tax as of 2026-07-02/).first()).toBeVisible();
     await expect(page.getByText(/ট্রেজারি বন্ড|Treasury Bonds/).first()).toBeVisible();
     await expect(page.getByText(/ব্যাংক ফিক্সড ডিপোজিট|Commercial Bank Fixed Deposit/).first()).toBeVisible();
 

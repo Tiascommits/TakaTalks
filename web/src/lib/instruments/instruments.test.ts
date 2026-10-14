@@ -2,30 +2,42 @@ import { describe, expect, it } from "vitest";
 import { compareInstruments, INSTRUMENT_CATALOG } from "./instruments";
 
 describe("Bangladeshi Instrument Comparison & Real Yield Matrix", () => {
-  it("computes tiered Sanchayapatra rates and 5% vs 10% TDS", () => {
-    // Under 5 lakh: 5% TDS
-    const small = compareInstruments({
-      amount: 400_000,
-      tenureYears: 5,
-      hasPSR: true,
-    });
-    const paribarSmall = small.find((i) => i.id === "paribar-sanchaya");
-    expect(paribarSmall).toBeDefined();
-    expect(paribarSmall!.tdsPct).toBe(5);
-    expect(paribarSmall!.nominalGrossRatePct).toBe(11.52);
+  it("applies one Sanchayapatra rate to the whole holding, picked by its size (B8)", () => {
+    // Rates from 1 Jul 2025, kept for Jul-Dec 2026: Paribar 11.93% up to 7.5 lakh, 11.80% above
+    // (Prothom Alo English and Bangla Tribune, 2 Jul 2026; Dhaka Tribune, 4 Jan 2026).
+    const at = (amount: number, id: string) =>
+      compareInstruments({ amount, tenureYears: 5, hasPSR: true }).find((i) => i.id === id)!;
 
-    // Over 15 lakh: tiered weighted rate and 10% TDS
-    const large = compareInstruments({
-      amount: 2_000_000,
-      tenureYears: 5,
-      hasPSR: true,
-    });
-    const paribarLarge = large.find((i) => i.id === "paribar-sanchaya");
-    expect(paribarLarge).toBeDefined();
-    expect(paribarLarge!.tdsPct).toBe(10);
-    // Weighted between 11.52% (first 1.5M) and 11.04% (next 0.5M)
-    expect(paribarLarge!.nominalGrossRatePct).toBeLessThan(11.52);
-    expect(paribarLarge!.nominalGrossRatePct).toBeGreaterThan(11.04);
+    expect(at(400_000, "paribar-sanchaya").nominalGrossRatePct).toBe(11.93);
+    expect(at(750_000, "paribar-sanchaya").nominalGrossRatePct).toBe(11.93);
+    // Above 7.5 lakh the lower rate covers all of it, not just the part above
+    expect(at(2_000_000, "paribar-sanchaya").nominalGrossRatePct).toBe(11.8);
+    expect(at(400_000, "pensioner-sanchaya").nominalGrossRatePct).toBe(11.98);
+    expect(at(400_000, "three-month-sanchaya").nominalGrossRatePct).toBe(11.82);
+    expect(at(2_000_000, "three-month-sanchaya").nominalGrossRatePct).toBe(11.77);
+  });
+
+  it("includes the 5-year Bangladesh Sanchayapatra (11.83% / 11.80%)", () => {
+    const small = compareInstruments({ amount: 500_000 }).find((i) => i.id === "bangladesh-sanchaya")!;
+    const large = compareInstruments({ amount: 1_000_000 }).find((i) => i.id === "bangladesh-sanchaya")!;
+    expect(small.nominalGrossRatePct).toBe(11.83);
+    expect(large.nominalGrossRatePct).toBe(11.8);
+    expect(small.compounds).toBe(false);
+  });
+
+  it("takes 5% source tax up to 5 lakh, 10% above, and none on a small Pensioner holding", () => {
+    const at = (amount: number, id: string) => compareInstruments({ amount }).find((i) => i.id === id)!;
+    expect(at(400_000, "paribar-sanchaya").tdsPct).toBe(5);
+    expect(at(2_000_000, "paribar-sanchaya").tdsPct).toBe(10);
+    expect(at(400_000, "pensioner-sanchaya").tdsPct).toBe(0);
+    expect(at(600_000, "pensioner-sanchaya").tdsPct).toBe(10);
+  });
+
+  it("dates and sources every rate", () => {
+    for (const spec of INSTRUMENT_CATALOG) {
+      expect(spec.asOf).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+      expect(spec.source.length).toBeGreaterThan(0);
+    }
   });
 
   it("applies 10% vs 15% TDS on bank FDR based on PSR proof", () => {
