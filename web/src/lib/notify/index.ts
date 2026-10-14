@@ -22,10 +22,9 @@ export function channelsAvailableForUser(
 }
 
 /**
- * Sends a maturity reminder to every available channel for this user (not
- * just the first one) — see src/app/api/cron/maturity-reminders/route.ts,
- * which records one ReminderLog row per channel actually sent so a later
- * run never double-sends for the same window.
+ * Sends a maturity reminder on `opts.channels` (those the cron claimed in
+ * ReminderLog, see src/app/api/cron/maturity-reminders/route.ts), or on every
+ * available channel when omitted. Never on a channel that isn't available.
  */
 export async function notifyMaturityReminder(
   user: Pick<User, "id" | "email" | "emailVerifiedAt" | "phone" | "phoneVerifiedAt">,
@@ -34,9 +33,9 @@ export async function notifyMaturityReminder(
   // src/lib/reinvest/log.ts and /reinvest). Only added to the free-form
   // email body — the WhatsApp template is pre-approved by Meta with a fixed
   // param count, so it's left unchanged rather than risking a broken send.
-  opts?: { reinvestLink?: string }
+  opts?: { reinvestLink?: string; channels?: NotifyChannel[] }
 ): Promise<NotifyResult[]> {
-  const channels = channelsAvailableForUser(user);
+  const channels = channelsAvailableForUser(user).filter((c) => !opts?.channels || opts.channels.includes(c));
   const dateLabel = investment.maturityDate.toLocaleDateString("en-GB", {
     day: "2-digit",
     month: "short",
