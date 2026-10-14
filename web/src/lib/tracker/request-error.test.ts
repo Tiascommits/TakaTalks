@@ -10,6 +10,10 @@ describe("requestErrorMessage", () => {
     expect(requestErrorMessage(400).en).toMatch(/check/i);
   });
 
+  it("says what to do when the entry limit is reached", () => {
+    expect(requestErrorMessage(409).en).toMatch(/delete/i);
+  });
+
   it("blames the connection when the request never got an answer", () => {
     expect(requestErrorMessage(null).en).toMatch(/connection/i);
   });

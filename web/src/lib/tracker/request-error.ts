@@ -1,3 +1,5 @@
+import { MAX_ENTRIES_PER_USER } from "./limits";
+
 /**
  * What to tell someone when a tracker request fails, by HTTP status. `null` means
  * the request never got an answer (offline, timeout).
@@ -7,6 +9,12 @@ export function requestErrorMessage(status: number | null): { en: string; bn: st
     return {
       en: "Too many saves in a short time. Wait a minute, then try again.",
       bn: "অল্প সময়ে অনেকবার সেভ হয়েছে। এক মিনিট অপেক্ষা করে আবার চেষ্টা করুন।",
+    };
+  }
+  if (status === 409) {
+    return {
+      en: `You've reached the limit of ${MAX_ENTRIES_PER_USER} entries here. Delete old ones to add more.`,
+      bn: `এখানে সর্বোচ্চ ${MAX_ENTRIES_PER_USER}টি এন্ট্রি রাখা যায়। নতুন যোগ করতে পুরনো কয়েকটি মুছে ফেলুন।`,
     };
   }
   if (status === 400) {
