@@ -90,8 +90,8 @@ export function PrivacyNotice() {
           <li>{t("Site admins also get a login cookie.", "সাইটের অ্যাডমিনদের জন্য একটি লগইন কুকিও আছে।")}</li>
           <li>
             {t(
-              "Videos on the homepage and the Videos page are embedded from YouTube, which may set its own cookies when a video loads.",
-              "হোমপেজ ও ভিডিও পাতার ভিডিওগুলো YouTube থেকে যুক্ত; ভিডিও লোড হলে YouTube নিজস্ব কুকি সেট করতে পারে।"
+              "Videos on the homepage and the Videos page use YouTube's no-cookie player and load only when you press play. YouTube may then set its own cookies.",
+              "হোমপেজ ও ভিডিও পাতার ভিডিওগুলো YouTube-এর no-cookie প্লেয়ারে চলে এবং প্লে চাপলে তবেই লোড হয়। তখন YouTube নিজস্ব কুকি সেট করতে পারে।"
             )}
           </li>
           <li>{t("We use no advertising cookies.", "আমরা কোনো বিজ্ঞাপনী কুকি ব্যবহার করি না।")}</li>
@@ -101,8 +101,8 @@ export function PrivacyNotice() {
       <Section title={t("Analytics and server logs", "অ্যানালিটিক্স ও সার্ভার লগ")}>
         <p>
           {t(
-            "We count page views with GoatCounter. It sets no cookies and records the page, the referring site, browser type and country, not who you are or what you type. Like any website, our host receives your IP address and browser details to serve each page. To stop abuse, we keep short-lived counters keyed by a one-way hash of your IP address; they expire within an hour.",
-            "পেজ ভিউ গোনার জন্য আমরা GoatCounter ব্যবহার করি। এটি কোনো কুকি সেট করে না; শুধু কোন পাতা, কোন সাইট থেকে এসেছেন, ব্রাউজারের ধরন ও দেশ রাখে — আপনি কে বা কী লেখেন তা নয়। যেকোনো ওয়েবসাইটের মতো, পাতা দেখাতে আমাদের হোস্ট আপনার IP ঠিকানা ও ব্রাউজারের তথ্য পায়। অপব্যবহার ঠেকাতে আমরা আপনার IP ঠিকানার একমুখী হ্যাশ দিয়ে স্বল্পমেয়াদি গণনা রাখি, যা এক ঘণ্টার মধ্যে মুছে যায়।"
+            "We count page views with GoatCounter. It sets no cookies and records the page, the referring site, browser type and country, not who you are or what you type. It also counts two tax-calculator actions, a calculation and the rebate optimizer appearing, as bare counts with no amounts or personal data. Like any website, our host receives your IP address and browser details to serve each page. To stop abuse, we keep short-lived counters keyed by a one-way hash of your IP address; they expire within an hour.",
+            "পেজ ভিউ গোনার জন্য আমরা GoatCounter ব্যবহার করি। এটি কোনো কুকি সেট করে না; শুধু কোন পাতা, কোন সাইট থেকে এসেছেন, ব্রাউজারের ধরন ও দেশ রাখে — আপনি কে বা কী লেখেন তা নয়। ট্যাক্স ক্যালকুলেটরের দুটি কাজও এটি গোনে — হিসাব করা আর রিবেট অপটিমাইজার দেখানো — শুধু সংখ্যা হিসেবে, কোনো অঙ্ক বা ব্যক্তিগত তথ্য ছাড়া। যেকোনো ওয়েবসাইটের মতো, পাতা দেখাতে আমাদের হোস্ট আপনার IP ঠিকানা ও ব্রাউজারের তথ্য পায়। অপব্যবহার ঠেকাতে আমরা আপনার IP ঠিকানার একমুখী হ্যাশ দিয়ে স্বল্পমেয়াদি গণনা রাখি, যা এক ঘণ্টার মধ্যে মুছে যায়।"
           )}
         </p>
       </Section>
