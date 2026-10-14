@@ -112,6 +112,14 @@ test.describe("Calculator — weird / adversarial input", () => {
     await noGarbageOnPage(page);
   });
 
+  test("Bangla digits typed on a Bangla keyboard are read as numbers", async ({ page }) => {
+    await page.goto("/calculator");
+    await page.getByLabel("ব্যবসা / পেশার নেট মুনাফা (annual)").fill("৫০০০০০");
+    const slabBaseLine = page.getByText("মোট স্লাব-ভিত্তিক আয়").locator("..");
+    await expect(slabBaseLine).toContainText("5,00,000");
+    await noGarbageOnPage(page);
+  });
+
   test("decimal/paisa values are accepted without crashing", async ({ page }) => {
     await page.goto("/calculator");
     await page.getByLabel("মূল বেতন (Basic, monthly)").fill("33333.33");

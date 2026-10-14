@@ -1,6 +1,7 @@
 "use client";
 
 import { useId, useState } from "react";
+import { cleanNumberText } from "@/lib/format";
 
 const FOCUS_RING =
   "focus:outline-none focus:border-green focus:ring-2 focus:ring-green/30";
@@ -32,9 +33,7 @@ export function NumberField({
   const displayValue = focused ? text : currency ? formatDisplay(value) : value ? String(value) : "";
 
   function handleChange(raw: string) {
-    const isNegative = raw.trim().startsWith("-");
-    const digitsOnly = raw.replace(/[^\d.]/g, "");
-    const cleaned = isNegative ? `-${digitsOnly}` : digitsOnly;
+    const cleaned = cleanNumberText(raw);
     setText(cleaned);
     const n = parseFloat(cleaned);
     onChange(Number.isFinite(n) ? n : 0);

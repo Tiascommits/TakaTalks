@@ -213,44 +213,32 @@ export function ZakatCalculator() {
               {t("2. Gold & Silver (স্বর্ণ ও রৌপ্য)", "২. সোনা ও রূপা")}
             </h3>
             <div className="space-y-3.5">
-              <div>
-                <label className="block text-xs text-[#555] mb-1 font-medium">
-                  {t("Gold Jewelry & Bullion (Bhori / Tola)", "স্বর্ণালঙ্কার ও বার (ভরি / তোলা)")}
-                </label>
-                <div className="flex items-center gap-3">
-                  <input
-                    type="number"
-                    min={0}
-                    step={0.25}
-                    value={goldBhori || ""}
-                    onChange={(e) => setGoldBhori(parseFloat(e.target.value) || 0)}
-                    placeholder="0"
-                    className="w-full px-3 py-2 border border-line bg-[#FCFBF8] text-sm font-mono focus:outline-none focus:border-green"
+              <div className="flex items-end gap-3">
+                <div className="flex-1">
+                  <NumberField
+                    label={t("Gold Jewelry & Bullion (Bhori / Tola)", "স্বর্ণালঙ্কার ও বার (ভরি / তোলা)")}
+                    currency={false}
+                    value={goldBhori}
+                    onChange={setGoldBhori}
                   />
-                  <span className="text-xs font-mono text-muted whitespace-nowrap">
-                    ≈ {fmtTaka(Math.round(goldBhori * goldPrice))}
-                  </span>
                 </div>
+                <span className="text-xs font-mono text-muted whitespace-nowrap pb-3">
+                  ≈ {fmtTaka(Math.round(goldBhori * goldPrice))}
+                </span>
               </div>
 
-              <div>
-                <label className="block text-xs text-[#555] mb-1 font-medium">
-                  {t("Silver Jewelry & Coins (Bhori / Tola)", "রূপার গহনা ও মুদ্রা (ভরি / তোলা)")}
-                </label>
-                <div className="flex items-center gap-3">
-                  <input
-                    type="number"
-                    min={0}
-                    step={0.5}
-                    value={silverBhori || ""}
-                    onChange={(e) => setSilverBhori(parseFloat(e.target.value) || 0)}
-                    placeholder="0"
-                    className="w-full px-3 py-2 border border-line bg-[#FCFBF8] text-sm font-mono focus:outline-none focus:border-green"
+              <div className="flex items-end gap-3">
+                <div className="flex-1">
+                  <NumberField
+                    label={t("Silver Jewelry & Coins (Bhori / Tola)", "রূপার গহনা ও মুদ্রা (ভরি / তোলা)")}
+                    currency={false}
+                    value={silverBhori}
+                    onChange={setSilverBhori}
                   />
-                  <span className="text-xs font-mono text-muted whitespace-nowrap">
-                    ≈ {fmtTaka(Math.round(silverBhori * silverPrice))}
-                  </span>
                 </div>
+                <span className="text-xs font-mono text-muted whitespace-nowrap pb-3">
+                  ≈ {fmtTaka(Math.round(silverBhori * silverPrice))}
+                </span>
               </div>
             </div>
           </div>

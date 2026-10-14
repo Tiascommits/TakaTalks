@@ -12,6 +12,7 @@ import { TaxBreakdown } from "./TaxBreakdown";
 import { RebateOptimizer } from "./RebateOptimizer";
 import { TaxSlipModal } from "./TaxSlipModal";
 import { useLanguage } from "@/lib/i18n";
+import { toAsciiDigits } from "@/lib/format";
 
 function field<K extends keyof TaxCalculatorInput>(
   input: TaxCalculatorInput,
@@ -34,7 +35,7 @@ function parseSharedLinkPatch(params: URLSearchParams): Partial<TaxCalculatorInp
   const parseNum = (k: string) => {
     const v = params.get(k);
     if (v) {
-      const n = parseFloat(v);
+      const n = parseFloat(toAsciiDigits(v));
       if (Number.isFinite(n) && n > 0) return n;
     }
     return undefined;
