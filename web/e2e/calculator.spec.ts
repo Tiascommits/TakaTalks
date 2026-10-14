@@ -70,9 +70,10 @@ test.describe("Calculator — normal cases", () => {
     page,
   }) => {
     await page.goto("/calculator");
-    await page.getByLabel("ব্যবসা / পেশার নেট মুনাফা (annual)").fill("500000");
+    // ৳20 lakh: high enough that the 3%-of-income ceiling binds before the minimum-tax floor.
+    await page.getByLabel("ব্যবসা / পেশার নেট মুনাফা (annual)").fill("2000000");
     await page.getByLabel("DSE listed stock, নতুন বিনিয়োগ (annual)").fill("1000000");
-    await expect(page.getByText(/ইতিমধ্যে সর্বোচ্চ rebate/)).toBeVisible();
+    await expect(page.getByText(/ইতিমধ্যে সর্বোচ্চ রেয়াত/)).toBeVisible();
     await noGarbageOnPage(page);
   });
 

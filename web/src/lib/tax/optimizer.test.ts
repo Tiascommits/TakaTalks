@@ -99,6 +99,13 @@ describe("calculateOptimizer — minimum tax floor (critique B3)", () => {
     expect(opt.cappedByMinimumTax).toBe(true);
   });
 
+  it("at ৳20 lakh with ৳10 lakh invested, the 3% ceiling binds, not the minimum tax", () => {
+    const { r, opt } = optimizerFor({ businessAnnual: 2000000, invStockAnnual: 1000000 });
+    expect(r.minApplied).toBe(false);
+    expect(opt.alreadyAtMax).toBe(true);
+    expect(opt.cappedByMinimumTax).toBe(false);
+  });
+
   it("never promises a saving that would take tax below the minimum-tax floor", () => {
     for (const businessAnnual of [450000, 500000, 600000, 700000, 900000]) {
       const { r, opt } = optimizerFor({ businessAnnual });

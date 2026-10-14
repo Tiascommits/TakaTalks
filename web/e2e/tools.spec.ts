@@ -137,7 +137,7 @@ test.describe("Zakat Calculator (/zakat)", () => {
     await expect(page.getByText(/2026-10-13/).first()).toBeVisible();
     await expect(page.getByText(/আগে উপরে আজকের সোনা ও রূপার দাম যাচাই করুন|Check today's gold and silver price above first/)).toBeVisible();
     await page.getByLabel(/আজকের সোনা ও রূপার দাম যাচাই করেছি|I've checked today's gold and silver price/).check();
-    await expect(page.getByText(/নিসাব সীমার নিচে|Below Nisab Threshold/)).toBeVisible();
+    await expect(page.getByText(/ℹ (নিসাব সীমার নিচে|Below Nisab Threshold)/)).toBeVisible();
 
     // Switch to Gold Nisab
     await page.getByRole("button", { name: /স্বর্ণ নিসাব|Gold Nisab/ }).click();
