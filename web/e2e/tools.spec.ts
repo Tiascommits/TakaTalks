@@ -99,6 +99,8 @@ test.describe("Loan & Home EMI Accelerator (/loans)", () => {
   test("loads cleanly, calculates EMI, toggles presets, and computes prepayment savings", async ({ page }) => {
     await page.goto("/loans");
     await expect(page.getByText(/লোন ও গৃহঋণ ইএমআই ক্যালকুলেটর|Loan & Home EMI Calculator/)).toBeVisible();
+    // Preset rates are labelled as examples next to a dated Bangladesh Bank benchmark
+    await expect(page.getByText(/11\.83%/).first()).toBeVisible();
     await noGarbageOnPage(page);
 
     // Verify monthly EMI is shown

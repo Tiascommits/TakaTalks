@@ -21,6 +21,15 @@ export interface LoanPreset {
   descriptionBn: string;
 }
 
+// owner-confirm: the preset rates are illustrative examples set on 2026-09-13, not
+// quotes from any bank. Replace with a dated bank quote if one is wanted.
+export const LOAN_PRESETS_AS_OF = "2026-09-13";
+
+// Real benchmark shown next to the presets: Bangladesh Bank, "Weighted average
+// interest rates of scheduled banks", All Banks advances rate (read 2026-10-15,
+// https://www.bb.org.bd/en/index.php/econdata/w_avg_interest).
+export const BB_AVG_LENDING_RATE = { ratePct: 11.83, month: "August 2026", source: "Bangladesh Bank" };
+
 export const LOAN_PRESETS: LoanPreset[] = [
   {
     id: "home_loan",
@@ -65,15 +74,22 @@ export const LOAN_PRESETS: LoanPreset[] = [
 ];
 
 /**
- * NBR Excise Duty Slabs on Bank Accounts & Loans in Bangladesh.
- * Source: National Board of Revenue & Bangladesh Bank circulars.
+ * Excise duty on a bank account or loan balance, per the Finance Ordinance 2025 bands.
+ * Nil up to 3 lakh, 150, 3,000 (10-50 lakh) and 50,000 bands: Prothom Alo English,
+ * 23 Oct 2025, and Prothom Alo Bangla, 18 Dec 2025. Full table: Prothom Alo English only.
+ * owner-confirm: the 500, 5,000, 10,000 and 20,000 bands have one source, and the FY2026-27
+ * budget proposed raising the nil band to 4 lakh (Daily Star, 11 Jun 2026); not confirmed enacted.
  */
+export const EXCISE_DUTY_AS_OF = "2025-10-23";
+
 export function calculateExciseDuty(amount: number): number {
-  if (amount <= 100_000) return 0;
+  if (amount <= 300_000) return 0;
   if (amount <= 500_000) return 150;
   if (amount <= 1_000_000) return 500;
-  if (amount <= 10_000_000) return 3_000;
-  if (amount <= 50_000_000) return 15_000;
+  if (amount <= 5_000_000) return 3_000;
+  if (amount <= 10_000_000) return 5_000;
+  if (amount <= 20_000_000) return 10_000;
+  if (amount <= 50_000_000) return 20_000;
   return 50_000;
 }
 

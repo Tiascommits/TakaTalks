@@ -2,17 +2,18 @@ import { describe, it, expect } from "vitest";
 import { calculateLoan, calculateExciseDuty, LOAN_PRESETS } from "./loans";
 
 describe("NBR Excise Duty", () => {
-  it("computes exact statutory NBR excise duty slabs", () => {
-    expect(calculateExciseDuty(50_000)).toBe(0);
-    expect(calculateExciseDuty(100_000)).toBe(0);
-    expect(calculateExciseDuty(100_001)).toBe(150);
+  it("uses the Finance Ordinance 2025 bands (Prothom Alo English, 23 Oct 2025)", () => {
+    expect(calculateExciseDuty(100_001)).toBe(0); // nil up to 3 lakh, was 1 lakh
+    expect(calculateExciseDuty(300_000)).toBe(0);
+    expect(calculateExciseDuty(300_001)).toBe(150);
     expect(calculateExciseDuty(500_000)).toBe(150);
     expect(calculateExciseDuty(500_001)).toBe(500);
     expect(calculateExciseDuty(1_000_000)).toBe(500);
     expect(calculateExciseDuty(5_000_000)).toBe(3_000);
-    expect(calculateExciseDuty(10_000_000)).toBe(3_000);
-    expect(calculateExciseDuty(20_000_000)).toBe(15_000);
-    expect(calculateExciseDuty(60_000_000)).toBe(50_000);
+    expect(calculateExciseDuty(5_000_001)).toBe(5_000);
+    expect(calculateExciseDuty(10_000_001)).toBe(10_000);
+    expect(calculateExciseDuty(20_000_001)).toBe(20_000);
+    expect(calculateExciseDuty(50_000_001)).toBe(50_000);
   });
 });
 
@@ -91,7 +92,7 @@ describe("Loan Calculation & Prepayment Accelerator", () => {
     expect(nano.tenureMonths).toBe(6);
     expect(nano.actualMonthsToPayoff).toBe(6);
     expect(nano.standardMonthlyEMI).toBeGreaterThan(5_000);
-    expect(nano.estimatedExciseDuty).toBe(0); // Up to 100k is 0
+    expect(nano.estimatedExciseDuty).toBe(0); // Up to 3 lakh is 0
   });
 
   it("provides valid presets", () => {
