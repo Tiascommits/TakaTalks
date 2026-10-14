@@ -9,24 +9,24 @@ import { VizStrip } from "@/components/home/VizStrip";
 const TRUST_POINTS = [
   {
     icon: "🔒",
-    en: "Runs on your device",
-    bn: "আপনার ডিভাইসেই চলে",
-    descEn: "Income figures are never sent to a server.",
-    descBn: "আয়ের তথ্য কোনো সার্ভারে যায় না।",
+    en: "Calculators run on your device",
+    bn: "ক্যালকুলেটর আপনার ডিভাইসেই চলে",
+    descEn: "What you type into a calculator stays in your browser. The tracker saves your entries on our server, only when you use it.",
+    descBn: "ক্যালকুলেটরে যা লেখেন তা আপনার ব্রাউজারেই থাকে। ট্র্যাকার ব্যবহার করলে কেবল তখনই আপনার এন্ট্রি আমাদের সার্ভারে সেভ হয়।",
   },
   {
     icon: "📄",
-    en: "Every number is sourced",
-    bn: "প্রতিটি সংখ্যার সূত্র আছে",
-    descEn: "NBR rules and bank rates cite where they came from.",
-    descBn: "এনবিআর নিয়ম ও ব্যাংক রেটের সূত্র দেখানো হয়।",
+    en: "Estimates, not advice",
+    bn: "আনুমানিক হিসাব, পরামর্শ নয়",
+    descEn: "Based on published NBR rules and bank data. Check final figures with NBR or your bank.",
+    descBn: "এনবিআরের প্রকাশিত নিয়ম ও ব্যাংকের তথ্যের ভিত্তিতে। চূড়ান্ত অঙ্ক এনবিআর বা ব্যাংকে মিলিয়ে নিন।",
   },
   {
     icon: "🚫",
     en: "No signup to try",
     bn: "ব্যবহারে সাইনআপ লাগে না",
-    descEn: "An account is only for maturity reminders.",
-    descBn: "শুধু মেয়াদপূর্তির রিমাইন্ডারের জন্য অ্যাকাউন্ট।",
+    descEn: "Calculators need no account. The tracker makes an anonymous one when you first save.",
+    descBn: "ক্যালকুলেটরে অ্যাকাউন্ট লাগে না। ট্র্যাকারে প্রথমবার সেভ করলে একটি নামহীন অ্যাকাউন্ট তৈরি হয়।",
   },
 ];
 
@@ -45,14 +45,14 @@ export default function Home() {
             </span>
             <h1 className="font-serif font-bold text-[1.75rem] leading-[1.15] sm:text-4xl text-green-deep mb-3">
               {t(
-                "Your Money, In Your Hands — Powered by Math",
-                "তোমার টাকার পূর্ণ নিয়ন্ত্রণ — নিখুঁত গাণিতিক হিসাব"
+                "Your Money, In Your Hands — Estimates You Can Check",
+                "আপনার টাকার হিসাব আপনার হাতে — যাচাইযোগ্য আনুমানিক হিসাব"
               )}
             </h1>
             <p className="text-sm sm:text-base text-[#444] leading-relaxed mb-6 max-w-xl mx-auto md:mx-0">
               {t(
-                "Tax, salary, savings and loan calculators built on Bangladesh's actual rules — with the source for every number.",
-                "বাংলাদেশের প্রকৃত নিয়মে তৈরি কর, বেতন, সঞ্চয় ও ঋণের ক্যালকুলেটর — প্রতিটি সংখ্যার সূত্রসহ।"
+                "Tax, salary, savings and loan estimates based on Bangladesh's published rules. They are a starting point, not a filing or advice.",
+                "বাংলাদেশের প্রকাশিত নিয়ম অনুযায়ী কর, বেতন, সঞ্চয় ও ঋণের আনুমানিক হিসাব। এটি শুরু করার জায়গা — রিটার্ন দাখিল বা পরামর্শ নয়।"
               )}
             </p>
             <div className="flex flex-col sm:flex-row gap-3 sm:justify-center md:justify-start">

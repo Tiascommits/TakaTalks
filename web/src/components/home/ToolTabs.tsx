@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useLanguage } from "@/lib/i18n";
-import { TOOL_CATEGORIES, TOOLS, toolsInCategory, type ToolCategoryId } from "@/config/tools";
+import { TOOL_CATEGORIES, toolsInCategory, type ToolCategoryId } from "@/config/tools";
 import { useRatesLive } from "@/components/rates/RatesLive";
 
 /**
@@ -30,9 +30,13 @@ export function ToolTabs() {
         </h2>
         <p className="text-xs text-muted mt-1.5">
           {t(
-            `All ${TOOLS.length} tools run in your browser. No personal income data leaves your device.`,
-            `সব ${TOOLS.length}টি টুল আপনার ব্রাউজারেই চলে। ব্যক্তিগত আয়ের তথ্য ডিভাইস ছাড়ে না।`
-          )}
+            "Calculators run in your browser and keep what you type on your device. The tracker saves your entries on our server — see the",
+            "ক্যালকুলেটরগুলো আপনার ব্রাউজারেই চলে, যা লেখেন তা ডিভাইসেই থাকে। ট্র্যাকার আপনার এন্ট্রি আমাদের সার্ভারে সেভ করে — বিস্তারিত"
+          )}{" "}
+          <Link href="/privacy" className="underline">
+            {t("privacy notice", "গোপনীয়তা নীতিতে")}
+          </Link>
+          {t(".", "।")}
         </p>
       </div>
 

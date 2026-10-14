@@ -118,8 +118,8 @@ export const TOOLS: Tool[] = [
     title: { en: "Salary Offer & In-Hand Analyzer", bn: "স্যালারি অফার ও ইন-হ্যান্ড পে" },
     navLabel: { en: "Salary Analyzer", bn: "স্যালারি তুলনাকারী" },
     desc: {
-      en: "Compare job offers side-by-side. See exact monthly bank credit after 10% PF and Section 86 monthly TDS.",
-      bn: "চাকরির অফার পাশাপাশি তুলনা করুন। ১০% পিএফ ও মাসিক কর কর্তনের পর প্রকৃত ব্যাংক জমা দেখুন।",
+      en: "Compare job offers side-by-side. Estimate the monthly bank credit after 10% PF and Section 86 monthly TDS.",
+      bn: "চাকরির অফার পাশাপাশি তুলনা করুন। ১০% পিএফ ও মাসিক কর কর্তনের পর আনুমানিক ব্যাংক জমা দেখুন।",
     },
   },
   {
@@ -163,12 +163,12 @@ export const TOOLS: Tool[] = [
     category: "save",
     needsRateData: true,
     icon: "🏦",
-    tag: { en: "LIVE RATES + AUDITED DATA", bn: "লাইভ রেট + অডিট ডাটা" },
+    tag: { en: "PUBLISHED RATES + AUDITED DATA", bn: "প্রকাশিত রেট + অডিট তথ্য" },
     title: { en: "Bank Rates & Health Scorecard", bn: "ব্যাংক রেট ও স্বাস্থ্য স্কোরকার্ড" },
     navLabel: { en: "Bank Rates", bn: "ব্যাংক রেট" },
     desc: {
-      en: "Commercial bank deposit rates with audited Basel III health disclosures (CAR, NPL, ROA).",
-      bn: "বাণিজ্যিক ব্যাংকের আমানত রেট এবং অডিটেড মূলধন পর্যাপ্ততা (CAR) ও খেলাপি ঋণ (NPL) তথ্য।",
+      en: "Banks' published FDR rates side by side, with audited health figures (CAR, NPL, ROA) where available.",
+      bn: "ব্যাংকগুলোর প্রকাশিত FDR রেট পাশাপাশি, আর যেখানে পাওয়া যায় সেখানে নিরীক্ষিত মূলধন পর্যাপ্ততা (CAR) ও খেলাপি ঋণ (NPL) তথ্য।",
     },
   },
   {
@@ -179,8 +179,8 @@ export const TOOLS: Tool[] = [
     title: { en: "Reinvestment Suggestion", bn: "পুনঃবিনিয়োগ পরামর্শ" },
     navLabel: { en: "Reinvest", bn: "পুনঃবিনিয়োগ" },
     desc: {
-      en: "When an investment matures, see which instrument category fits — by after-tax return, tax-rebate room, and your timeline.",
-      bn: "বিনিয়োগের মেয়াদ শেষ হলে কোন ক্যাটাগরি উপযুক্ত দেখুন — ট্যাক্স-পরবর্তী মুনাফা, রেয়াতের সুযোগ ও সময়সীমা অনুযায়ী।",
+      en: "When an investment matures, see instrument categories ranked by a fixed formula — after-tax return, tax-rebate room and your timeline. Not AI, not advice.",
+      bn: "বিনিয়োগের মেয়াদ শেষ হলে একটি নির্দিষ্ট সূত্রে ক্যাটাগরিগুলোর ক্রম দেখুন — ট্যাক্স-পরবর্তী মুনাফা, রেয়াতের সুযোগ ও সময়সীমা অনুযায়ী। এআই বা পরামর্শ নয়।",
     },
   },
   {
@@ -228,7 +228,7 @@ export const TOOLS: Tool[] = [
     navLabel: { en: "Zakat", bn: "যাকাত" },
     desc: {
       en: "Gold & Silver Nisab, Sanchayapatra, DSE stocks, and bank interest purification under Hanafi fiqh.",
-      bn: "স্বর্ণ-রৌপ্য নিসাব, সঞ্চয়পত্র, শেয়ার ও ব্যাংক সুদের পরিশুদ্ধির শরিয়তসম্মত নির্ভুল হিসাব।",
+      bn: "স্বর্ণ-রৌপ্য নিসাব, সঞ্চয়পত্র, শেয়ার ও ব্যাংক সুদের পরিশুদ্ধির শরিয়তসম্মত আনুমানিক হিসাব।",
     },
   },
 ];

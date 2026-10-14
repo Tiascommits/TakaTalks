@@ -29,6 +29,9 @@ work with zero setup, no account, no server round-trip for the calculation itsel
 you save an entry, tracked via an httpOnly cookie — see `src/lib/tracker/session.ts`.
 `/rates` and `/admin/*` need the rate-scrape/bank-health cron jobs and an admin login
 to show live data (see `src/lib/rates/`, `src/lib/bank-health/`, `src/lib/admin/`).
+Until a scrape has stored at least one rate, `/rates` shows a "not collected yet" state and
+is left out of the nav and homepage (`hasRateData` in `src/lib/rates/current-rates.ts`); a
+successful scrape revalidates every page so the link comes back on its own.
 
 ## Deploying (Vercel)
 
@@ -145,7 +148,9 @@ Playwright needs its browser installed once: `npx playwright install chromium`.
 
 ## Status
 
-Every phase in the root `README.md`'s roadmap table is built. What's left is tracked in
+Every phase in the root `README.md`'s roadmap table has code, but rate collection,
+bank-health figures and reminders are not live in production yet; the roadmap's Status
+column says why. What's left is tracked in
 `todo/`, not here: `todo/my-work/` and `todo/needs-us-both/` are items gated on the human
 owner's own accounts or judgment calls (email/WhatsApp provider setup, a couple of bank
 data-source decisions); `todo/agent-work/README.md` is the running log of autonomous work

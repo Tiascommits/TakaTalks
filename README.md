@@ -52,9 +52,10 @@ server, no dependencies beyond a Google Fonts CDN link.
 ## What's in `web/`
 
 The real app, scaffolded from **Prompt 1** and grown well past it since: Next.js +
-TypeScript + Tailwind + Prisma/Postgres, now covering every phase in the roadmap table
+TypeScript + Tailwind + Prisma/Postgres, with code for every phase in the roadmap table
 below (tax calculator, tracker, rate scorecard, bank-health disclosures, goal planner,
 salary comparator, instrument yield matrix, and the Phase 5 reinvestment suggestions).
+Not all of it is live in production: the roadmap's Status column says which parts are.
 Deployed on Vercel. See `web/README.md` for setup, deployment, and the current route/module
 list — this file's roadmap table is the status summary, `web/README.md` is where the
 route-by-route detail lives, so it isn't duplicated in both places. The `tools/` HTML demos
@@ -91,15 +92,15 @@ Hand these to Claude Code **in order**. Each one assumes the previous module exi
 | Phase | What | Status |
 |---|---|---|
 | 1 | Tax calculator + rebate optimizer + printable tax slip | Built in `web/` (`/calculator`), plus a fast income-only on-ramp at `/tax_basic_calculation` that links up to the full calculator |
-| 2 | Income/investment tracker, maturity reminders | Built in `web/` (`/tracker`) |
-| 3 | Bank rate comparison + scorecard (live daily monitoring) | Built in `web/` (`/rates`) |
-| 3 | Audited bank health disclosures (CAR, NPL, ROA, ROE) | Built in `web/` (`/rates`, `/admin/bank-health`); figures come from the extraction pipeline and each needs manual approval before it shows |
+| 2 | Income/investment tracker, maturity reminders | Tracker live in `web/` (`/tracker`). Reminders are built but send nothing until email (Resend) or WhatsApp is configured, which production doesn't have yet (Oct 2026) |
+| 3 | Bank rate comparison + scorecard (daily monitoring) | Built in `web/` (`/rates`, daily scrape cron), **not live**: production has stored no rates yet (Oct 2026), most likely because `CRON_SECRET` isn't set. Until a rate exists, `/rates` shows an empty state and stays out of the nav and homepage |
+| 3 | Audited bank health disclosures (CAR, NPL, ROA, ROE) | Built in `web/` (`/rates` panel, `/admin/bank-health`, daily cron), **not live**: every figure needs an admin's approval and no admin account exists in production yet. The panel stays hidden until one figure is approved |
 | 4 | Life goal planner (car, flat, education, retirement) | Built in `web/` (`/goals`) |
 | 4 | Salary offer analyzer & net take-home benchmark | Built in `web/` (`/salary`) |
 | 4 | Real yield matrix (Sanchayapatra vs FDR vs Sukuk) | Built in `web/` (`/instruments`) |
 | 6 | Money habit tracker & guide (micro-spend regulation) | Built in `web/` (`/habits`) — unit cost × frequency for subscriptions, data packs, delivery, rides and card spend, with user-set monthly caps and comparisons against alternatives the person prices themselves |
 | 6 | Financial freedom (FIRE) calculator & roadmap | Built in `web/` (`/freedom`) — lifestyle-based corpus, inflation on both sides, existing passive income netted off, corpus allocation by role, and a year-by-year roadmap with a coast marker |
-| 5 | Smart reinvestment optimizer | Built in `web/` (`/reinvest`, and surfaced from `/tracker`'s maturity flow), ahead of the original "needs real usage data" gate — see `docs/product-notes.md` for why that was safe: it's deterministic category-level scoring, not an LLM verdict, and stays on the math side of the advice-vs-math line |
+| 5 | Reinvestment suggestions (fixed-formula category ranking, not AI) | Built in `web/` (`/reinvest`, and surfaced from `/tracker`'s maturity flow), ahead of the original "needs real usage data" gate — see `docs/product-notes.md` for why that was safe: it's deterministic category-level scoring, not an LLM verdict, and stays on the math side of the advice-vs-math line |
 
 ## A few things to keep true as this grows
 

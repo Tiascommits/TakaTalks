@@ -19,8 +19,8 @@ export function ReinvestHeader() {
         </h1>
         <p className="max-w-[720px] text-sm text-[#DCE6DD]">
           {t(
-            "When money matures, this ranks Sanchayapatra, Govt Bonds, Bank FDR, and Mutual Funds as categories — by after-tax real return, your remaining tax-rebate room, and how soon you'll need the money — and shows the math behind the ranking. It never names a specific bank or fund as \"the best.\"",
-            "কোনো বিনিয়োগের মেয়াদ শেষ হলে, এই টুল সঞ্চয়পত্র, সরকারি বন্ড, ব্যাংক এফডিআর ও মিউচুয়াল ফান্ড — এই ক্যাটাগরিগুলোকে ট্যাক্স-পরবর্তী প্রকৃত মুনাফা, অবশিষ্ট ট্যাক্স রেয়াতের সুযোগ, ও টাকা কখন লাগবে তার ভিত্তিতে র‍্যাংক করে এবং হিসাবটা দেখায়। এটি কখনো কোনো নির্দিষ্ট ব্যাংক বা ফান্ডকে \"সেরা\" বলে না।"
+            "When money matures, this ranks Sanchayapatra, Govt Bonds, Bank FDR, and Mutual Funds as categories — by after-tax real return, your remaining tax-rebate room, and how soon you'll need the money — and shows the math behind the ranking. The ranking is a fixed formula, not AI, and an estimate, not investment advice. It never names a specific bank or fund as \"the best.\"",
+            "কোনো বিনিয়োগের মেয়াদ শেষ হলে, এই টুল সঞ্চয়পত্র, সরকারি বন্ড, ব্যাংক এফডিআর ও মিউচুয়াল ফান্ড — এই ক্যাটাগরিগুলোকে ট্যাক্স-পরবর্তী প্রকৃত মুনাফা, অবশিষ্ট ট্যাক্স রেয়াতের সুযোগ, ও টাকা কখন লাগবে তার ভিত্তিতে র‍্যাংক করে এবং হিসাবটা দেখায়। র‍্যাংকিংটি একটি নির্দিষ্ট সূত্রে করা, কোনো এআই নয় — আনুমানিক হিসাব, বিনিয়োগ পরামর্শ নয়। এটি কখনো কোনো নির্দিষ্ট ব্যাংক বা ফান্ডকে \"সেরা\" বলে না।"
           )}
         </p>
       </div>

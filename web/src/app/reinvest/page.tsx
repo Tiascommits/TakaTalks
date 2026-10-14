@@ -10,7 +10,7 @@ import type { TaxCalculationResult } from "@/lib/tax/types";
 export const metadata = {
   title: "পুনঃবিনিয়োগ পরামর্শ — TakaTalks",
   description:
-    "Bangladesh reinvestment suggestion tool — ranks Sanchayapatra, Govt Bonds, Bank FDR, and Mutual Funds by after-tax return, tax-rebate headroom, and your goal timeline. Category math only, never a named-bank verdict.",
+    "Bangladesh reinvestment suggestion tool — ranks Sanchayapatra, Govt Bonds, Bank FDR, and Mutual Funds by after-tax return, tax-rebate headroom, and your goal timeline, using a fixed formula (not AI). Category math only, never a named-bank verdict.",
 };
 
 export default async function ReinvestPage({
