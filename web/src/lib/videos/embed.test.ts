@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { buildEmbedUrl, buildFacebookEmbedUrl, buildYoutubeEmbedUrl } from "./embed";
+import { buildEmbedUrl, buildFacebookEmbedUrl, buildYoutubeEmbedUrl, youtubeThumbnailUrl } from "./embed";
 
 describe("buildFacebookEmbedUrl", () => {
   it("wraps a Facebook share URL in the video plugin iframe URL", () => {
@@ -14,19 +14,19 @@ describe("buildFacebookEmbedUrl", () => {
 describe("buildYoutubeEmbedUrl", () => {
   it("extracts the video ID from a watch URL", () => {
     expect(buildYoutubeEmbedUrl("https://www.youtube.com/watch?v=abc123XYZ")).toBe(
-      "https://www.youtube.com/embed/abc123XYZ"
+      "https://www.youtube-nocookie.com/embed/abc123XYZ"
     );
   });
 
   it("extracts the video ID from a shortened youtu.be URL", () => {
     expect(buildYoutubeEmbedUrl("https://youtu.be/abc123XYZ")).toBe(
-      "https://www.youtube.com/embed/abc123XYZ"
+      "https://www.youtube-nocookie.com/embed/abc123XYZ"
     );
   });
 
   it("extracts the video ID from a Shorts URL", () => {
     expect(buildYoutubeEmbedUrl("https://www.youtube.com/shorts/abc123XYZ")).toBe(
-      "https://www.youtube.com/embed/abc123XYZ"
+      "https://www.youtube-nocookie.com/embed/abc123XYZ"
     );
   });
 
@@ -44,7 +44,15 @@ describe("buildEmbedUrl", () => {
 
   it("dispatches to the YouTube builder", () => {
     expect(buildEmbedUrl("youtube", "https://www.youtube.com/watch?v=abc123XYZ")).toBe(
-      "https://www.youtube.com/embed/abc123XYZ"
+      "https://www.youtube-nocookie.com/embed/abc123XYZ"
+    );
+  });
+});
+
+describe("youtubeThumbnailUrl", () => {
+  it("points at the video's still, so the player loads only on a tap", () => {
+    expect(youtubeThumbnailUrl("https://www.youtube.com/watch?v=abc123XYZ")).toBe(
+      "https://i.ytimg.com/vi/abc123XYZ/hqdefault.jpg"
     );
   });
 });
