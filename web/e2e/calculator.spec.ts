@@ -75,6 +75,14 @@ test.describe("Calculator — normal cases", () => {
     await expect(page.getByText(/ইতিমধ্যে সর্বোচ্চ rebate/)).toBeVisible();
     await noGarbageOnPage(page);
   });
+
+  test("optimizer promises no saving when the minimum tax already applies", async ({ page }) => {
+    await page.goto("/calculator");
+    await page.getByLabel("ব্যবসা / পেশার নেট মুনাফা (annual)").fill("400001");
+    await expect(page.getByText(/ইতিমধ্যে ন্যূনতম করে আছে/)).toBeVisible();
+    await expect(page.getByText(/বাঁচাতে পারো/)).toHaveCount(0);
+    await noGarbageOnPage(page);
+  });
 });
 
 test.describe("Calculator — weird / adversarial input", () => {

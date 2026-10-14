@@ -12,9 +12,13 @@ export function calculateOptimizer(r: TaxCalculationResult): OptimizerResult {
 
   // Rebate can never exceed 3% of taxable income or the hard cap, no matter
   // how much more is invested.
-  const maxRebate = Math.min(r.rebate3pct, TAX_RULES.rebateCap);
-  const rebateGap = Math.max(0, maxRebate - r.rebate);
-  const taxSaving = rebateGap; // each extra taka of rebate is a taka of tax saved
+  const legalMaxRebate = Math.min(r.rebate3pct, TAX_RULES.rebateCap);
+  // Tax can't fall below the minimum-tax floor, so rebate past that point
+  // saves nothing: cap the useful rebate at (current tax - floor).
+  const usefulMaxRebate = r.rebate + Math.max(0, r.taxAfterRebate - r.minFloor);
+  const maxRebate = Math.max(r.rebate, Math.min(legalMaxRebate, usefulMaxRebate));
+  const rebateGap = maxRebate - r.rebate;
+  const taxSaving = rebateGap; // each extra taka of useful rebate is a taka of tax saved
 
   // rebate = min(3% * income, 10% * investment, cap) — to close the gap from
   // the investment side, total eligible investment must reach maxRebate / 10%.
@@ -65,6 +69,7 @@ export function calculateOptimizer(r: TaxCalculationResult): OptimizerResult {
     investmentNeeded,
     suggestions,
     alreadyAtMax: hasTaxableIncome && rebateGap <= 0,
+    cappedByMinimumTax: hasTaxableIncome && maxRebate < legalMaxRebate,
     hasTaxableIncome,
   };
 }

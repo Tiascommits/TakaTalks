@@ -158,5 +158,7 @@ export interface OptimizerResult {
   investmentNeeded: number;
   suggestions: OptimizerSuggestion[];
   alreadyAtMax: boolean;
+  /** The minimum tax, not the 3%/cap ceiling, is what limits the saving. */
+  cappedByMinimumTax: boolean;
   hasTaxableIncome: boolean;
 }
