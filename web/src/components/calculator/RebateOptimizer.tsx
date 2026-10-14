@@ -6,11 +6,11 @@ import type { OptimizerResult, OptimizerSuggestion } from "@/lib/tax/types";
 import { useLanguage } from "@/lib/i18n";
 
 const INSTRUMENT_LABEL: Record<OptimizerSuggestion["instrumentId"], { en: string; bn: string }> = {
-  sanchay_group: { en: "Sanchaypatra / Govt Bond / Mutual Fund", bn: "সঞ্চয়পত্র / Govt Bond / Mutual Fund" },
+  sanchay_group: { en: "Sanchaypatra / Govt Bond", bn: "সঞ্চয়পত্র / Govt Bond" },
   dps: { en: "DPS", bn: "DPS" },
   uncapped: {
-    en: "PF / DSE Stock / Life insurance / Donation",
-    bn: "PF / DSE Stock / জীবন বীমা / দাতব্য দান",
+    en: "Mutual fund / PF / DSE Stock / Life insurance / Donation",
+    bn: "মিউচুয়াল ফান্ড / PF / DSE Stock / জীবন বীমা / দাতব্য দান",
   },
 };
 

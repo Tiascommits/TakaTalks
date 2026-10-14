@@ -4,7 +4,7 @@ import { EMPTY_TAX_INPUT } from "@/lib/tax/types";
 import { calculateSalaryBreakdown, compareSalaries } from "./salary";
 
 describe("Salary Offer Analyzer (Income Tax Act 2023)", () => {
-  it("computes accurate statutory 1/3 exemption capped at ৳4.5 lakh", () => {
+  it("computes the statutory 1/3 exemption capped at ৳5 lakh (KPMG Bangladesh Tax 2026 p45)", () => {
     // High salary where 1/3 would exceed 4.5 lakh
     const high = calculateSalaryBreakdown({
       label: "Senior Role",
@@ -15,12 +15,12 @@ describe("Salary Offer Analyzer (Income Tax Act 2023)", () => {
       festivalBonusesCount: 2,
     });
 
-    // 1/3 of ~3.3M is ~1.1M, but must be capped at exactly 4,50,000
-    expect(high.statutoryExemption).toBe(450_000);
-    expect(high.taxableSalary).toBe(high.totalEmploymentReceiptsForTax - 450_000);
+    // 1/3 of ~3.3M is ~1.1M, but must be capped at exactly 5,00,000
+    expect(high.statutoryExemption).toBe(500_000);
+    expect(high.taxableSalary).toBe(high.totalEmploymentReceiptsForTax - 500_000);
   });
 
-  it("computes 1/3 exemption when below ৳4.5 lakh cap", () => {
+  it("computes 1/3 exemption when below the ৳5 lakh cap", () => {
     // Moderate salary where 1/3 is below 4.5 lakh
     const mod = calculateSalaryBreakdown({
       label: "Junior Role",
@@ -36,7 +36,7 @@ describe("Salary Offer Analyzer (Income Tax Act 2023)", () => {
     const receipts = mod.totalEmploymentReceiptsForTax;
     const expectedExemption = Math.round(receipts / 3);
     expect(mod.statutoryExemption).toBe(expectedExemption);
-    expect(mod.statutoryExemption).toBeLessThan(450_000);
+    expect(mod.statutoryExemption).toBeLessThan(500_000);
   });
 
   it("calculates accurate monthly take-home and TDS", () => {

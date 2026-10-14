@@ -52,7 +52,7 @@ export function TaxBreakdown({ r, ait }: { r: TaxCalculationResult; ait: number 
       <GroupTitle>{t("Income sources", "আয়ের খাত")}</GroupTitle>
       <Line label={t("Gross salary", "মোট বেতন (gross salary)")} value={fmtTaka(r.grossSalary)} />
       <Line
-        label={t("Salary exemption (⅓ or ৳5 lakh, whichever lower)", "বেতন exemption (⅓ বা ৫ লাখ, যেটা কম)")}
+        label={t(`Salary exemption (⅓ or ${fmtTaka(TAX_RULES.salaryExemptionCap)}, whichever lower)`, `বেতন exemption (⅓ বা ${fmtTaka(TAX_RULES.salaryExemptionCap)}, যেটা কম)`)}
         value={`−${fmtTaka(r.salaryExemption)}`}
         variant="sub"
       />

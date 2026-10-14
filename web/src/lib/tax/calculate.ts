@@ -115,7 +115,8 @@ export function calculateTax(rawInput: TaxCalculatorInput): TaxCalculationResult
   const grossTax = baseSlabTax + flatCGTax;
 
   // Investments
-  const sharedGroupRaw = input.invSanchayAnnual + input.invBondAnnual + input.invMFAnnual;
+  // Government securities share the cap; mutual funds are uncapped (see TAX_RULES.instruments).
+  const sharedGroupRaw = input.invSanchayAnnual + input.invBondAnnual;
   const sharedGroupCapped = Math.min(sharedGroupRaw, TAX_RULES.sharedGroupCap);
   const dpsAnnual = input.invDPSMonthly * 12;
   const dpsEligible = Math.min(dpsAnnual, TAX_RULES.dpsCap);
@@ -123,6 +124,7 @@ export function calculateTax(rawInput: TaxCalculatorInput): TaxCalculationResult
   const totalInvestment =
     sharedGroupCapped +
     dpsEligible +
+    input.invMFAnnual +
     input.invStockAnnual +
     input.invLifeAnnual +
     pfAnnual +
@@ -134,12 +136,8 @@ export function calculateTax(rawInput: TaxCalculatorInput): TaxCalculationResult
 
   let taxAfterRebate = Math.max(0, grossTax - rebate);
 
-  // The statutory floor depends only on location; there is no reduced
-  // minimum for first-time filers under the Income Tax Act 2023.
-  const minFloor =
-    input.location && TAX_RULES.minTaxByLocation[input.location]
-      ? TAX_RULES.minTaxByLocation[input.location]
-      : TAX_RULES.minTaxRegular;
+  // Flat minimum everywhere, with a lower one for a taxpayer's first return.
+  const minFloor = input.firstTimeFiler ? TAX_RULES.minTaxNewTaxpayer : TAX_RULES.minTax;
   let minApplied = false;
   const totalIncomeAll = slabBase + sharesFundGain + cgAfter5 + cgGold;
   if (totalIncomeAll > taxFree && taxAfterRebate < minFloor) {
