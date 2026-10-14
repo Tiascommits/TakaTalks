@@ -1,13 +1,14 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { isAuthorizedCronRequest } from "@/lib/cron/auth";
-import { checkBankForNewReport } from "@/lib/bank-health/fetch-reports";
+import { checkBankForNewReport, pickDueBanks } from "@/lib/bank-health/fetch-reports";
 import { extractFiguresFromPdf } from "@/lib/bank-health/extract-figures";
 
 /**
- * Monthly cron (see vercel.json) — annual reports update rarely, so this
- * runs far less often than the daily rate scraper. Ships functional-but-
- * empty for any bank with no annualReportPageUrl set yet, see
+ * Daily cron (see vercel.json). Each run checks the banks that are due (see
+ * pickDueBanks), one by default to stay inside serverless time and memory
+ * limits, so every configured report page is checked within a week and then
+ * about monthly. Banks with no annualReportPageUrl are skipped, see
  * todo/needs-us-both/bank-annual-report-urls.md.
  */
 export async function GET(request: Request) {
@@ -18,38 +19,22 @@ export async function GET(request: Request) {
   const url = new URL(request.url);
   const limitParam = url.searchParams.get("limit");
   const bankIdParam = url.searchParams.get("bankId");
-  // Default to processing 1 bank per invocation to stay safely within serverless timeout/memory limits
-  const limit = limitParam ? Math.max(1, Math.min(5, parseInt(limitParam, 10))) : 1;
-
-  const whereClause: {
-    active: boolean;
-    annualReportPageUrl: { not: null };
-    id?: string;
-  } = {
-    active: true,
-    annualReportPageUrl: { not: null },
-  };
-
-  if (bankIdParam) {
-    whereClause.id = bankIdParam;
-  }
+  const limit = Math.max(1, Math.min(5, parseInt(limitParam ?? "", 10) || 1));
 
   const banks = await prisma.bank.findMany({
-    where: whereClause,
-    orderBy: { updatedAt: "asc" },
-    take: limit,
+    where: { active: true, annualReportPageUrl: { not: null }, ...(bankIdParam ? { id: bankIdParam } : {}) },
+    include: { annualReportCheckLogs: { orderBy: { checkedAt: "desc" }, take: 1, select: { checkedAt: true } } },
   });
+  const withLastCheck = banks.map((b) => ({ ...b, lastCheckedAt: b.annualReportCheckLogs[0]?.checkedAt ?? null }));
+  // An explicit bankId is a manual re-check, so it runs even if checked recently.
+  const due = bankIdParam ? withLastCheck : pickDueBanks(withLastCheck, new Date(), limit);
 
   let checked = 0;
   let newDocs = 0;
   let figuresExtracted = 0;
 
-  for (const bank of banks) {
+  for (const bank of due) {
     checked++;
-    await prisma.bank.update({
-      where: { id: bank.id },
-      data: { updatedAt: new Date() },
-    }).catch(() => {});
     const result = await checkBankForNewReport(bank);
     if (result.status !== "new_doc") continue;
 

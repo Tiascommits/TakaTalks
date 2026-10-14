@@ -1,6 +1,7 @@
 import * as cheerio from "cheerio";
 import { prisma } from "@/lib/prisma";
 import { assertPublicUrl, fetchPublic, readBodyCapped } from "@/lib/net/safe-fetch";
+import { BANK_HEALTH_RECHECK_DAYS } from "@/config/rate-monitoring";
 
 export type FetchReportResult =
   | { status: "no_source" }
@@ -66,6 +67,21 @@ export function pickAnnualReportLink(pdfLinks: PdfLink[]): PdfLink | null {
 }
 
 /**
+ * Which banks the daily bank-health cron checks now: never-checked first,
+ * then the longest unchecked, skipping any checked in the last
+ * BANK_HEALTH_RECHECK_DAYS. At one bank a run (Vercel Hobby allows one cron
+ * run a day) that covers the 7 configured report pages in a week, then
+ * each about monthly.
+ */
+export function pickDueBanks<T extends { lastCheckedAt: Date | null }>(banks: T[], now: Date, limit: number): T[] {
+  const cutoff = now.getTime() - BANK_HEALTH_RECHECK_DAYS * 86_400_000;
+  return banks
+    .filter((b) => !b.lastCheckedAt || b.lastCheckedAt.getTime() <= cutoff)
+    .sort((a, b) => (a.lastCheckedAt?.getTime() ?? 0) - (b.lastCheckedAt?.getTime() ?? 0))
+    .slice(0, limit);
+}
+
+/**
  * Finds the most-likely-current annual report PDF linked from a bank's
  * investor-relations page. Heuristic only — see pickAnnualReportLink.
  * Every result (including failures) gets an AnnualReportCheckLog row so a
@@ -79,7 +95,10 @@ export async function checkBankForNewReport(bank: {
   try {
     await assertPublicUrl(bank.annualReportPageUrl);
   } catch {
-    return { status: "fetch_error", errorMessage: "Invalid bank annual report URL" };
+    const errorMessage = "Invalid bank annual report URL";
+    // Logged like every other outcome, or pickDueBanks would pick this bank first every day.
+    await prisma.annualReportCheckLog.create({ data: { bankId: bank.id, foundNewDoc: false, errorMessage } });
+    return { status: "fetch_error", errorMessage };
   }
 
   let pageHtml: string;

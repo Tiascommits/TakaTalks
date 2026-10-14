@@ -40,3 +40,7 @@ export const FDR_SOURCE_TAX = { withPsr: 0.1, withoutPsr: 0.15 } as const;
 // prompts/03-annual-report-extraction.md and docs/product-notes.md for why
 // this matters given documented sector-wide capital stress.
 export const CRAR_REGULATORY_MINIMUM_PCT = 12.5;
+
+// The daily bank-health cron re-checks a bank's annual-report page at most
+// this often. Reports come out yearly, so monthly is plenty.
+export const BANK_HEALTH_RECHECK_DAYS = 30;
