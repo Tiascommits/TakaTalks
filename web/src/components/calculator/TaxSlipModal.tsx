@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 import type { TaxCalculationResult } from "@/lib/tax/types";
 import { fmtTaka } from "@/lib/format";
 import { TAX_RULES } from "@/config/tax-rules-2025-26";
@@ -19,6 +19,12 @@ export function TaxSlipModal({
 }) {
   const { t } = useLanguage();
   const [copied, setCopied] = useState(false);
+  const titleId = useId();
+  // A native modal dialog: traps focus, closes on Escape, and hands focus back on close.
+  const dialogRef = useRef<HTMLDialogElement>(null);
+  useEffect(() => {
+    dialogRef.current?.showModal();
+  }, []);
 
   function copyLink() {
     navigator.clipboard.writeText(shareUrl).then(() => {
@@ -32,8 +38,13 @@ export function TaxSlipModal({
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4 overflow-y-auto">
-      <div className="bg-card border border-line rounded-sm max-w-xl w-full shadow-xl overflow-hidden my-8">
+    <dialog
+      ref={dialogRef}
+      onClose={onClose}
+      aria-labelledby={titleId}
+      className="m-auto w-[calc(100%-2rem)] max-w-xl bg-transparent p-0 backdrop:bg-black/60 backdrop:backdrop-blur-xs"
+    >
+      <div className="bg-card border border-line rounded-sm w-full shadow-xl overflow-hidden my-8">
         {/* Modal Controls Bar */}
         <div className="bg-[#FAF9F5] border-b border-line px-5 py-3 flex justify-between items-center print:hidden">
           <div className="flex items-center gap-2">
@@ -59,8 +70,9 @@ export function TaxSlipModal({
             </button>
             <button
               type="button"
-              onClick={onClose}
-              className="text-muted hover:text-foreground text-lg leading-none px-1"
+              onClick={() => dialogRef.current?.close()}
+              aria-label={t("Close", "বন্ধ করুন")}
+              className="text-muted hover:text-foreground text-xl leading-none px-2 py-1"
             >
               ×
             </button>
@@ -70,7 +82,7 @@ export function TaxSlipModal({
         {/* Printable Formal Slip Content */}
         <div id="printable-tax-slip" className="p-6 text-foreground bg-card space-y-4">
           <div className="text-center pb-3 border-b-2 border-green-deep">
-            <h2 className="font-serif font-bold text-xl text-green-deep">
+            <h2 id={titleId} className="font-serif font-bold text-xl text-green-deep">
               TakaTalks — {t("Income Tax Estimation Slip", "আয়কর হিসাব বিবরণী")}
             </h2>
             <p className="text-xs text-muted font-mono mt-0.5">
@@ -195,6 +207,6 @@ export function TaxSlipModal({
           </div>
         </div>
       </div>
-    </div>
+    </dialog>
   );
 }
