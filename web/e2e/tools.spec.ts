@@ -240,25 +240,32 @@ test.describe("Homepage tool picker (/)", () => {
     await page.getByRole("tab", { name: /আয়|^Earn$/ }).click();
     await expect(page.getByText(/স্যালারি অফার ও ইন-হ্যান্ড পে|Salary Offer/)).toBeVisible();
     await expect(page.getByText(/ইনকাম ও ইনভেস্টমেন্ট ট্র্যাকার|Income & Investment/)).toBeVisible();
-    await expect(page.getByText(/মানি হ্যাবিট ট্র্যাকার ও গাইড|Money Habit Tracker & Guide/)).toBeVisible();
+    // Frozen side tools live under More, not in the core categories.
+    await expect(page.getByText(/মানি হ্যাবিট ট্র্যাকার ও গাইড|Money Habit Tracker & Guide/)).toHaveCount(0);
 
     await page.getByRole("tab", { name: /সঞ্চয়|^Save$/ }).click();
     await expect(page.getByText(/সঞ্চয় স্কিম তুলনামূলক ম্যাট্রিক্স|Real Yield Matrix/)).toBeVisible();
     await expect(page.getByText(/পুনঃবিনিয়োগ পরামর্শ|Reinvestment Suggestion/)).toBeVisible();
+    await expect(page.getByText(/ভবিষ্যৎ লক্ষ্য ও অবসর প্ল্যানার|Life Goal/)).toHaveCount(0);
+
+    await page.getByRole("tab", { name: /যাকাত|^Zakat$/ }).click();
+    await expect(page.getByText(/যাকাত ক্যালকুলেটর বাংলাদেশ|Bangladesh Zakat Calculator/)).toBeVisible();
+
+    await page.getByRole("tab", { name: /আরও|^More$/ }).click();
+    await expect(page.getByText(/মানি হ্যাবিট ট্র্যাকার ও গাইড|Money Habit Tracker & Guide/)).toBeVisible();
     await expect(page.getByText(/ভবিষ্যৎ লক্ষ্য ও অবসর প্ল্যানার|Life Goal/)).toBeVisible();
     await expect(
       page.getByText(/আর্থিক স্বাধীনতা ক্যালকুলেটর ও রোডম্যাপ|Financial Freedom Calculator & Roadmap/)
     ).toBeVisible();
-
-    await page.getByRole("tab", { name: /ঋণ ও যাকাত|Borrow & Give/ }).click();
+    await expect(page.getByText(/গাড়ি কেনা ও এআইটি কর বিশ্লেষণ|Car Buying & Tax Decision Engine/)).toBeVisible();
     await expect(page.getByText(/লোন ও গৃহঋণ ইএমআই প্ল্যানার|Loan & Home EMI/)).toBeVisible();
-    await expect(page.getByText(/যাকাত ক্যালকুলেটর বাংলাদেশ|Bangladesh Zakat Calculator/)).toBeVisible();
+    await expect(page.getByText(/টাকার ভিজ্যুয়ালাইজার|Money Visualizers/)).toBeVisible();
     await noGarbageOnPage(page);
   });
 
   test("a tool card navigates to its tool", async ({ page }) => {
     await page.goto("/");
-    await page.getByRole("tab", { name: /সঞ্চয়|^Save$/ }).click();
+    await page.getByRole("tab", { name: /আরও|^More$/ }).click();
     await page.getByText(/ভবিষ্যৎ লক্ষ্য ও অবসর প্ল্যানার|Life Goal & Wealth Planner/).first().click();
     await expect(page).toHaveURL(/\/goals/);
   });
@@ -275,6 +282,20 @@ test.describe("Site nav", () => {
 
     // Tool links live behind the Tools menu, so none is in the bar itself.
     await expect(nav.getByRole("link", { name: /সঞ্চয় স্কিম|Real Yields/ })).toHaveCount(0);
+    await expect(nav.getByRole("link", { name: /ভিজ্যুয়ালাইজার|^Visualizers$/ })).toHaveCount(0);
+  });
+
+  test("keeps the side tools folded under More in the Tools menu", async ({ page }) => {
+    await page.goto("/");
+    const nav = page.getByRole("navigation");
+
+    await nav.getByRole("button", { name: /টুলস|^Tools$/ }).click();
+    await expect(nav.getByRole("link", { name: /সঞ্চয় স্কিম|Real Yields/ })).toBeVisible();
+    await expect(nav.getByRole("link", { name: /লোন ও EMI|Loans & EMI/ })).toBeHidden();
+
+    await nav.getByText(/^(আরও|MORE)$/).click();
+    await nav.getByRole("link", { name: /লোন ও EMI|Loans & EMI/ }).click();
+    await expect(page).toHaveURL(/\/loans/);
   });
 
   test("the Tools menu opens, navigates, and closes again", async ({ page }) => {

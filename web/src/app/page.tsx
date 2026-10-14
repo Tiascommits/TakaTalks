@@ -4,7 +4,6 @@ import Link from "next/link";
 import { useLanguage } from "@/lib/i18n";
 import { VideoReel } from "@/components/home/VideoReel";
 import { ToolTabs } from "@/components/home/ToolTabs";
-import { VizStrip } from "@/components/home/VizStrip";
 
 const TRUST_POINTS = [
   {
@@ -76,8 +75,6 @@ export default function Home() {
       </section>
 
       <ToolTabs />
-
-      <VizStrip />
 
       <section className="border-t border-line bg-card/60">
         <div className="max-w-[1160px] mx-auto px-5 py-8 grid gap-5 sm:grid-cols-3">
