@@ -1,3 +1,4 @@
+import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { BANKS } from "@/config/banks";
 import { RATE_ADAPTERS } from "./adapters/registry";
@@ -11,9 +12,8 @@ export type RunScrapeSummary = {
 };
 
 /**
- * Manual-trigger entry point for module 3 (no cron wired up yet — see
- * prompts/02-rate-monitoring-and-scorecard.md, this project runs it from
- * the admin "Run scrape now" button). Upserts the configured bank list so
+ * Entry point for module 3, run by the daily cron (/api/cron/rate-scrape)
+ * and the admin "Run scrape now" button. Upserts the configured bank list so
  * adding a bank to config/banks.ts is enough to make it show up, then runs
  * whichever adapter is registered for each one. A failing adapter only logs
  * a failure for its own bank — it never stops the run for the others.
@@ -48,11 +48,22 @@ export async function runScrape(): Promise<RunScrapeSummary> {
 
     try {
       const rates = await adapter.scrape();
+      // A dated (manual) figure is stored once; re-storing it every day would
+      // pile up identical rows that all count as "latest".
+      const toStore: typeof rates = [];
+      for (const r of rates) {
+        const stored =
+          r.asOf &&
+          (await prisma.rateSnapshot.findFirst({
+            where: { bankId: bank.id, instrument: r.instrument, termMonths: r.termMonths, ratePct: r.ratePct, scrapedAt: r.asOf },
+          }));
+        if (!stored) toStore.push(r);
+      }
       await prisma.$transaction([
         prisma.scrapeLog.create({
           data: { bankId: bank.id, success: true, ratesFound: rates.length },
         }),
-        ...rates.map((r) =>
+        ...toStore.map((r) =>
           prisma.rateSnapshot.create({
             data: {
               bankId: bank.id,
@@ -61,6 +72,7 @@ export async function runScrape(): Promise<RunScrapeSummary> {
               ratePct: r.ratePct,
               method: r.method,
               source: r.source,
+              scrapedAt: r.asOf, // undefined = now, for a live read
             },
           })
         ),
@@ -77,6 +89,10 @@ export async function runScrape(): Promise<RunScrapeSummary> {
       failed++;
     }
   }
+
+  // The nav and homepage hide /rates until rate data exists (root layout,
+  // hasRateData); re-render every page so they pick up today's state.
+  if (succeeded > 0) revalidatePath("/", "layout");
 
   return {
     banksUpserted: BANKS.length,

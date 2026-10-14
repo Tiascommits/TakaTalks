@@ -13,6 +13,11 @@
 export const SEED_SOURCE_LABEL =
   "Manually curated, publicly published bank rate roundup, dated 31 Dec 2025 (not a live scrape)";
 
+// The roundup's own date, stored as each seed snapshot's date so the page
+// never shows a manual figure as checked today. Midday UTC reads as 31 Dec
+// in every time zone.
+export const SEED_AS_OF = new Date("2025-12-31T12:00:00Z");
+
 // AB, NATIONAL, and IFIC removed from here — all three got real, verified
 // adapters (see adapters/ab-bank.ts, adapters/national-bank.ts,
 // adapters/ific-bank.ts) which override any manual-seed entry for the same

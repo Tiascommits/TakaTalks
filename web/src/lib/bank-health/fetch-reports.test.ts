@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { pickAnnualReportLink, type PdfLink } from "./fetch-reports";
+import { pickAnnualReportLink, pickDueBanks, type PdfLink } from "./fetch-reports";
 
 /**
  * Every fixture below is a real set of PDF links taken from the bank page
@@ -88,5 +88,31 @@ describe("pickAnnualReportLink", () => {
 
   it("returns null for a page with no PDF links", () => {
     expect(pickAnnualReportLink([])).toBeNull();
+  });
+});
+
+describe("pickDueBanks", () => {
+  const now = new Date("2026-10-15T04:00:00Z");
+  const daysAgo = (n: number) => new Date(now.getTime() - n * 86_400_000);
+
+  it("takes never-checked banks first, then the longest unchecked, and skips recent ones", () => {
+    const banks = [
+      { id: "recent", lastCheckedAt: daysAgo(3) },
+      { id: "old", lastCheckedAt: daysAgo(40) },
+      { id: "never", lastCheckedAt: null },
+      { id: "older", lastCheckedAt: daysAgo(90) },
+    ];
+    expect(pickDueBanks(banks, now, 5).map((b) => b.id)).toEqual(["never", "older", "old"]);
+    expect(pickDueBanks(banks, now, 1).map((b) => b.id)).toEqual(["never"]);
+  });
+
+  it("checks all 7 report pages within a week of daily one-bank runs, then leaves them for a month", () => {
+    const banks = Array.from({ length: 7 }, (_, i) => ({ id: `bank${i}`, lastCheckedAt: null as Date | null }));
+    for (let day = 0; day < 7; day++) {
+      const today = new Date(now.getTime() + day * 86_400_000);
+      for (const b of pickDueBanks(banks, today, 1)) b.lastCheckedAt = today;
+    }
+    expect(banks.every((b) => b.lastCheckedAt !== null)).toBe(true);
+    expect(pickDueBanks(banks, new Date(now.getTime() + 20 * 86_400_000), 1)).toEqual([]);
   });
 });

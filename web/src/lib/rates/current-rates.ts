@@ -15,8 +15,13 @@ export type CurrentRateRow = {
   ratePct: number | null;
   method: RateSourceMethod | null;
   source: string | null;
-  lastVerifiedAt: Date | null;
+  asOf: Date | null;
   unverified: boolean;
+};
+
+const FDR_SNAPSHOTS = {
+  instrument: "FDR" as RateInstrument,
+  termMonths: { in: [...FDR_TERMS_MONTHS] },
 };
 
 /**
@@ -29,20 +34,28 @@ export async function getCurrentFdrRates(): Promise<CurrentRateRow[]> {
   const banks = await prisma.bank.findMany({
     where: { active: true },
     orderBy: { name: "asc" },
-    include: {
-      rateSnapshots: {
-        where: { instrument: "FDR" as RateInstrument, termMonths: { in: [...FDR_TERMS_MONTHS] } },
-        orderBy: { scrapedAt: "desc" },
-      },
-      scrapeLogs: { orderBy: { attemptedAt: "desc" }, take: 1 },
-    },
+    include: { scrapeLogs: { orderBy: { attemptedAt: "desc" }, take: 1 } },
   });
+
+  // Only the newest snapshot per bank and term: the table gains rows every
+  // day, so reading the full history would slow this page without bound.
+  const latest = await prisma.rateSnapshot.groupBy({
+    by: ["bankId", "termMonths"],
+    where: FDR_SNAPSHOTS,
+    _max: { scrapedAt: true },
+  });
+  const latestKeys = latest.flatMap((l) =>
+    l._max.scrapedAt ? [{ bankId: l.bankId, termMonths: l.termMonths, scrapedAt: l._max.scrapedAt }] : []
+  );
+  const snapshots = latestKeys.length
+    ? await prisma.rateSnapshot.findMany({ where: { ...FDR_SNAPSHOTS, OR: latestKeys } })
+    : [];
 
   const rows: CurrentRateRow[] = [];
   for (const bank of banks) {
     const latestLog = bank.scrapeLogs[0] ?? null;
     for (const termMonths of FDR_TERMS_MONTHS) {
-      const snapshot = bank.rateSnapshots.find((s) => s.termMonths === termMonths) ?? null;
+      const snapshot = snapshots.find((s) => s.bankId === bank.id && s.termMonths === termMonths) ?? null;
       rows.push({
         bankShortCode: bank.shortCode,
         bankName: bank.name,
@@ -55,7 +68,7 @@ export async function getCurrentFdrRates(): Promise<CurrentRateRow[]> {
         ratePct: snapshot?.ratePct ?? null,
         method: snapshot?.method ?? null,
         source: snapshot?.source ?? null,
-        lastVerifiedAt: snapshot?.scrapedAt ?? null,
+        asOf: snapshot?.scrapedAt ?? null,
         unverified: isRateStale(
           snapshot?.scrapedAt ?? null,
           latestLog?.attemptedAt ?? null,
@@ -65,6 +78,23 @@ export async function getCurrentFdrRates(): Promise<CurrentRateRow[]> {
     }
   }
   return rows;
+}
+
+/**
+ * True once any active bank has an FDR rate stored. Gates /rates in the nav
+ * and homepage, so an empty scorecard is never advertised.
+ */
+export async function hasRateData(): Promise<boolean> {
+  try {
+    const any = await prisma.rateSnapshot.findFirst({
+      where: { ...FDR_SNAPSHOTS, bank: { active: true } },
+      select: { id: true },
+    });
+    return any !== null;
+  } catch {
+    // No reachable or migrated database (e.g. `next build` in CI): keep it hidden.
+    return false;
+  }
 }
 
 export async function getLatestBBAggregateRate() {

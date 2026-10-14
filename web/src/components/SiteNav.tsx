@@ -6,6 +6,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useLanguage } from "@/lib/i18n";
 import { TOOL_CATEGORIES, toolsInCategory } from "@/config/tools";
+import { useRatesLive } from "@/components/rates/RatesLive";
 
 function LanguageToggle({ className = "" }: { className?: string }) {
   const { lang, setLang, t } = useLanguage();
@@ -43,6 +44,7 @@ function LanguageToggle({ className = "" }: { className?: string }) {
  *  the mobile sheet so the two can't drift apart. */
 function ToolMenuPanel({ onNavigate }: { onNavigate: () => void }) {
   const { t } = useLanguage();
+  const ratesLive = useRatesLive();
   return (
     <div className="grid gap-x-8 gap-y-5 sm:grid-cols-2">
       {TOOL_CATEGORIES.map((category) => (
@@ -51,7 +53,7 @@ function ToolMenuPanel({ onNavigate }: { onNavigate: () => void }) {
             {t(category.label.en, category.label.bn).toUpperCase()}
           </p>
           <ul className="flex flex-col gap-1.5">
-            {toolsInCategory(category.id).map((tool) => (
+            {toolsInCategory(category.id, ratesLive).map((tool) => (
               <li key={tool.href}>
                 <Link
                   href={tool.href}
