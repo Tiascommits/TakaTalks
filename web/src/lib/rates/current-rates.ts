@@ -80,6 +80,23 @@ export async function getCurrentFdrRates(): Promise<CurrentRateRow[]> {
   return rows;
 }
 
+/**
+ * True once any active bank has an FDR rate stored. Gates /rates in the nav
+ * and homepage, so an empty scorecard is never advertised.
+ */
+export async function hasRateData(): Promise<boolean> {
+  try {
+    const any = await prisma.rateSnapshot.findFirst({
+      where: { ...FDR_SNAPSHOTS, bank: { active: true } },
+      select: { id: true },
+    });
+    return any !== null;
+  } catch {
+    // No reachable or migrated database (e.g. `next build` in CI): keep it hidden.
+    return false;
+  }
+}
+
 export async function getLatestBBAggregateRate() {
   return prisma.bBAggregateRate.findFirst({ orderBy: { enteredAt: "desc" } });
 }

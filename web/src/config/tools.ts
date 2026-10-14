@@ -22,6 +22,8 @@ export type Tool = {
   /** Short label for the nav menu, where the full title is too long. */
   navLabel: { en: string; bn: string };
   desc: { en: string; bn: string };
+  /** Hidden from the nav and homepage until some bank has rate data (see hasRateData). */
+  needsRateData?: true;
 };
 
 export const TOOL_CATEGORIES: ToolCategory[] = [
@@ -159,6 +161,7 @@ export const TOOLS: Tool[] = [
   {
     href: "/rates",
     category: "save",
+    needsRateData: true,
     icon: "🏦",
     tag: { en: "LIVE RATES + AUDITED DATA", bn: "লাইভ রেট + অডিট ডাটা" },
     title: { en: "Bank Rates & Health Scorecard", bn: "ব্যাংক রেট ও স্বাস্থ্য স্কোরকার্ড" },
@@ -230,6 +233,6 @@ export const TOOLS: Tool[] = [
   },
 ];
 
-export function toolsInCategory(id: ToolCategoryId): Tool[] {
-  return TOOLS.filter((tool) => tool.category === id);
+export function toolsInCategory(id: ToolCategoryId, ratesLive: boolean): Tool[] {
+  return TOOLS.filter((tool) => tool.category === id && (ratesLive || !tool.needsRateData));
 }

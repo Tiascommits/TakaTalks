@@ -4,6 +4,8 @@ import "./globals.css";
 import { LanguageProvider } from "@/lib/i18n";
 import { SiteNav } from "@/components/SiteNav";
 import { Analytics } from "@/components/Analytics";
+import { RatesLiveProvider } from "@/components/rates/RatesLive";
+import { hasRateData } from "@/lib/rates/current-rates";
 
 const newsreader = Newsreader({
   variable: "--font-newsreader",
@@ -29,7 +31,8 @@ export const metadata: Metadata = {
     "Personal finance tools for a Bangladesh audience: tax calculator, rebate optimizer, and income/investment tracker.",
 };
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
+  const ratesLive = await hasRateData();
   return (
     <html
       lang="bn"
@@ -37,8 +40,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     >
       <body className="min-h-full flex flex-col font-sans">
         <LanguageProvider>
-          <SiteNav />
-          <div className="flex-1 flex flex-col">{children}</div>
+          <RatesLiveProvider value={ratesLive}>
+            <SiteNav />
+            <div className="flex-1 flex flex-col">{children}</div>
+          </RatesLiveProvider>
         </LanguageProvider>
         <Analytics />
       </body>

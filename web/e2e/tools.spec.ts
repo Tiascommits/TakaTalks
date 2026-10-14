@@ -233,7 +233,7 @@ test.describe("Homepage tool picker (/)", () => {
 
     await page.getByRole("tab", { name: /সঞ্চয়|^Save$/ }).click();
     await expect(page.getByText(/সঞ্চয় স্কিম তুলনামূলক ম্যাট্রিক্স|Real Yield Matrix/)).toBeVisible();
-    await expect(page.getByText(/ব্যাংক রেট ও স্বাস্থ্য স্কোরকার্ড|Bank Rates/)).toBeVisible();
+    await expect(page.getByText(/পুনঃবিনিয়োগ পরামর্শ|Reinvestment Suggestion/)).toBeVisible();
     await expect(page.getByText(/ভবিষ্যৎ লক্ষ্য ও অবসর প্ল্যানার|Life Goal/)).toBeVisible();
     await expect(
       page.getByText(/আর্থিক স্বাধীনতা ক্যালকুলেটর ও রোডম্যাপ|Financial Freedom Calculator & Roadmap/)
@@ -263,7 +263,7 @@ test.describe("Site nav", () => {
     await expect(nav.getByRole("link", { name: /ডেমো|^Demo$/ })).toBeVisible();
 
     // Tool links live behind the Tools menu, so none is in the bar itself.
-    await expect(nav.getByRole("link", { name: /ব্যাংক রেট|Bank Rates/ })).toHaveCount(0);
+    await expect(nav.getByRole("link", { name: /সঞ্চয় স্কিম|Real Yields/ })).toHaveCount(0);
   });
 
   test("the Tools menu opens, navigates, and closes again", async ({ page }) => {
@@ -271,8 +271,8 @@ test.describe("Site nav", () => {
     const nav = page.getByRole("navigation");
 
     await nav.getByRole("button", { name: /টুলস|^Tools$/ }).click();
-    await nav.getByRole("link", { name: /ব্যাংক রেট|Bank Rates/ }).click();
-    await expect(page).toHaveURL(/\/rates/);
-    await expect(nav.getByRole("link", { name: /ব্যাংক রেট|Bank Rates/ })).toHaveCount(0);
+    await nav.getByRole("link", { name: /সঞ্চয় স্কিম|Real Yields/ }).click();
+    await expect(page).toHaveURL(/\/instruments/);
+    await expect(nav.getByRole("link", { name: /সঞ্চয় স্কিম|Real Yields/ })).toHaveCount(0);
   });
 });

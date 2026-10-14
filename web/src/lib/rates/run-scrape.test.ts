@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-const { prisma } = vi.hoisted(() => ({
+const { prisma, revalidatePath } = vi.hoisted(() => ({
+  revalidatePath: vi.fn(),
   prisma: {
     bank: { upsert: vi.fn(), findMany: vi.fn() },
     scrapeLog: { create: vi.fn() },
@@ -9,6 +10,7 @@ const { prisma } = vi.hoisted(() => ({
   },
 }));
 vi.mock("@/lib/prisma", () => ({ prisma }));
+vi.mock("next/cache", () => ({ revalidatePath }));
 
 import { runScrape } from "./run-scrape";
 import { SEED_AS_OF } from "./seed-rates";
@@ -39,5 +41,10 @@ describe("runScrape", () => {
     expect(prisma.scrapeLog.create).toHaveBeenCalledWith({
       data: { bankId: "b1", success: true, ratesFound: 3 },
     });
+  });
+
+  it("re-renders every page after a successful run, so the nav can show /rates", async () => {
+    await runScrape();
+    expect(revalidatePath).toHaveBeenCalledWith("/", "layout");
   });
 });

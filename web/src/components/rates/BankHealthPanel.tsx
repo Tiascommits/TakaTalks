@@ -26,7 +26,6 @@ export function BankHealthPanel({ rows }: { rows: BankHealthRow[] }) {
   const { t } = useLanguage();
   const [filter, setFilter] = useState<"ALL" | "CAR_COMPLIANT" | "LOW_NPL">("ALL");
   const notAvailable = t("not disclosed / not extracted", "প্রকাশিত/extract করা হয়নি");
-  const hasAnyData = rows.some((r) => r.figures.length > 0);
 
   const filteredRows = useMemo(() => {
     if (filter === "ALL") return rows;
@@ -51,44 +50,42 @@ export function BankHealthPanel({ rows }: { rows: BankHealthRow[] }) {
           {t("Bank health (from audited annual reports)", "Bank health (audited annual report থেকে)")}
         </legend>
 
-        {hasAnyData && (
-          <div className="flex items-center gap-1.5 self-start sm:self-auto">
-            <span className="text-[11px] text-muted mr-1 font-mono uppercase">{t("Filter:", "ফিল্টার:")}</span>
-            <button
-              type="button"
-              onClick={() => setFilter("ALL")}
-              className={`px-2 py-0.5 text-xs rounded-xs font-medium transition-colors ${
-                filter === "ALL"
-                  ? "bg-green-deep text-paper font-semibold"
-                  : "bg-[#FAF9F5] border border-line text-muted hover:text-foreground"
-              }`}
-            >
-              {t("All Banks", "সকল ব্যাংক")}
-            </button>
-            <button
-              type="button"
-              onClick={() => setFilter("CAR_COMPLIANT")}
-              className={`px-2 py-0.5 text-xs rounded-xs font-medium transition-colors ${
-                filter === "CAR_COMPLIANT"
-                  ? "bg-green text-paper font-semibold"
-                  : "bg-[#FAF9F5] border border-line text-muted hover:text-foreground"
-              }`}
-            >
-              {t("CAR ≥ 12.5%", "CAR ≥ ১২.৫%")}
-            </button>
-            <button
-              type="button"
-              onClick={() => setFilter("LOW_NPL")}
-              className={`px-2 py-0.5 text-xs rounded-xs font-medium transition-colors ${
-                filter === "LOW_NPL"
-                  ? "bg-gold text-ink font-semibold"
-                  : "bg-[#FAF9F5] border border-line text-muted hover:text-foreground"
-              }`}
-            >
-              {t("NPL < 5%", "NPL < ৫%")}
-            </button>
-          </div>
-        )}
+        <div className="flex items-center gap-1.5 self-start sm:self-auto">
+          <span className="text-[11px] text-muted mr-1 font-mono uppercase">{t("Filter:", "ফিল্টার:")}</span>
+          <button
+            type="button"
+            onClick={() => setFilter("ALL")}
+            className={`px-2 py-0.5 text-xs rounded-xs font-medium transition-colors ${
+              filter === "ALL"
+                ? "bg-green-deep text-paper font-semibold"
+                : "bg-[#FAF9F5] border border-line text-muted hover:text-foreground"
+            }`}
+          >
+            {t("All Banks", "সকল ব্যাংক")}
+          </button>
+          <button
+            type="button"
+            onClick={() => setFilter("CAR_COMPLIANT")}
+            className={`px-2 py-0.5 text-xs rounded-xs font-medium transition-colors ${
+              filter === "CAR_COMPLIANT"
+                ? "bg-green text-paper font-semibold"
+                : "bg-[#FAF9F5] border border-line text-muted hover:text-foreground"
+            }`}
+          >
+            {t("CAR ≥ 12.5%", "CAR ≥ ১২.৫%")}
+          </button>
+          <button
+            type="button"
+            onClick={() => setFilter("LOW_NPL")}
+            className={`px-2 py-0.5 text-xs rounded-xs font-medium transition-colors ${
+              filter === "LOW_NPL"
+                ? "bg-gold text-ink font-semibold"
+                : "bg-[#FAF9F5] border border-line text-muted hover:text-foreground"
+            }`}
+          >
+            {t("NPL < 5%", "NPL < ৫%")}
+          </button>
+        </div>
       </div>
 
       <p className="text-xs text-muted mb-3">
@@ -98,66 +95,57 @@ export function BankHealthPanel({ rows }: { rows: BankHealthRow[] }) {
         )}
       </p>
 
-      {!hasAnyData ? (
-        <p className="text-sm text-muted">
-          {t(
-            "No bank has an approved figure yet — this fills in as annual-report sources are added and reviewed.",
-            "এখনো কোনো bank er approved figure নেই — annual-report source যোগ ও review হলে এখানে দেখা যাবে।"
-          )}
-        </p>
-      ) : (
-        <div className="overflow-x-auto">
-          <table className="w-full text-[13.5px] border-collapse">
-            <thead>
-              <tr className="text-left">
-                <th className="py-2 px-2 border-b-2 border-green text-green-deep font-semibold">
-                  {t("Bank", "ব্যাংক")}
+      <div className="overflow-x-auto">
+        <table className="w-full text-[13.5px] border-collapse">
+          <thead>
+            <tr className="text-left">
+              <th className="py-2 px-2 border-b-2 border-green text-green-deep font-semibold">
+                {t("Bank", "ব্যাংক")}
+              </th>
+              {DISPLAY_FIELDS.map((field) => (
+                <th key={field} className="py-2 px-2 border-b-2 border-green text-green-deep font-semibold text-right">
+                  {field}
+                  {field === "CAR" && (
+                    <span className="block text-[10px] font-normal text-muted">
+                      {t(`min ${CRAR_REGULATORY_MINIMUM_PCT}%`, `সর্বনিম্ন ${CRAR_REGULATORY_MINIMUM_PCT}%`)}
+                    </span>
+                  )}
                 </th>
-                {DISPLAY_FIELDS.map((field) => (
-                  <th key={field} className="py-2 px-2 border-b-2 border-green text-green-deep font-semibold text-right">
-                    {field}
-                    {field === "CAR" && (
-                      <span className="block text-[10px] font-normal text-muted">
-                        {t(`min ${CRAR_REGULATORY_MINIMUM_PCT}%`, `সর্বনিম্ন ${CRAR_REGULATORY_MINIMUM_PCT}%`)}
-                      </span>
-                    )}
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {filteredRows.map((row) => {
-                const byField = latestByField(row);
-                return (
-                  <tr key={row.bankShortCode} className="border-b border-line hover:bg-[#FBFAF6]">
-                    <td className="py-2 px-2">{row.bankName}</td>
-                    {DISPLAY_FIELDS.map((field) => {
-                      const f = byField[field];
-                      return (
-                        <td key={field} className="py-2 px-2 text-right">
-                          {f ? (
-                            <a
-                              href={f.sourceReportUrl}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="underline decoration-dotted"
-                              title={t(`FY${f.fiscalYear}, audited — source`, `FY${f.fiscalYear}, audited — source`)}
-                            >
-                              {f.numericValue !== null ? `${f.numericValue}%` : f.rawValue} (FY{f.fiscalYear})
-                            </a>
-                          ) : (
-                            <span className="text-muted">{notAvailable}</span>
-                          )}
-                        </td>
-                      );
-                    })}
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
-      )}
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {filteredRows.map((row) => {
+              const byField = latestByField(row);
+              return (
+                <tr key={row.bankShortCode} className="border-b border-line hover:bg-[#FBFAF6]">
+                  <td className="py-2 px-2">{row.bankName}</td>
+                  {DISPLAY_FIELDS.map((field) => {
+                    const f = byField[field];
+                    return (
+                      <td key={field} className="py-2 px-2 text-right">
+                        {f ? (
+                          <a
+                            href={f.sourceReportUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="underline decoration-dotted"
+                            title={t(`FY${f.fiscalYear}, audited — source`, `FY${f.fiscalYear}, audited — source`)}
+                          >
+                            {f.numericValue !== null ? `${f.numericValue}%` : f.rawValue} (FY{f.fiscalYear})
+                          </a>
+                        ) : (
+                          <span className="text-muted">{notAvailable}</span>
+                        )}
+                      </td>
+                    );
+                  })}
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
     </fieldset>
   );
 }

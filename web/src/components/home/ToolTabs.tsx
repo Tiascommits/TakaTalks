@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { useLanguage } from "@/lib/i18n";
 import { TOOL_CATEGORIES, TOOLS, toolsInCategory, type ToolCategoryId } from "@/config/tools";
+import { useRatesLive } from "@/components/rates/RatesLive";
 
 /**
  * The homepage tool picker. Deliberately *not* a single list of all nine
@@ -18,7 +19,8 @@ export function ToolTabs() {
   const [active, setActive] = useState<ToolCategoryId>("tax");
 
   const category = TOOL_CATEGORIES.find((c) => c.id === active) ?? TOOL_CATEGORIES[0];
-  const tools = toolsInCategory(active);
+  const ratesLive = useRatesLive();
+  const tools = toolsInCategory(active, ratesLive);
 
   return (
     <section className="max-w-[1160px] mx-auto px-5 pt-4 pb-6 sm:pt-6 sm:pb-8 w-full">

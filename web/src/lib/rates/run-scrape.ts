@@ -1,3 +1,4 @@
+import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { BANKS } from "@/config/banks";
 import { RATE_ADAPTERS } from "./adapters/registry";
@@ -88,6 +89,10 @@ export async function runScrape(): Promise<RunScrapeSummary> {
       failed++;
     }
   }
+
+  // The nav and homepage hide /rates until rate data exists (root layout,
+  // hasRateData); re-render every page so they pick up today's state.
+  if (succeeded > 0) revalidatePath("/", "layout");
 
   return {
     banksUpserted: BANKS.length,
