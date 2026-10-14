@@ -2,7 +2,6 @@
 
 import { useId, useState } from "react";
 import { cleanNumberText } from "@/lib/format";
-import { MAX_AMOUNT_TAKA } from "@/lib/tracker/limits";
 
 export const FOCUS_RING =
   "focus:outline-none focus:border-green focus:ring-2 focus:ring-green/30";
@@ -37,8 +36,7 @@ export function NumberField({
     const cleaned = cleanNumberText(raw);
     setText(cleaned);
     const n = parseFloat(cleaned);
-    // Same ceiling as the tracker: nobody's figure is above 10,000 crore, and the maths stays readable.
-    onChange(Number.isFinite(n) ? Math.min(n, MAX_AMOUNT_TAKA) : 0);
+    onChange(Number.isFinite(n) ? n : 0);
   }
 
   return (
