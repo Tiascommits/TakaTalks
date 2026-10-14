@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { TaxpayerCategory } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
+import { clientIp, overLimit, tooManyRequests } from "@/lib/rate-limit";
 import { getCurrentUserId, getOrCreateUserId } from "@/lib/tracker/session";
 
 const VALID_CATEGORIES = Object.values(TaxpayerCategory);
@@ -22,6 +23,7 @@ export async function GET() {
 }
 
 export async function PUT(request: Request) {
+  if (await overLimit("write", clientIp(request))) return tooManyRequests();
   const body = await request.json().catch(() => null);
   const { category, disabledChildren, netWealth, multiCar, bigHouse } = body ?? {};
 

@@ -1,20 +1,13 @@
 import { cookies } from "next/headers";
-import { createHmac, randomBytes, scryptSync, timingSafeEqual } from "node:crypto";
+import { createHash, randomBytes, scryptSync, timingSafeEqual } from "node:crypto";
 import { prisma } from "@/lib/prisma";
 
 const SESSION_COOKIE_NAME = "taka_admin_session";
-const LEGACY_COOKIE_NAME = "taka_admin";
 const SESSION_TTL_MS = 30 * 24 * 60 * 60 * 1000; // 30 days
 
-function constantTimeCompare(a: string, b: string): boolean {
-  const bufA = Buffer.from(a);
-  const bufB = Buffer.from(b);
-  if (bufA.length !== bufB.length) return false;
-  return timingSafeEqual(bufA, bufB);
-}
-
-function getBootstrapToken(secret: string): string {
-  return createHmac("sha256", secret).update("admin_bootstrap_grant").digest("hex");
+/** The cookie holds a random token; the database holds only its hash, so a leaked row can't be replayed. */
+function sessionIdFor(token: string): string {
+  return createHash("sha256").update(token).digest("hex");
 }
 
 export function hashPassword(password: string): string {
@@ -39,57 +32,30 @@ export async function getCurrentAdminUserId(): Promise<string | null> {
   const store = await cookies();
   const sessionId = store.get(SESSION_COOKIE_NAME)?.value;
   if (!sessionId) return null;
-  const session = await prisma.adminSession.findUnique({ where: { id: sessionId } });
+  const session = await prisma.adminSession.findUnique({ where: { id: sessionIdFor(sessionId) } });
   if (!session || session.expiresAt.getTime() < Date.now()) return null;
   return session.adminUserId;
 }
 
 /**
- * True once a real AdminSession exists, OR (bootstrap only) while no
- * AdminUser has been created yet and the legacy ADMIN_SECRET cookie is set —
- * see /admin/setup. The legacy path stops working the moment the first
- * AdminUser is created, by design (see prisma/schema.prisma's AdminUser doc
- * comment): ADMIN_SECRET is a one-time bootstrap, not ongoing auth.
+ * True only with a live AdminSession. Before the first AdminUser exists,
+ * /admin/setup creates one (gated by ADMIN_SECRET), so no other path is needed.
  */
 export async function isAdmin(): Promise<boolean> {
-  if (await getCurrentAdminUserId()) return true;
-
-  const secret = process.env.ADMIN_SECRET;
-  if (!secret) return false;
-  if ((await adminUserCount()) > 0) return false;
-
-  const store = await cookies();
-  const cookieVal = store.get(LEGACY_COOKIE_NAME)?.value;
-  if (!cookieVal) return false;
-
-  const expectedToken = getBootstrapToken(secret);
-  return constantTimeCompare(cookieVal, expectedToken) || constantTimeCompare(cookieVal, secret);
-}
-
-export async function setLegacyAdminCookie(providedSecret: string): Promise<boolean> {
-  const secret = process.env.ADMIN_SECRET;
-  if (!secret || !constantTimeCompare(providedSecret, secret)) return false;
-  if ((await adminUserCount()) > 0) return false; // bootstrap window closed
-
-  const store = await cookies();
-  const token = getBootstrapToken(secret);
-  store.set(LEGACY_COOKIE_NAME, token, {
-    httpOnly: true,
-    sameSite: "lax",
-    maxAge: 60 * 60, // short-lived — just enough to complete /admin/setup
-    path: "/",
-  });
-  return true;
+  return (await getCurrentAdminUserId()) !== null;
 }
 
 export async function createAdminSession(adminUserId: string): Promise<void> {
-  const session = await prisma.adminSession.create({
-    data: { adminUserId, expiresAt: new Date(Date.now() + SESSION_TTL_MS) },
+  const token = randomBytes(32).toString("hex");
+  await prisma.adminSession.create({
+    data: { id: sessionIdFor(token), adminUserId, expiresAt: new Date(Date.now() + SESSION_TTL_MS) },
   });
   const store = await cookies();
-  store.set(SESSION_COOKIE_NAME, session.id, {
+  store.set(SESSION_COOKIE_NAME, token, {
     httpOnly: true,
     sameSite: "lax",
+    // Vercel serves only HTTPS. Not NODE_ENV: e2e runs `next start` over plain http, where a Secure cookie is dropped.
+    secure: process.env.VERCEL === "1",
     maxAge: SESSION_TTL_MS / 1000,
     path: "/",
   });
@@ -98,6 +64,6 @@ export async function createAdminSession(adminUserId: string): Promise<void> {
 export async function clearAdminSession(): Promise<void> {
   const store = await cookies();
   const sessionId = store.get(SESSION_COOKIE_NAME)?.value;
-  if (sessionId) await prisma.adminSession.delete({ where: { id: sessionId } }).catch(() => {});
+  if (sessionId) await prisma.adminSession.delete({ where: { id: sessionIdFor(sessionId) } }).catch(() => {});
   store.delete(SESSION_COOKIE_NAME);
 }

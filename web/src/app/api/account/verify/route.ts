@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { setUserIdCookie } from "@/lib/tracker/session";
+import { getCurrentUserId, setUserIdCookie } from "@/lib/tracker/session";
 import { consumeVerificationToken } from "@/lib/notify/verification";
 
 /**
@@ -28,7 +28,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Missing token or code" }, { status: 400 });
   }
 
-  const result = await consumeVerificationToken(targetTokenOrCode, destination);
+  const result = await consumeVerificationToken(targetTokenOrCode, destination, await getCurrentUserId());
   if (!result.ok || !result.userId) {
     const status = result.reason === "too_many_attempts" ? 429 : 400;
     return NextResponse.json({ error: result.reason ?? "invalid" }, { status });

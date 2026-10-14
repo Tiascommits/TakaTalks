@@ -57,6 +57,17 @@ model VerificationToken {
   @@index([userId])
 }
 
+// Fixed-window request counters for abuse limits (src/lib/rate-limit.ts). In
+// Postgres, not memory, because serverless instances share none. `key` hashes
+// bucket + client + window, so no IP or address is stored in clear.
+model RateLimit {
+  key       String   @id
+  count     Int      @default(0)
+  expiresAt DateTime
+
+  @@index([expiresAt])
+}
+
 enum IncomeFrequency {
   MONTHLY
   ANNUAL

@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { InstrumentType } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
+import { clientIp, overLimit, tooManyRequests } from "@/lib/rate-limit";
 import { getCurrentUserId, getOrCreateUserId } from "@/lib/tracker/session";
 import { MAX_AMOUNT_TAKA, MAX_LABEL_LENGTH, MAX_RATE_PCT, MAX_TERM_MONTHS } from "@/lib/tracker/limits";
 
@@ -28,6 +29,7 @@ function addMonthsSafe(date: Date, months: number): Date {
 }
 
 export async function POST(request: Request) {
+  if (await overLimit("write", clientIp(request))) return tooManyRequests();
   const body = await request.json().catch(() => null);
   const { label, instrumentType, principalAmount, startDate, termMonths, expectedRatePct } =
     body ?? {};

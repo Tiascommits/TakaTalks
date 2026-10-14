@@ -86,3 +86,8 @@ export async function setUserIdCookie(userId: string): Promise<void> {
     path: "/",
   });
 }
+
+/** Signs this browser out of its tracker account (used by "delete my data"). */
+export async function clearUserIdCookie(): Promise<void> {
+  (await cookies()).delete(COOKIE_NAME);
+}

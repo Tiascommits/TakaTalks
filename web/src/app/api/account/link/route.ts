@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { getOrCreateUserId } from "@/lib/tracker/session";
 import { requestEmailLink, requestPhoneOtp } from "@/lib/notify/verification";
+import { clientIp, overLimit, tooManyRequests } from "@/lib/rate-limit";
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const PHONE_RE = /^\+?[1-9]\d{7,14}$/; // loose E.164 check
@@ -16,6 +17,7 @@ function resolveAppUrl(request: Request): string {
  * toggle on an investment, not from any general signup wall.
  */
 export async function POST(request: Request) {
+  if (await overLimit("link", clientIp(request))) return tooManyRequests();
   const body = await request.json().catch(() => null);
   const channel = body?.channel;
   const destination = typeof body?.destination === "string" ? body.destination.trim() : "";
@@ -29,6 +31,7 @@ export async function POST(request: Request) {
   if (channel === "PHONE" && !PHONE_RE.test(destination)) {
     return NextResponse.json({ error: "Invalid phone number" }, { status: 400 });
   }
+  if (await overLimit("linkTo", destination.toLowerCase())) return tooManyRequests();
 
   const userId = await getOrCreateUserId();
   const result =

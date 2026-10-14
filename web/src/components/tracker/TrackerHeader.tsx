@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useLanguage } from "@/lib/i18n";
 
 export function TrackerHeader() {
@@ -18,7 +19,10 @@ export function TrackerHeader() {
           {t(
             "Adding an entry saves automatically — a lightweight account is created on your first save, no email or password needed.",
             "যোগ করলেই save হবে, প্রথমবার save করার সময় হালকা একটা account তৈরি হয় — কোনো ইমেইল বা পাসওয়ার্ড লাগবে না।"
-          )}
+          )}{" "}
+          <Link href="/account" className="underline text-paper">
+            {t("See or delete your saved data", "সেভ করা ডেটা দেখো বা মুছে ফেলো")}
+          </Link>
         </p>
       </div>
     </header>

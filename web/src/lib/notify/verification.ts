@@ -19,26 +19,6 @@ function randomOtpCode(): string {
   return crypto.randomInt(100000, 1000000).toString();
 }
 
-const attemptMap = new Map<string, { attempts: number; resetAt: number }>();
-
-function checkRateLimit(key: string): boolean {
-  const now = Date.now();
-  const entry = attemptMap.get(key);
-  if (!entry || entry.resetAt < now) {
-    attemptMap.set(key, { attempts: 1, resetAt: now + 15 * 60 * 1000 });
-    return true;
-  }
-  if (entry.attempts >= 5) {
-    return false;
-  }
-  entry.attempts++;
-  return true;
-}
-
-function clearRateLimit(key: string): void {
-  attemptMap.delete(key);
-}
-
 async function mergeIntoExistingUser(fromUserId: string, intoUserId: string): Promise<string> {
   await prisma.$transaction([
     prisma.incomeEntry.updateMany({ where: { userId: fromUserId }, data: { userId: intoUserId } }),
@@ -56,6 +36,41 @@ async function mergeIntoExistingUser(fromUserId: string, intoUserId: string): Pr
 
   await prisma.user.delete({ where: { id: fromUserId } }).catch(() => {});
   return intoUserId;
+}
+
+/**
+ * Gives a verified email/phone to the browser that proved it, never to the
+ * browser that asked for the link: anyone can request a link for someone
+ * else's address, so the requester's account must not get it (account
+ * fixation). The verifier's anonymous data moves into the address's existing
+ * owner or a fresh user, which also retires its old anonymous cookie.
+ */
+async function bindToVerifier(
+  channel: "EMAIL" | "PHONE",
+  destination: string,
+  verifierUserId: string | null
+): Promise<string> {
+  const contact = channel === "EMAIL" ? { email: destination } : { phone: destination };
+  const [owner, verifier] = await Promise.all([
+    prisma.user.findUnique({ where: contact }),
+    verifierUserId ? prisma.user.findUnique({ where: { id: verifierUserId } }) : null,
+  ]);
+  const verifierIsAnonymous = !!verifier && !verifier.emailVerifiedAt && !verifier.phoneVerifiedAt;
+
+  // The address's owner if it has one, else a verifier already verified another way, else a fresh user.
+  const targetId =
+    owner?.id ??
+    (verifier && !verifierIsAnonymous ? verifier.id : (await prisma.user.create({ data: {} })).id);
+  if (verifier && verifierIsAnonymous && verifier.id !== targetId) {
+    await mergeIntoExistingUser(verifier.id, targetId);
+  }
+
+  const verifiedAt = new Date();
+  await prisma.user.update({
+    where: { id: targetId },
+    data: channel === "EMAIL" ? { ...contact, emailVerifiedAt: verifiedAt } : { ...contact, phoneVerifiedAt: verifiedAt },
+  });
+  return targetId;
 }
 
 export type RequestResult = { ok: boolean; reason?: string };
@@ -146,11 +161,13 @@ export type VerifyResult = { ok: boolean; userId?: string; reason?: string };
 
 /**
  * Shared by both the magic-link click and OTP-code submission.
- * Merges accounts safely ONLY after verification succeeds.
+ * `verifierUserId` is the account of the browser submitting the token (null
+ * if it has none); see bindToVerifier for who ends up with the address.
  */
 export async function consumeVerificationToken(
   tokenOrCode: string,
-  destination?: string
+  destination?: string,
+  verifierUserId: string | null = null
 ): Promise<VerifyResult> {
   // OTP guesses (anything aimed at a phone/email) spend one of the pending token's
   // attempts BEFORE the guess is compared. The increment is a single atomic UPDATE
@@ -163,7 +180,7 @@ export async function consumeVerificationToken(
     consumedAt: null,
     expiresAt: { gt: new Date() },
   };
-  let rateLimitKey: string | null = null;
+  // A bare magic-link token is 256 random bits, so it needs no guess limit.
   if (pendingDestination) {
     const gate = await prisma.verificationToken.updateMany({
       where: { ...pendingFilter, attempts: { lt: MAX_OTP_ATTEMPTS } },
@@ -175,12 +192,6 @@ export async function consumeVerificationToken(
       });
       if (exhausted > 0) return { ok: false, reason: "too_many_attempts" };
       // No pending token for that destination: fall through to a plain "invalid".
-    }
-  } else {
-    // Bare magic-link token: 256 random bits, so only a cheap per-process guard.
-    rateLimitKey = `token:${tokenOrCode.trim()}`;
-    if (!checkRateLimit(rateLimitKey)) {
-      return { ok: false, reason: "too_many_attempts" };
     }
   }
 
@@ -200,39 +211,14 @@ export async function consumeVerificationToken(
   if (record.consumedAt) return { ok: false, reason: "already_used" };
   if (record.expiresAt.getTime() < Date.now()) return { ok: false, reason: "expired" };
 
-  if (rateLimitKey) clearRateLimit(rateLimitKey);
-
-  // Mark token consumed
-  await prisma.verificationToken.update({
-    where: { id: record.id },
+  // Claim atomically: of two concurrent clicks, only one sees count 1.
+  const claim = await prisma.verificationToken.updateMany({
+    where: { id: record.id, consumedAt: null },
     data: { consumedAt: new Date() },
   });
+  if (claim.count === 0) return { ok: false, reason: "already_used" };
 
-  // Safe deferred post-verification account merge
-  const existingUser =
-    record.channel === "EMAIL"
-      ? await prisma.user.findUnique({ where: { email: record.destination } })
-      : await prisma.user.findUnique({ where: { phone: record.destination } });
-
-  let finalUserId = record.userId;
-  if (existingUser && existingUser.id !== record.userId) {
-    finalUserId = await mergeIntoExistingUser(record.userId, existingUser.id);
-  }
-
-  // Update verified timestamp on the confirmed user
-  if (record.channel === "EMAIL") {
-    await prisma.user.update({
-      where: { id: finalUserId },
-      data: { email: record.destination, emailVerifiedAt: new Date() },
-    });
-  } else {
-    await prisma.user.update({
-      where: { id: finalUserId },
-      data: { phone: record.destination, phoneVerifiedAt: new Date() },
-    });
-  }
-
-  return { ok: true, userId: finalUserId };
+  return { ok: true, userId: await bindToVerifier(record.channel, record.destination, verifierUserId) };
 }
 
 export type PreviewResult = { ok: true; destination: string } | { ok: false; reason: string };
