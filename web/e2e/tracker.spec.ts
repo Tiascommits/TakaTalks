@@ -76,7 +76,7 @@ test.describe("Tracker — normal cases", () => {
     const maturedRow = page
       .locator("li")
       .filter({ has: page.getByRole("button", { name: "পেমেন্ট নিশ্চিত করো" }) });
-    await maturedRow.locator('input[type="number"]').fill("111500");
+    await maturedRow.getByRole("textbox", { name: /প্রাপ্ত পরিমাণ|Amount received/ }).fill("111500");
     await maturedRow.getByRole("button", { name: "পেমেন্ট নিশ্চিত করো" }).click();
 
     // Appears both in the reinvestable-cash summary and in the investment

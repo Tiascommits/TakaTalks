@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useId, useState } from "react";
-import { fmtTaka } from "@/lib/format";
+import { cleanNumberText, fmtTaka } from "@/lib/format";
 import { NumberField } from "@/components/ui/fields";
 import { INSTRUMENT_LABELS, INSTRUMENT_LABELS_EN, type InstrumentType, type InvestmentEntryDTO } from "./types";
 import { useLanguage } from "@/lib/i18n";
@@ -24,7 +24,7 @@ export function InvestmentSection({
     startDate: string;
     termMonths: number;
     expectedRatePct: number;
-  }) => Promise<boolean>;
+  }) => Promise<{ en: string; bn: string } | null>;
   onDelete: (id: string) => Promise<void>;
 }) {
   const { t } = useLanguage();
@@ -85,7 +85,7 @@ export function InvestmentSection({
     }
 
     setSubmitting(true);
-    const ok = await onAdd({
+    const saveError = await onAdd({
       label: label.trim(),
       instrumentType,
       principalAmount: principal,
@@ -94,8 +94,8 @@ export function InvestmentSection({
       expectedRatePct: r,
     });
     setSubmitting(false);
-    if (!ok) {
-      setError(t("Couldn't save, try again.", "সেভ করা যায়নি, আবার চেষ্টা করো।"));
+    if (saveError) {
+      setError(t(saveError.en, saveError.bn));
       return;
     }
     setLabel("");
@@ -224,10 +224,10 @@ export function InvestmentSection({
           </label>
           <input
             id={termId}
-            type="number"
-            min={1}
+            type="text"
+            inputMode="numeric"
             value={termMonths}
-            onChange={(e) => setTermMonths(e.target.value)}
+            onChange={(e) => setTermMonths(cleanNumberText(e.target.value))}
             className="w-full px-2.5 py-2 border border-line bg-[#FCFBF8] text-sm"
           />
         </div>
@@ -238,11 +238,10 @@ export function InvestmentSection({
             </label>
             <input
               id={rateId}
-              type="number"
-              min={0}
-              step={0.1}
+              type="text"
+              inputMode="decimal"
               value={rate}
-              onChange={(e) => setRate(e.target.value)}
+              onChange={(e) => setRate(cleanNumberText(e.target.value))}
               className="w-full px-2.5 py-2 border border-line bg-[#FCFBF8] text-sm"
             />
           </div>

@@ -28,7 +28,7 @@ export function IncomeSection({
     source: string;
     amount: number;
     frequency: IncomeFrequency;
-  }) => Promise<boolean>;
+  }) => Promise<{ en: string; bn: string } | null>;
   onDelete: (id: string) => Promise<void>;
 }) {
   const { t } = useLanguage();
@@ -63,10 +63,10 @@ export function IncomeSection({
       return;
     }
     setSubmitting(true);
-    const ok = await onAdd({ label: label.trim(), source, amount, frequency });
+    const saveError = await onAdd({ label: label.trim(), source, amount, frequency });
     setSubmitting(false);
-    if (!ok) {
-      setError(t("Couldn't save, try again.", "সেভ করা যায়নি, আবার চেষ্টা করো।"));
+    if (saveError) {
+      setError(t(saveError.en, saveError.bn));
       return;
     }
     setLabel("");

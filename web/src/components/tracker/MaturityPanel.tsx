@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { fmtTaka } from "@/lib/format";
+import { cleanNumberText, fmtTaka } from "@/lib/format";
 import { daysUntil } from "@/lib/tracker/derive";
 import { INSTRUMENT_LABELS, INSTRUMENT_LABELS_EN, type InvestmentEntryDTO } from "./types";
 import { useLanguage } from "@/lib/i18n";
@@ -113,10 +113,11 @@ function MaturedRow({
       </Link>
       <div className="ml-auto flex items-center gap-2">
         <input
-          type="number"
-          min={0}
+          type="text"
+          inputMode="decimal"
+          aria-label={t("Amount received", "প্রাপ্ত পরিমাণ")}
           value={amount}
-          onChange={(e) => setAmount(e.target.value)}
+          onChange={(e) => setAmount(cleanNumberText(e.target.value))}
           className="w-32 px-2 py-1 border border-line bg-[#FCFBF8] text-sm"
         />
         <button

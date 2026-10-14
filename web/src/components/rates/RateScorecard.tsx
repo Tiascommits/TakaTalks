@@ -1,7 +1,7 @@
 "use client";
 
 import { useId, useMemo, useState } from "react";
-import { fmtTaka } from "@/lib/format";
+import { cleanNumberText, fmtTaka } from "@/lib/format";
 import { calculateAfterTaxReturn } from "@/lib/rates/after-tax";
 import { DEPOSIT_INSURANCE_COVER_BDT, FDR_SOURCE_TAX } from "@/config/rate-monitoring";
 import type { BankTypeCode, BBAggregateRateDTO, CurrentRateRowDTO } from "./types";
@@ -155,10 +155,10 @@ export function RateScorecard({
             </label>
             <input
               id={amountId}
-              type="number"
-              min={0}
+              type="text"
+              inputMode="numeric"
               value={amount}
-              onChange={(e) => setAmount(parseFloat(e.target.value) || 0)}
+              onChange={(e) => setAmount(parseFloat(cleanNumberText(e.target.value)) || 0)}
               className="w-full px-2.5 py-2 border border-line bg-[#FCFBF8] text-sm"
             />
           </div>
