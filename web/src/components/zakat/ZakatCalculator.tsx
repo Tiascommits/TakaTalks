@@ -6,11 +6,13 @@ import {
   DEFAULT_GOLD_PER_BHORI,
   DEFAULT_SILVER_PER_BHORI,
   GOLD_NISAB_BHORI,
+  METAL_PRICES_AS_OF,
+  METAL_PRICES_SOURCE,
   SILVER_NISAB_BHORI,
   type NisabStandard,
 } from "@/lib/zakat/zakat";
 import { fmtTaka } from "@/lib/format";
-import { NumberField } from "@/components/ui/fields";
+import { CheckField, NumberField } from "@/components/ui/fields";
 import { useLanguage } from "@/lib/i18n";
 
 export function ZakatCalculator() {
@@ -19,7 +21,9 @@ export function ZakatCalculator() {
   const [nisabStandard, setNisabStandard] = useState<NisabStandard>("silver");
   const [goldPrice, setGoldPrice] = useState<number>(DEFAULT_GOLD_PER_BHORI);
   const [silverPrice, setSilverPrice] = useState<number>(DEFAULT_SILVER_PER_BHORI);
-  const [showRateSettings, setShowRateSettings] = useState<boolean>(false);
+  // Nisab moves with the metal price, so the verdict waits until the person
+  // has checked today's price instead of trusting a dated default.
+  const [pricesConfirmed, setPricesConfirmed] = useState<boolean>(false);
 
   // Cash & Bank
   const [cashInHand, setCashInHand] = useState<number>(0);
@@ -103,7 +107,7 @@ export function ZakatCalculator() {
       <div className="bg-[#FBFAF6] border border-line p-4.5 rounded-sm mb-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
           <span className="font-mono text-[10.5px] text-gold uppercase tracking-wider font-semibold">
-            {t("NISAB BENCHMARK (AY 2025-26 / 1446-1447 AH)", "নিসাব মানদণ্ড (২০২৫-২৬ / ১৪৪৬-১৪৪৭ হিজরি)")}
+            {t("NISAB BENCHMARK", "নিসাব মানদণ্ড")}
           </span>
           <div className="flex flex-wrap items-center gap-3 mt-1">
             <span className="text-xs text-muted font-medium">{t("Active Nisab Threshold:", "প্রযোজ্য নিসাব সীমা:")}</span>
@@ -141,18 +145,17 @@ export function ZakatCalculator() {
               {t("Gold Nisab", "স্বর্ণ নিসাব")}
             </button>
           </div>
-          <button
-            type="button"
-            onClick={() => setShowRateSettings((v) => !v)}
-            className="text-xs text-green font-medium hover:underline px-2 py-1"
-          >
-            {showRateSettings ? t("Close Rates", "বন্ধ") : t("Edit Rates", "রেট পরিবর্তন")}
-          </button>
         </div>
       </div>
 
-      {showRateSettings && (
-        <div className="bg-[#FAF9F5] border border-line p-4 rounded-sm mb-6 grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <div className="bg-[#FAF9F5] border border-line p-4 rounded-sm mb-6">
+        <p className="text-xs text-[#555] mb-3">
+          {t(
+            `Prices below are ${METAL_PRICES_SOURCE} as of ${METAL_PRICES_AS_OF}. Gold and silver prices change several times a month, so enter today's price.`,
+            `নিচের দাম ${METAL_PRICES_AS_OF} তারিখের (${METAL_PRICES_SOURCE})। সোনা-রূপার দাম মাসে কয়েকবার বদলায়, তাই আজকের দাম বসান।`
+          )}
+        </p>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <NumberField
             label={t("Gold Price per Bhori (৳)", "স্বর্ণের ভরি প্রতি মূল্য (৳)")}
             value={goldPrice}
@@ -164,7 +167,12 @@ export function ZakatCalculator() {
             onChange={setSilverPrice}
           />
         </div>
-      )}
+        <CheckField
+          label={t("I've checked today's gold and silver price", "আজকের সোনা ও রূপার দাম যাচাই করেছি")}
+          checked={pricesConfirmed}
+          onChange={setPricesConfirmed}
+        />
+      </div>
 
       {/* Main Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-[1.15fr_1fr] gap-6 items-start">
@@ -337,7 +345,14 @@ export function ZakatCalculator() {
 
             {/* Nisab Status Badge */}
             <div className="mb-4">
-              {result.isZakatObligatory ? (
+              {!pricesConfirmed ? (
+                <div className="bg-[#FFFBEB] border border-gold/40 p-3 rounded-xs text-xs text-[#444] leading-relaxed">
+                  {t(
+                    `Check today's gold and silver price above first. The nisab depends on it, and the defaults are from ${METAL_PRICES_AS_OF}.`,
+                    `আগে উপরে আজকের সোনা ও রূপার দাম যাচাই করুন। নিসাব এই দামের ওপর নির্ভর করে, আর ডিফল্ট দাম ${METAL_PRICES_AS_OF} তারিখের।`
+                  )}
+                </div>
+              ) : result.isZakatObligatory ? (
                 <div className="bg-[#EFF8F1] border border-green/40 p-3 rounded-xs text-xs">
                   <span className="font-bold text-green block mb-0.5">
                     ✓ {t("Zakat is Obligatory (Fard)", "যাকাত প্রদান ফরজ")}
