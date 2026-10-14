@@ -139,6 +139,24 @@ describe("computeReinvestSuggestion — tax-rebate headroom reasoning", () => {
     expect(sanchay.rebateEligibleAmount).toBeCloseTo(10_000, 0);
   });
 
+  it("does not hold mutual funds to the government-securities cap", () => {
+    // Shared group full; mutual funds are uncapped, so they still earn rebate.
+    const taxResult = taxResultFor({
+      businessAnnual: 5_000_000,
+      invSanchayAnnual: TAX_RULES.sharedGroupCap,
+    });
+    const result = computeReinvestSuggestion({
+      reinvestAmount: 200_000,
+      horizonYears: 3,
+      taxResult,
+    });
+    const sanchay = result.categories.find((c) => c.category === "SANCHAYAPATRA")!;
+    const mf = result.categories.find((c) => c.category === "MUTUAL_FUND")!;
+    expect(sanchay.rebateEligibleAmount).toBe(0);
+    expect(mf.rebateEligibleAmount).toBeCloseTo(200_000, 0);
+    expect(mf.scoreBreakdown.rebatePoints).toBeGreaterThan(0);
+  });
+
   it("has no tax-context bonus at all when no tax result is supplied", () => {
     const result = computeReinvestSuggestion({ reinvestAmount: 200_000, horizonYears: 3 });
     expect(result.hasTaxContext).toBe(false);

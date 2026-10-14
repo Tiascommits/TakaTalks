@@ -140,12 +140,11 @@ function termRangeFor(instrumentId: string): { minTermYears: number; maxTermYear
 }
 
 /**
- * Categories that count toward TAX_RULES.sharedGroupCap (Sanchayapatra +
- * Govt Bond + Mutual Fund, combined ৳5 lakh/year) — the same grouping
- * src/lib/tax/optimizer.ts's "sanchay_group" suggestion already uses. Bank
- * FDR is not a rebate-eligible investment under the Income Tax Act 2023's
- * Sixth Schedule instrument list (see TAX_RULES.instruments), so it never
- * gets a rebate bonus here.
+ * Sanchayapatra and Govt Bond share TAX_RULES.sharedGroupCap (the optimizer's
+ * "sanchay_group"); mutual funds are uncapped. Bank FDR is not a
+ * rebate-eligible investment under the Income Tax Act 2023's Sixth Schedule
+ * instrument list (see TAX_RULES.instruments), so it never gets a rebate
+ * bonus here.
  */
 function isRebateEligible(category: ReinvestCategoryId): boolean {
   return category !== "BANK_DEPOSIT";
@@ -180,12 +179,13 @@ export function computeReinvestSuggestion(params: {
   if (params.taxResult) {
     optimizer = calculateOptimizer(params.taxResult);
   }
-  // How much of a *new* investment would still fall inside the unused
-  // "sanchay_group" (Sanchayapatra/Bond/MF) rebate headroom this year —
-  // reuses the optimizer's own fill-order logic instead of recomputing it,
-  // so this never disagrees with what /calculator already tells the person.
+  // How much of a *new* investment would still earn rebate this year: reuses
+  // the optimizer's own numbers so this never disagrees with /calculator.
+  // Government securities are limited to the unused shared-group room; mutual
+  // funds are uncapped, so only the overall rebate gap limits them.
   const sanchayGroupHeadroom =
     optimizer?.suggestions.find((s) => s.instrumentId === "sanchay_group")?.investMore ?? 0;
+  const uncappedHeadroom = optimizer?.additionalInvestmentNeeded ?? 0;
 
   const categories: ReinvestCategoryScore[] = REINVEST_CATEGORY_IDS.map((category) => {
     const best = bestInCategory(compared, category);
@@ -197,7 +197,8 @@ export function computeReinvestSuggestion(params: {
 
     // --- Tax-rebate headroom ---
     const rebateEligible = isRebateEligible(category);
-    const rebateEligibleAmount = rebateEligible ? Math.min(reinvestAmount, sanchayGroupHeadroom) : 0;
+    const headroom = category === "MUTUAL_FUND" ? uncappedHeadroom : sanchayGroupHeadroom;
+    const rebateEligibleAmount = rebateEligible ? Math.min(reinvestAmount, headroom) : 0;
     const rebateFraction = reinvestAmount > 0 ? rebateEligibleAmount / reinvestAmount : 0;
     const rebatePoints = Math.round(rebateFraction * REBATE_WEIGHT * 10) / 10;
     const estimatedTaxSaving = Math.round(rebateEligibleAmount * TAX_RULES.rebateRateOfInvestment);
