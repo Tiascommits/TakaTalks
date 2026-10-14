@@ -11,6 +11,11 @@ const PHONE_OTP_TTL_MS = 10 * 60 * 1000;
 const MAX_OTP_ATTEMPTS = 5;
 const OTP_RESEND_COOLDOWN_MS = 60 * 1000;
 
+/** Only this hash is stored, so a leaked database row is not a working login link or code. */
+function hashToken(token: string): string {
+  return crypto.createHash("sha256").update(token).digest("hex");
+}
+
 function randomLinkToken(): string {
   return crypto.randomBytes(32).toString("hex");
 }
@@ -96,7 +101,7 @@ export async function requestEmailLink(
       userId: currentUserId,
       channel: "EMAIL",
       destination: email.trim().toLowerCase(),
-      token,
+      token: hashToken(token),
       expiresAt: new Date(Date.now() + EMAIL_TOKEN_TTL_MS),
     },
   });
@@ -144,7 +149,7 @@ export async function requestPhoneOtp(currentUserId: string, phone: string): Pro
       userId: currentUserId,
       channel: "PHONE",
       destination: cleanPhone,
-      token,
+      token: hashToken(token),
       expiresAt: new Date(Date.now() + PHONE_OTP_TTL_MS),
     },
   });
@@ -196,12 +201,12 @@ export async function consumeVerificationToken(
   }
 
   const cleanInput = tokenOrCode.trim();
-  let record = await prisma.verificationToken.findUnique({ where: { token: cleanInput } });
+  let record = await prisma.verificationToken.findUnique({ where: { token: hashToken(cleanInput) } });
 
   // If not found and destination is provided, check destination:code
   if (!record && destination) {
     const scopedToken = `${destination.trim()}:${cleanInput}`;
-    record = await prisma.verificationToken.findUnique({ where: { token: scopedToken } });
+    record = await prisma.verificationToken.findUnique({ where: { token: hashToken(scopedToken) } });
   }
 
   if (!record) return { ok: false, reason: "invalid" };
@@ -234,7 +239,7 @@ export async function previewVerificationToken(token: string): Promise<PreviewRe
   const clean = token.trim();
   if (!clean || clean.includes(":")) return { ok: false, reason: "invalid" };
 
-  const record = await prisma.verificationToken.findUnique({ where: { token: clean } });
+  const record = await prisma.verificationToken.findUnique({ where: { token: hashToken(clean) } });
   if (!record || record.channel !== "EMAIL") return { ok: false, reason: "invalid" };
   if (record.consumedAt) return { ok: false, reason: "already_used" };
   if (record.expiresAt.getTime() < Date.now()) return { ok: false, reason: "expired" };

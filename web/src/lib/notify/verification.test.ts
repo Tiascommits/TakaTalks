@@ -21,9 +21,13 @@ const { prisma, sendWhatsAppTemplate } = vi.hoisted(() => ({
 }));
 vi.mock("@/lib/prisma", () => ({ prisma }));
 vi.mock("./whatsapp", () => ({ isWhatsAppConfigured: () => true, sendWhatsAppTemplate }));
-vi.mock("./email", () => ({ isEmailConfigured: () => true, sendEmail: vi.fn() }));
+const { sendEmail } = vi.hoisted(() => ({ sendEmail: vi.fn() }));
+vi.mock("./email", () => ({ isEmailConfigured: () => true, sendEmail }));
 
-import { consumeVerificationToken, requestPhoneOtp } from "./verification";
+import { createHash } from "node:crypto";
+import { consumeVerificationToken, requestEmailLink, requestPhoneOtp } from "./verification";
+
+const sha256 = (s: string) => createHash("sha256").update(s).digest("hex");
 
 beforeEach(() => {
   vi.resetAllMocks();
@@ -198,5 +202,25 @@ describe("consumeVerificationToken binds the address to the browser that verifie
     });
     expect(prisma.user.update).not.toHaveBeenCalled();
     expect(prisma.user.create).not.toHaveBeenCalled();
+  });
+});
+
+describe("stored tokens", () => {
+  it("keeps only a hash of the emailed login link, so a database leak gives no working link", async () => {
+    sendEmail.mockResolvedValue({ sent: true });
+    await requestEmailLink("user1", "a@example.com", "https://takatalks.test");
+
+    const linkToken = new URL(sendEmail.mock.calls[0][0].text.match(/https:\S+/)[0]).searchParams.get("token")!;
+    const stored = prisma.verificationToken.create.mock.calls[0][0].data.token;
+    expect(stored).toBe(sha256(linkToken));
+    expect(stored).not.toBe(linkToken);
+  });
+
+  it("looks a clicked link up by its hash", async () => {
+    prisma.verificationToken.findUnique.mockResolvedValue(null);
+    await consumeVerificationToken("a".repeat(64));
+    expect(prisma.verificationToken.findUnique).toHaveBeenCalledWith({
+      where: { token: sha256("a".repeat(64)) },
+    });
   });
 });
