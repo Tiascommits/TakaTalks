@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useMemo, useState } from "react";
+import { Suspense, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { TAX_RULES, TAXPAYER_CATEGORIES } from "@/config/tax-rules-2025-26";
@@ -58,24 +58,55 @@ function parseSharedLinkPatch(params: URLSearchParams): Partial<TaxCalculatorInp
   return patch;
 }
 
-export function CalculatorForm({ initial }: { initial?: Partial<TaxCalculatorInput> }) {
+/**
+ * The page is static, so the shared-link query string is only known in the browser:
+ * the server sends the empty form as the Suspense fallback, and the browser swaps in
+ * the form with the link's values (and the tracker prefill) applied.
+ */
+export function CalculatorForm() {
   return (
-    <Suspense fallback={null}>
-      <CalculatorFormInner initial={initial} />
+    <Suspense fallback={<CalculatorFormInner patch={{}} loadTracker={false} />}>
+      <CalculatorFormFromUrl />
     </Suspense>
   );
 }
 
-function CalculatorFormInner({ initial }: { initial?: Partial<TaxCalculatorInput> }) {
-  const { t } = useLanguage();
+function CalculatorFormFromUrl() {
   const searchParams = useSearchParams();
-  // Lazy initializer: runs once, so the URL patch is folded into the very
-  // first render instead of arriving a tick later via setState-in-effect.
-  const [input, setInput] = useState<TaxCalculatorInput>(() => ({
-    ...EMPTY_TAX_INPUT,
-    ...initial,
-    ...parseSharedLinkPatch(searchParams),
-  }));
+  const patch = useMemo(() => parseSharedLinkPatch(searchParams), [searchParams]);
+  return <CalculatorFormInner patch={patch} loadTracker />;
+}
+
+function CalculatorFormInner({
+  patch,
+  loadTracker,
+}: {
+  patch: Partial<TaxCalculatorInput>;
+  loadTracker: boolean;
+}) {
+  const { t } = useLanguage();
+  // Lazy initializer: runs once, so the URL patch is part of the very first render.
+  const [initialInput] = useState<TaxCalculatorInput>(() => ({ ...EMPTY_TAX_INPUT, ...patch }));
+  const [input, setInput] = useState(initialInput);
+
+  // Someone who logged income in the tracker shouldn't have to retype it. A shared
+  // link's values still win over the tracker's.
+  useEffect(() => {
+    if (!loadTracker) return;
+    let cancelled = false;
+    fetch("/api/calculator/prefill")
+      .then((res) => (res.ok ? res.json() : null))
+      .then((body: { initial: Partial<TaxCalculatorInput> | null } | null) => {
+        if (cancelled || !body?.initial) return;
+        // Every edit makes a new object, so `prev === initialInput` means untouched:
+        // a late prefill never overwrites what the person typed.
+        setInput((prev) => (prev === initialInput ? { ...prev, ...body.initial, ...patch } : prev));
+      })
+      .catch(() => {}); // prefill is a convenience; the form works without it
+    return () => {
+      cancelled = true;
+    };
+  }, [loadTracker, patch, initialInput]);
   const [wealthOpen, setWealthOpen] = useState(false);
   const [showSlipModal, setShowSlipModal] = useState(false);
 
