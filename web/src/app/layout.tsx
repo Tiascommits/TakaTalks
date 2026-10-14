@@ -3,6 +3,7 @@ import { Newsreader, Noto_Sans_Bengali, IBM_Plex_Mono } from "next/font/google";
 import "./globals.css";
 import { LanguageProvider } from "@/lib/i18n";
 import { SiteNav } from "@/components/SiteNav";
+import { SiteFooter } from "@/components/SiteFooter";
 import { Analytics } from "@/components/Analytics";
 import { RatesLiveProvider } from "@/components/rates/RatesLive";
 import { hasRateData } from "@/lib/rates/current-rates";
@@ -43,6 +44,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
           <RatesLiveProvider value={ratesLive}>
             <SiteNav />
             <div className="flex-1 flex flex-col">{children}</div>
+            <SiteFooter />
           </RatesLiveProvider>
         </LanguageProvider>
         <Analytics />
