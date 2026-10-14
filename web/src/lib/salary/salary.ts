@@ -3,15 +3,13 @@
  *
  * Grounded in:
  * - Bangladesh Income Tax Act 2023 (Section 32 / Second Schedule: Part 1).
- *   Statutory Employment Exemption: min(1/3 of total employment receipts, ৳4,50,000).
  * - Section 86: Deduction of tax at source from salary (TDS).
- * - General tax slabs for AY 2025-26 (Configured in tax-rules-2025-26.ts).
+ * - The tax itself comes from calculateTax (src/lib/tax/calculate.ts), the
+ *   same engine and rules config as /calculator.
  */
 
-import {
-  TAX_RULES,
-  TAXPAYER_CATEGORIES,
-} from "@/config/tax-rules-2025-26";
+import { calculateTax } from "@/lib/tax/calculate";
+import { EMPTY_TAX_INPUT } from "@/lib/tax/types";
 
 export interface SalaryStructureInput {
   label: string;
@@ -23,7 +21,7 @@ export interface SalaryStructureInput {
   festivalBonusesCount?: number; // default 2 (e.g. 2 x basic for Eid / Puja)
   pfContributionPct?: number; // default 10% of basic
   hasEmployerPFMatch?: boolean; // default true
-  taxpayerCategoryId?: string; // default "GENERAL"
+  taxpayerCategoryId?: string; // a TAXPAYER_CATEGORIES id, default "general"
 }
 
 export interface SalaryBreakdownResult {
@@ -60,7 +58,7 @@ export interface SalaryBreakdownResult {
   statutoryExemption: number;
   taxableSalary: number;
   taxFreeLimit: number;
-  annualTaxBeforeRebate: number;
+  annualTax: number;
   monthlyTDS: number;
   effectiveTaxRatePct: number;
 
@@ -134,34 +132,26 @@ export function calculateSalaryBreakdown(
   const totalEmploymentReceiptsForTax =
     annualGrossCashReceipts + annualEmployerPF;
 
-  // Statutory exemption per TAX_RULES (1/3 capped at configured salaryExemptionCap)
-  const oneThird = Math.round(totalEmploymentReceiptsForTax * TAX_RULES.salaryExemptionFraction);
-  const statutoryExemption = Math.min(oneThird, TAX_RULES.salaryExemptionCap);
-  const taxableSalary = Math.max(0, totalEmploymentReceiptsForTax - statutoryExemption);
-
-  // Taxpayer category threshold
-  const categoryId = input.taxpayerCategoryId ?? "general";
-  const cat =
-    TAXPAYER_CATEGORIES.find((c) => c.id.toLowerCase() === categoryId.toLowerCase()) ??
-    TAXPAYER_CATEGORIES[0];
-  const taxFreeLimit = cat.taxFreeLimit;
-
-  // Slab tax calculation on amount exceeding the initial tax-free limit
-  const taxableAboveTaxFree = Math.max(0, taxableSalary - taxFreeLimit);
-  let remaining = taxableAboveTaxFree;
-  let annualTaxBeforeRebate = 0;
-  for (const s of TAX_RULES.slabs) {
-    if (remaining <= 0) break;
-    const chunk = Math.min(remaining, s.amt);
-    annualTaxBeforeRebate += chunk * s.rate;
-    remaining -= chunk;
-  }
-  annualTaxBeforeRebate = Math.round(annualTaxBeforeRebate);
-  const monthlyTDS = Math.round(annualTaxBeforeRebate / 12);
+  // Same engine as /calculator, so the 1/3 exemption, the rebate on the
+  // employee's own PF contribution and the minimum tax all match it.
+  const tax = calculateTax({
+    ...EMPTY_TAX_INPUT,
+    categoryId: input.taxpayerCategoryId ?? "general",
+    basicMonthly: basic,
+    allowanceMonthly: houseRent + medical + conveyance + other,
+    bonusAnnual: annualFestivalBonuses,
+    employerPFMonthly: monthlyEmployerPF,
+    invPFMonthly: monthlyEmployeePF,
+  });
+  const statutoryExemption = Math.round(tax.salaryExemption);
+  const taxableSalary = Math.round(tax.taxableSalary);
+  const taxFreeLimit = tax.taxFree;
+  const annualTax = Math.round(tax.totalLiability);
+  const monthlyTDS = Math.round(annualTax / 12);
 
   const effectiveTaxRatePct =
     annualGrossCashReceipts > 0
-      ? Math.round((annualTaxBeforeRebate / annualGrossCashReceipts) * 1000) / 10
+      ? Math.round((annualTax / annualGrossCashReceipts) * 1000) / 10
       : 0;
 
   // Net Monthly In-Hand Cash (Bank Credit)
@@ -173,7 +163,7 @@ export function calculateSalaryBreakdown(
   // Net Annual In-Hand Cash
   const netAnnualInHand = Math.max(
     0,
-    annualGrossCashReceipts - annualEmployeePF - annualTaxBeforeRebate
+    annualGrossCashReceipts - annualEmployeePF - annualTax
   );
 
   // Total Annual Wealth = Net in-hand cash + Total PF accrued
@@ -204,7 +194,7 @@ export function calculateSalaryBreakdown(
     statutoryExemption,
     taxableSalary,
     taxFreeLimit,
-    annualTaxBeforeRebate,
+    annualTax,
     monthlyTDS,
     effectiveTaxRatePct,
     netMonthlyInHand,

@@ -1,4 +1,6 @@
 import { describe, expect, it } from "vitest";
+import { calculateTax } from "@/lib/tax/calculate";
+import { EMPTY_TAX_INPUT } from "@/lib/tax/types";
 import { calculateSalaryBreakdown, compareSalaries } from "./salary";
 
 describe("Salary Offer Analyzer (Income Tax Act 2023)", () => {
@@ -93,5 +95,45 @@ describe("Salary Offer Analyzer (Income Tax Act 2023)", () => {
     expect(comp.offers).toHaveLength(2);
     expect(comp.winnerMonthlyInHand).toBe("Offer A (High Cash, No PF)");
     expect(comp.winnerTotalWealth).toBeTruthy();
+  });
+
+  it("uses the same engine as /calculator: rebate on own PF and minimum tax included", () => {
+    const role = calculateSalaryBreakdown({
+      label: "Engineer",
+      monthlyBasic: 50_000,
+      monthlyHouseRent: 25_000,
+      monthlyMedical: 5_000,
+      monthlyConveyance: 5_000,
+      pfContributionPct: 10,
+      hasEmployerPFMatch: true,
+    });
+    const calc = calculateTax({
+      ...EMPTY_TAX_INPUT,
+      basicMonthly: 50_000,
+      allowanceMonthly: 35_000,
+      bonusAnnual: 100_000, // 2 festival bonuses of one basic each
+      employerPFMonthly: 5_000,
+      invPFMonthly: 5_000, // own PF contribution earns the investment rebate
+    });
+    expect(calc.rebate).toBeGreaterThan(0);
+    expect(role.annualTax).toBe(Math.round(calc.totalLiability));
+    expect(role.monthlyTDS).toBe(Math.round(calc.totalLiability / 12));
+  });
+
+  it("charges the minimum tax when salary is just over the tax-free limit", () => {
+    // 6,30,000 gross a year, no PF: 1/3 exempt leaves 4,20,000, so 20,000 above the
+    // 4,00,000 threshold at 10% is 2,000, which the 5,000 minimum tax replaces.
+    const role = calculateSalaryBreakdown({
+      label: "Junior",
+      monthlyBasic: 45_000,
+      monthlyHouseRent: 7_500,
+      monthlyMedical: 0,
+      monthlyConveyance: 0,
+      festivalBonusesCount: 0,
+      pfContributionPct: 0,
+      hasEmployerPFMatch: false,
+    });
+    expect(role.taxableSalary).toBe(420_000);
+    expect(role.annualTax).toBe(5_000);
   });
 });
