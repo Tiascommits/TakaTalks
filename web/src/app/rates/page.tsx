@@ -10,6 +10,8 @@ import { RatesEmptyState } from "@/components/rates/RatesEmptyState";
 
 export const metadata = {
   title: "ব্যাংক রেট তুলনা — TakaTalks",
+  description:
+    "Bangladesh banks' published FDR rates side by side, each with its source and the date it was collected.",
 };
 
 // Rates change (and staleness flags depend on the latest scrape attempt),

@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useMemo, useState } from "react";
+import { Suspense, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { TAX_RULES, TAXPAYER_CATEGORIES } from "@/config/tax-rules-2025-26";
@@ -99,6 +99,14 @@ function CalculatorFormInner({ initial }: { initial?: Partial<TaxCalculatorInput
 
   const result = useMemo(() => calculateTax(input), [input]);
   const optimizer = useMemo(() => calculateOptimizer(result), [result]);
+
+  // Demand signal: counts that someone got a result, never the figures. No-op
+  // unless GoatCounter is on (production only). shortcut: lost if the script has
+  // not loaded yet (a shared link opened cold); queue it if that count matters.
+  const calculated = result.slabBase > 0;
+  useEffect(() => {
+    if (calculated) window.goatcounter?.count?.({ path: "tax-calculate", event: true });
+  }, [calculated]);
 
   const n = (key: keyof TaxCalculatorInput) => field(input, setInput, key);
 

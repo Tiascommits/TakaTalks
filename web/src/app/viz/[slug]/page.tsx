@@ -19,10 +19,6 @@ export async function generateMetadata({ params }: VizPageProps): Promise<Metada
   return {
     title: `${meta.title.bn} · ${meta.title.en} — TakaTalks`,
     description: `${meta.hook.bn} ${meta.hook.en}`,
-    openGraph: {
-      title: `${meta.icon} ${meta.title.bn} — TakaTalks`,
-      description: meta.hook.bn,
-    },
   };
 }
 

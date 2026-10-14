@@ -7,6 +7,8 @@ import { TrackerHeader } from "@/components/tracker/TrackerHeader";
 
 export const metadata = {
   title: "ইনকাম / ইনভেস্টমেন্ট ট্র্যাকার — TakaTalks",
+  description:
+    "Record your income and investments and see what matures when. No email or password needed to start.",
 };
 
 export default async function TrackerPage({
