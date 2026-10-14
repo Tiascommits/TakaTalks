@@ -378,9 +378,15 @@ export function LoanCalculator() {
         </div>
 
         <p className="sm:hidden text-[11px] text-muted mb-1.5">
-          {t("← Swipe to see total paid & remaining balance →", "← মোট পরিশোধ ও অবশিষ্ট ঋণ দেখতে স্ক্রল করো →")}
+          {t("← Swipe to see total paid & remaining balance →", "← মোট পরিশোধ ও অবশিষ্ট ঋণ দেখতে স্ক্রল করুন →")}
         </p>
-        <div className="overflow-x-auto max-h-96 overflow-y-auto">
+        {/* Focusable so keyboard users can scroll the schedule too. */}
+        <div
+          tabIndex={0}
+          role="region"
+          aria-label={t("Repayment schedule", "কিস্তির তালিকা")}
+          className="overflow-x-auto max-h-96 overflow-y-auto focus:outline-none focus-visible:ring-2 focus-visible:ring-green/30"
+        >
           <table className="w-full text-xs border-collapse">
             <thead className="sticky top-0 bg-[#FAF9F5] z-10">
               <tr className="border-b-2 border-green text-green-deep">

@@ -79,7 +79,7 @@ export function BankHealthPanel({ rows }: { rows: BankHealthRow[] }) {
             onClick={() => setFilter("LOW_NPL")}
             className={`px-2 py-0.5 text-xs rounded-xs font-medium transition-colors ${
               filter === "LOW_NPL"
-                ? "bg-gold text-ink font-semibold"
+                ? "bg-gold text-paper font-semibold"
                 : "bg-[#FAF9F5] border border-line text-muted hover:text-foreground"
             }`}
           >

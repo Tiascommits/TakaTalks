@@ -3,7 +3,7 @@
 import { useId, useState } from "react";
 import { cleanNumberText } from "@/lib/format";
 
-const FOCUS_RING =
+export const FOCUS_RING =
   "focus:outline-none focus:border-green focus:ring-2 focus:ring-green/30";
 
 function formatDisplay(n: number): string {
@@ -86,9 +86,11 @@ export function CheckField({
         type="checkbox"
         checked={checked}
         onChange={(e) => onChange(e.target.checked)}
-        className={`w-auto ${FOCUS_RING}`}
+        className={`w-5 h-5 shrink-0 ${FOCUS_RING}`}
       />
-      <label htmlFor={id}>{label}</label>
+      <label htmlFor={id} className="py-1">
+        {label}
+      </label>
     </div>
   );
 }

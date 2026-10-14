@@ -7,7 +7,7 @@ import { TAX_RULES, TAXPAYER_CATEGORIES } from "@/config/tax-rules-2025-26";
 import { calculateTax } from "@/lib/tax/calculate";
 import { calculateOptimizer } from "@/lib/tax/optimizer";
 import { EMPTY_TAX_INPUT, type TaxCalculatorInput } from "@/lib/tax/types";
-import { CheckField, Fieldset, NumberField, SelectField } from "@/components/ui/fields";
+import { CheckField, FOCUS_RING, Fieldset, NumberField, SelectField } from "@/components/ui/fields";
 import { TaxBreakdown } from "./TaxBreakdown";
 import { RebateOptimizer } from "./RebateOptimizer";
 import { TaxSlipModal } from "./TaxSlipModal";
@@ -275,28 +275,28 @@ function CalculatorFormInner({ initial }: { initial?: Partial<TaxCalculatorInput
             {...n("aitPaid")}
           />
 
-          <button
-            type="button"
-            onClick={() => {
-              const next = !wealthOpen;
-              setWealthOpen(next);
-              if (!next) setInput({ ...input, netWealth: 0, multiCar: false, bigHouse: false });
-            }}
-            className="w-full text-left flex items-center gap-2.5 px-3 py-2.5 mt-3.5 bg-[#FBFAF6] border border-dashed border-line text-[13.5px] text-green-deep"
-          >
-            <input type="checkbox" checked={wealthOpen} readOnly className="w-auto" />
+          <label className="w-full flex items-center gap-2.5 px-3 py-2.5 mt-3.5 bg-[#FBFAF6] border border-dashed border-line text-[13.5px] text-green-deep cursor-pointer">
+            <input
+              type="checkbox"
+              checked={wealthOpen}
+              onChange={(e) => {
+                setWealthOpen(e.target.checked);
+                if (!e.target.checked) setInput({ ...input, netWealth: 0, multiCar: false, bigHouse: false });
+              }}
+              className={`w-5 h-5 shrink-0 ${FOCUS_RING}`}
+            />
             {t(
               "Do you have significant assets / property? (doesn't apply to most people)",
-              "তোমার significant সম্পদ / সম্পত্তি আছে? (বেশিরভাগ মানুষের জন্য এটা প্রযোজ্য না)"
+              "আপনার কি উল্লেখযোগ্য সম্পদ বা সম্পত্তি আছে? (বেশিরভাগ মানুষের ক্ষেত্রে প্রযোজ্য নয়)"
             )}
-          </button>
+          </label>
 
           {wealthOpen && (
             <div className="pt-3">
               <p className="text-xs text-muted mb-2.5">
                 {t(
                   "If your net wealth is under ৳4 crore, and you don't have multiple cars or 8,000+ sqft of property, this section isn't for you.",
-                  "Net wealth ৪ কোটির নিচে হলে, ba multiple car/8000+ sqft property na thakle, এই section তোমার জন্য না।"
+                  "নিট সম্পদ ৪ কোটি টাকার কম হলে, আর একাধিক গাড়ি বা ৮,০০০ বর্গফুটের বেশি সম্পত্তি না থাকলে, এই অংশ আপনার জন্য নয়।"
                 )}
               </p>
               <NumberField

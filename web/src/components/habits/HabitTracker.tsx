@@ -339,13 +339,13 @@ export function HabitTracker() {
         {/* Right: the totals */}
         <div className="flex flex-col gap-4 lg:sticky lg:top-4">
           <div className="bg-green-deep text-paper p-5 rounded-sm border-t-4 border-gold shadow-sm">
-            <span className="inline-block font-mono text-[10px] text-gold border border-gold/60 px-1.5 py-0.5 mb-2">
+            <span className="inline-block font-mono text-[10px] text-gold-light border border-gold-light/60 px-1.5 py-0.5 mb-2">
               {t("THE REAL TOTAL", "প্রকৃত মোট")}
             </span>
             <div className="text-xs text-paper/80 mb-1">
               {t("These habits cost you, every month:", "প্রতি মাসে এই অভ্যাসগুলোর খরচ:")}
             </div>
-            <div className="font-mono font-bold text-2xl text-gold mb-2">
+            <div className="font-mono font-bold text-2xl text-gold-light mb-2">
               {fmtTaka(summary.totalMonthly)}
             </div>
             <div className="text-xs text-paper/80 border-t border-paper/20 pt-2">

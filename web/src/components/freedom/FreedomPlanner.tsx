@@ -179,7 +179,7 @@ export function FreedomPlanner() {
                   {lang === "bn" ? preset.titleBn : preset.titleEn}
                 </div>
                 <div
-                  className={`font-mono text-[10px] mt-1 ${isSelected ? "text-gold" : "text-muted"}`}
+                  className={`font-mono text-[10px] mt-1 ${isSelected ? "text-gold-light" : "text-muted"}`}
                 >
                   {Math.round(preset.expenseMultiplier * 100)}%{" "}
                   {t("of today's spend", "আজকের খরচের")}
@@ -541,7 +541,7 @@ export function FreedomPlanner() {
         {/* Right column: the numbers */}
         <div className="flex flex-col gap-4 lg:sticky lg:top-4">
           <div className="bg-green-deep text-paper p-5 rounded-sm border-t-4 border-gold shadow-sm">
-            <span className="inline-block font-mono text-[10px] text-gold border border-gold/60 px-1.5 py-0.5 mb-2">
+            <span className="inline-block font-mono text-[10px] text-gold-light border border-gold-light/60 px-1.5 py-0.5 mb-2">
               {t("YOUR FREEDOM NUMBER", "আপনার স্বাধীনতার অঙ্ক")}
             </span>
             <div className="text-xs text-paper/80 mb-1">
@@ -550,7 +550,7 @@ export function FreedomPlanner() {
                 `${freedomAge} বছরে থামতে এবং ${planUntilAge} বছর পর্যন্ত চলতে প্রয়োজন:`
               )}
             </div>
-            <div className="font-mono font-bold text-2xl text-gold mb-2">
+            <div className="font-mono font-bold text-2xl text-gold-light mb-2">
               {fmtTaka(plan.freedomNumber)}
             </div>
             <p className="text-[11.5px] text-paper/70 leading-relaxed border-t border-paper/20 pt-2">
