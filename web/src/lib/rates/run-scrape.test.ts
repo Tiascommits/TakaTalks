@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 const { prisma, revalidatePath } = vi.hoisted(() => ({
   revalidatePath: vi.fn(),
@@ -14,6 +14,7 @@ vi.mock("next/cache", () => ({ revalidatePath }));
 
 import { runScrape } from "./run-scrape";
 import { SEED_AS_OF } from "./seed-rates";
+import { RATE_ADAPTERS } from "./adapters/registry";
 
 beforeEach(() => {
   vi.resetAllMocks();
@@ -21,6 +22,7 @@ beforeEach(() => {
   prisma.rateSnapshot.create.mockImplementation((args) => args);
   prisma.$transaction.mockResolvedValue([]);
 });
+afterEach(() => vi.restoreAllMocks());
 
 describe("runScrape", () => {
   it("dates a manual-seed rate by its source, not by today's run", async () => {
@@ -46,5 +48,20 @@ describe("runScrape", () => {
   it("re-renders every page after a successful run, so the nav can show /rates", async () => {
     await runScrape();
     expect(revalidatePath).toHaveBeenCalledWith("/", "layout");
+  });
+
+  it("refuses a parse with an implausible rate and logs the bank as failed", async () => {
+    // A wrong-column parse: a 365-day term read as the rate.
+    vi.spyOn(RATE_ADAPTERS, "get").mockReturnValue({
+      bankShortCode: "MIDLAND",
+      scrape: async () => [
+        { instrument: "FDR", termMonths: 12, ratePct: 365, method: "SCRAPED", source: "test" },
+      ],
+    });
+    await runScrape();
+    expect(prisma.rateSnapshot.create).not.toHaveBeenCalled();
+    expect(prisma.scrapeLog.create).toHaveBeenCalledWith({
+      data: expect.objectContaining({ bankId: "b1", success: false }),
+    });
   });
 });
