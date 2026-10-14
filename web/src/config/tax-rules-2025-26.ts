@@ -50,7 +50,13 @@ export const TAXPAYER_CATEGORIES: TaxpayerCategory[] = [
 ];
 
 export const TAX_RULES = {
-  sourceYear: "2025-26",
+  // Returns being filed now cover income earned 1 Jul 2025 - 30 Jun 2026.
+  incomeYear: "2025-26",
+  assessmentYear: "2026-27",
+  yearLabel: {
+    en: "Income year 2025-26 (assessment year 2026-27)",
+    bn: "আয়বর্ষ ২০২৫-২৬ (করবর্ষ ২০২৬-২৭)",
+  },
 
   slabs: [
     { amt: 100000, rate: 0.05 },

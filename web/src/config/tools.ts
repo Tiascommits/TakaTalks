@@ -68,8 +68,8 @@ export const TOOLS: Tool[] = [
     title: { en: "Tax Calculator & Rebate Optimizer", bn: "আয়কর ও রিবেট অপটিমাইজার" },
     navLabel: { en: "Tax Calculator", bn: "আয়কর" },
     desc: {
-      en: "Estimate what you owe under Assessment Year 2025-26 rules. Maximize your legal tax rebate.",
-      bn: "করবর্ষ ২০২৫-২৬ অনুযায়ী ট্যাক্স প্রাক্কলন করুন। সর্বোচ্চ আইনসম্মত কর রেয়াত অর্জন করুন।",
+      en: "Estimate what you owe for income year 2025-26 (assessment year 2026-27). Maximize your legal tax rebate.",
+      bn: "আয়বর্ষ ২০২৫-২৬ (করবর্ষ ২০২৬-২৭) অনুযায়ী ট্যাক্স প্রাক্কলন করুন। সর্বোচ্চ আইনসম্মত কর রেয়াত অর্জন করুন।",
     },
   },
   {

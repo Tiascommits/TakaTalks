@@ -1,6 +1,7 @@
 "use client";
 
 import { useLanguage } from "@/lib/i18n";
+import { TAX_RULES } from "@/config/tax-rules-2025-26";
 
 export function CalculatorHeader() {
   const { t } = useLanguage();
@@ -9,7 +10,8 @@ export function CalculatorHeader() {
     <header className="bg-green-deep text-paper px-5 pt-6.5 pb-5 border-b-4 border-gold">
       <div className="max-w-[1160px] mx-auto">
         <p className="font-mono text-[11.5px] tracking-wide text-[#C9D9CB] mb-1.5">
-          ESTIMATE TOOL — NOT AN OFFICIAL NBR SERVICE, NOT A FILING
+          ESTIMATE TOOL — NOT AN OFFICIAL NBR SERVICE, NOT A FILING ·{" "}
+          {t(TAX_RULES.yearLabel.en, TAX_RULES.yearLabel.bn).toUpperCase()}
         </p>
         <h1 className="font-serif font-semibold text-2xl sm:text-3xl mb-1.5">
           {t(
