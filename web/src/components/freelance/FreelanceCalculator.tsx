@@ -152,7 +152,7 @@ export function FreelanceCalculator() {
               <p className="text-[10.5px] text-muted -mt-2">
                 {t(
                   "Indicative rate, not live — check your bank/gateway's actual rate before relying on this figure.",
-                  "এটা একটা ইঙ্গিতমূলক রেট, লাইভ না — এই সংখ্যায় নির্ভর করার আগে নিজের ব্যাংক/গেটওয়ের প্রকৃত রেট দেখে নাও।"
+                  "এটা একটা ইঙ্গিতমূলক রেট, লাইভ না — এই সংখ্যায় নির্ভর করার আগে নিজের ব্যাংক/গেটওয়ের প্রকৃত রেট দেখে নিন।"
                 )}
               </p>
 

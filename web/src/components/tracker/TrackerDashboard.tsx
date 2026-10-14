@@ -223,7 +223,7 @@ export function TrackerDashboard({
           disabled={savingProfile}
           className="mt-3 bg-green-deep text-paper px-4 py-2 text-sm font-medium disabled:opacity-50"
         >
-          {t("Save profile", "প্রোফাইল সেভ করো")}
+          {t("Save profile", "প্রোফাইল সেভ করুন")}
         </button>
       </section>
     </div>

@@ -47,7 +47,7 @@ export function IncomeSection({
     e.preventDefault();
     setError(null);
     if (!label.trim()) {
-      setError(t("Give it a label.", "লেবেল দাও।"));
+      setError(t("Give it a label.", "একটি লেবেল দিন।"));
       return;
     }
     if (label.trim().length > MAX_LABEL_LENGTH) {
@@ -80,7 +80,7 @@ export function IncomeSection({
       </h2>
 
       {entries.length === 0 ? (
-        <p className="text-sm text-muted mb-4">{t("No income sources added yet.", "এখনো কোনো আয়ের উৎস যোগ করোনি।")}</p>
+        <p className="text-sm text-muted mb-4">{t("No income sources added yet.", "এখনো কোনো আয়ের উৎস যোগ করেননি।")}</p>
       ) : (
         <ul className="mb-4 divide-y divide-line">
           {entries.map((e) => (
@@ -186,7 +186,7 @@ export function IncomeSection({
             disabled={submitting}
             className="shrink-0 bg-green-deep text-paper px-3 py-2 text-sm font-medium disabled:opacity-50 self-end"
           >
-            {t("Add", "যোগ করো")}
+            {t("Add", "যোগ করুন")}
           </button>
         </div>
       </form>

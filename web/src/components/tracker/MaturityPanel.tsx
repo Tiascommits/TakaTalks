@@ -47,7 +47,7 @@ export function MaturityPanel({
 
       {matured.length > 0 && (
         <div className="mb-4">
-          <p className="text-xs font-semibold text-red mb-2">{t("Matured, confirm payout:", "মেয়াদ শেষ, পেমেন্ট নিশ্চিত করো:")}</p>
+          <p className="text-xs font-semibold text-red mb-2">{t("Matured, confirm payout:", "মেয়াদ শেষ, পেমেন্ট নিশ্চিত করুন:")}</p>
           <ul className="space-y-2">
             {matured.map((e) => (
               <MaturedRow key={e.id} entry={e} onConfirmPayout={onConfirmPayout} />
@@ -131,7 +131,7 @@ function MaturedRow({
           }}
           className="bg-green-deep text-paper px-3 py-1.5 text-xs font-medium disabled:opacity-50"
         >
-          {t("Confirm payout", "পেমেন্ট নিশ্চিত করো")}
+          {t("Confirm payout", "পেমেন্ট নিশ্চিত করুন")}
         </button>
       </div>
     </li>

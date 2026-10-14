@@ -125,7 +125,7 @@ test.describe("Magic-link confirmation screen", () => {
     await expect(target).toContainText("a•••@example.com");
     await expect(target).not.toContainText("alice."); // the address itself is never shown
 
-    await page.getByRole("button", { name: /নিশ্চিত করো ও ট্র্যাকারে যাও/ }).click();
+    await page.getByRole("button", { name: /নিশ্চিত করুন ও ট্র্যাকারে যান/ }).click();
     await expect(page).toHaveURL(/\/tracker\?linked=1/);
   });
 
@@ -153,7 +153,7 @@ test.describe("Magic-link confirmation screen", () => {
 
   test("an unknown token shows no target, and the confirm button is still offered", async ({ page }) => {
     await page.goto("/account/verify?token=not-a-real-token");
-    await expect(page.getByRole("button", { name: /নিশ্চিত করো ও ট্র্যাকারে যাও/ })).toBeVisible();
+    await expect(page.getByRole("button", { name: /নিশ্চিত করুন ও ট্র্যাকারে যান/ })).toBeVisible();
     await expect(page.getByTestId("verify-target")).toHaveCount(0);
   });
 });

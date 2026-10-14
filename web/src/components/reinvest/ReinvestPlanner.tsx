@@ -290,7 +290,7 @@ export function ReinvestPlanner({
           >
             {saveState === "saving"
               ? t("Saving…", "সেভ হচ্ছে…")
-              : t("Save this suggestion", "এই পরামর্শ সেভ করো")}
+              : t("Save this suggestion", "এই পরামর্শ সেভ করুন")}
           </button>
         )}
         {saveState === "saved" && (

@@ -358,7 +358,7 @@ function CalculatorFormInner({
             ESTIMATE
           </span>
           <h2 className="font-serif font-semibold text-[17px] mb-3.5 pb-2 border-b-2 border-green text-green-deep">
-            {t("Your estimate, step by step", "তোমার এস্টিমেট, ধাপে ধাপে")}
+            {t("Your estimate, step by step", "আপনার এস্টিমেট, ধাপে ধাপে")}
           </h2>
           <TaxBreakdown r={result} ait={input.aitPaid} />
 

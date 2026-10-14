@@ -133,7 +133,7 @@ export function PrivacyNotice() {
           </Link>{" "}
           {t(
             "and choose “Delete my data”. It permanently removes your income and investment entries, tax profile, reminders and email or phone from our server. Clearing cookies alone deletes nothing.",
-            "গিয়ে “আমার ডেটা মুছে ফেলো” বেছে নিন। এতে আমাদের সার্ভার থেকে আপনার আয় ও বিনিয়োগের এন্ট্রি, ট্যাক্স প্রোফাইল, রিমাইন্ডার এবং ইমেইল বা ফোন স্থায়ীভাবে মুছে যায়। শুধু কুকি মুছলে কিছুই মোছে না।"
+            "গিয়ে “আমার ডেটা মুছে ফেলুন” বেছে নিন। এতে আমাদের সার্ভার থেকে আপনার আয় ও বিনিয়োগের এন্ট্রি, ট্যাক্স প্রোফাইল, রিমাইন্ডার এবং ইমেইল বা ফোন স্থায়ীভাবে মুছে যায়। শুধু কুকি মুছলে কিছুই মোছে না।"
           )}
         </p>
       </Section>
