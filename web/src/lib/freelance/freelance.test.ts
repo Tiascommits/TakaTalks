@@ -1,4 +1,6 @@
 import { describe, expect, it } from "vitest";
+import { calculateTax } from "@/lib/tax/calculate";
+import { EMPTY_TAX_INPUT } from "@/lib/tax/types";
 import { calculateFreelanceEarnings } from "./freelance";
 
 describe("Freelancer & ITES Remittance Engine", () => {
@@ -66,5 +68,25 @@ describe("Freelancer & ITES Remittance Engine", () => {
     const psr = res.complianceChecklist.find((c) => c.itemEn.includes("PSR"));
     expect(psr).toBeDefined();
     expect(psr!.required).toBe(true);
+  });
+
+  it("taxes non-exempt income with the /calculator engine, minimum tax included", () => {
+    const res = calculateFreelanceEarnings({
+      foreignAmount: 15_000,
+      currency: "USD",
+      categoryId: "general_consulting",
+      hasBankingChannelFIRC: false,
+    });
+    const calc = calculateTax({ ...EMPTY_TAX_INPUT, otherIncomeAnnual: res.grossBDT });
+    expect(res.taxPayableBDT).toBe(Math.round(calc.totalLiability));
+
+    // 4,10,000 BDT: 10,000 above the threshold, so the 5,000 minimum tax applies
+    const small = calculateFreelanceEarnings({
+      foreignAmount: 410_000,
+      currency: "BDT",
+      categoryId: "general_consulting",
+      hasBankingChannelFIRC: false,
+    });
+    expect(small.taxPayableBDT).toBe(5_000);
   });
 });
