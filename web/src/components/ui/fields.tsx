@@ -2,8 +2,9 @@
 
 import { useId, useState } from "react";
 import { cleanNumberText } from "@/lib/format";
+import { MAX_AMOUNT_TAKA } from "@/lib/tracker/limits";
 
-const FOCUS_RING =
+export const FOCUS_RING =
   "focus:outline-none focus:border-green focus:ring-2 focus:ring-green/30";
 
 function formatDisplay(n: number): string {
@@ -36,7 +37,8 @@ export function NumberField({
     const cleaned = cleanNumberText(raw);
     setText(cleaned);
     const n = parseFloat(cleaned);
-    onChange(Number.isFinite(n) ? n : 0);
+    // Same ceiling as the tracker: nobody's figure is above 10,000 crore, and the maths stays readable.
+    onChange(Number.isFinite(n) ? Math.min(n, MAX_AMOUNT_TAKA) : 0);
   }
 
   return (
@@ -86,9 +88,11 @@ export function CheckField({
         type="checkbox"
         checked={checked}
         onChange={(e) => onChange(e.target.checked)}
-        className={`w-auto ${FOCUS_RING}`}
+        className={`w-5 h-5 shrink-0 ${FOCUS_RING}`}
       />
-      <label htmlFor={id}>{label}</label>
+      <label htmlFor={id} className="py-1">
+        {label}
+      </label>
     </div>
   );
 }

@@ -14,7 +14,7 @@ test.describe("Magic-link confirmation (/account/verify)", () => {
     await expect(page).toHaveTitle(/লগইন নিশ্চিত করুন/);
 
     // Site default language is Bengali.
-    await expect(page.getByRole("heading", { level: 1 })).toContainText("লগইন নিশ্চিত করো");
+    await expect(page.getByRole("heading", { level: 1 })).toContainText("লগইন নিশ্চিত করুন");
     await expect(page.getByRole("alert").filter({ hasText: "ভেরিফিকেশন লিংক" })).toBeVisible();
 
     // The error is stored as a code, so it must re-render when the language changes.
@@ -30,7 +30,7 @@ test.describe("Magic-link confirmation (/account/verify)", () => {
 
   test("an invalid token shows a specific failure message, not a crash", async ({ page }) => {
     await page.goto("/account/verify?token=not-a-real-token");
-    await page.getByRole("button", { name: /নিশ্চিত করো ও ট্র্যাকারে যাও/ }).click();
+    await page.getByRole("button", { name: /নিশ্চিত করুন ও ট্র্যাকারে যান/ }).click();
     await expect(page.getByRole("alert").filter({ hasText: "ভেরিফাই করা যায়নি" })).toBeVisible();
     await expect(page).toHaveURL(/\/account\/verify/);
   });
@@ -70,10 +70,10 @@ test.describe("Delete my data (/account)", () => {
 
     await page.reload();
     await expect(page.getByTestId("saved-summary")).toContainText("আয়ের এন্ট্রি: 1");
-    await page.getByRole("button", { name: "আমার ডেটা মুছে ফেলো" }).click();
+    await page.getByRole("button", { name: "আমার ডেটা মুছে ফেলুন" }).click();
     expect(await prisma.user.count({ where: { id: userId } })).toBe(1); // nothing deleted before confirming
-    await page.getByRole("button", { name: "হ্যাঁ, সব মুছে ফেলো" }).click();
-    await expect(page.getByRole("status").filter({ hasText: "তোমার ডেটা মুছে ফেলা হয়েছে" })).toBeVisible();
+    await page.getByRole("button", { name: "হ্যাঁ, সব মুছে ফেলুন" }).click();
+    await expect(page.getByRole("status").filter({ hasText: "আপনার ডেটা মুছে ফেলা হয়েছে" })).toBeVisible();
 
     expect(await prisma.user.count({ where: { id: userId } })).toBe(0);
     expect(await prisma.incomeEntry.count({ where: { userId } })).toBe(0);

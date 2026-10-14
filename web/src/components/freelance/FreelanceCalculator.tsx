@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useId, useMemo, useState } from "react";
 import {
   calculateFreelanceEarnings,
   DEFAULT_EXCHANGE_RATES,
@@ -20,6 +20,7 @@ const CURRENCY_SYMBOLS: Record<CurrencyCode, string> = {
 
 export function FreelanceCalculator() {
   const { t, lang } = useLanguage();
+  const categorySelectId = useId();
 
   const [foreignAmount, setForeignAmount] = useState<number>(2_500);
   const [currency, setCurrency] = useState<CurrencyCode>("USD");
@@ -151,7 +152,7 @@ export function FreelanceCalculator() {
               <p className="text-[10.5px] text-muted -mt-2">
                 {t(
                   "Indicative rate, not live — check your bank/gateway's actual rate before relying on this figure.",
-                  "এটা একটা ইঙ্গিতমূলক রেট, লাইভ না — এই সংখ্যায় নির্ভর করার আগে নিজের ব্যাংক/গেটওয়ের প্রকৃত রেট দেখে নাও।"
+                  "এটা একটা ইঙ্গিতমূলক রেট, লাইভ না — এই সংখ্যায় নির্ভর করার আগে নিজের ব্যাংক/গেটওয়ের প্রকৃত রেট দেখে নিন।"
                 )}
               </p>
 
@@ -167,10 +168,11 @@ export function FreelanceCalculator() {
 
               {/* Service Category */}
               <div>
-                <label className="block text-xs text-[#555] mb-1 font-medium">
+                <label htmlFor={categorySelectId} className="block text-xs text-[#555] mb-1 font-medium">
                   {t("Service Category (ITES Classification)", "সেবার ধরন (আইটিইএস খাত)")}
                 </label>
                 <select
+                  id={categorySelectId}
                   value={categoryId}
                   onChange={(e) => setCategoryId(e.target.value)}
                   className="w-full px-2.5 py-2 border border-line bg-[#FCFBF8] text-sm text-ellipsis overflow-hidden whitespace-nowrap"
@@ -261,14 +263,14 @@ export function FreelanceCalculator() {
         {/* Right Column: Earnings & Tax Breakdown */}
         <div className="flex flex-col gap-4 sticky top-4">
           <div className="bg-green-deep text-paper p-5 rounded-sm border-t-4 border-gold shadow-sm">
-            <span className="inline-block font-mono text-[10.5px] text-gold border border-gold/60 px-1.5 py-0.5 mb-2">
+            <span className="inline-block font-mono text-[10.5px] text-gold-light border border-gold-light/60 px-1.5 py-0.5 mb-2">
               {t("TOTAL NET IN-HAND IN BANGLADESH", "ব্যাংকে নীট প্রাপ্তি (টাকায়)")}
             </span>
             <div className="text-xs text-paper/80 mb-1">
               {t("For", "উপার্জিত")} {CURRENCY_SYMBOLS[currency]}
               {result.foreignAmount.toLocaleString()} {t("earnings, you receive:", "এর বিপরীতে ব্যাংকে জমা:")}
             </div>
-            <div className="font-mono font-bold text-3xl text-gold mb-1">
+            <div className="font-mono font-bold text-3xl text-gold-light mb-1">
               {fmtTaka(result.netInHandBDT)}
             </div>
             <div className="text-xs text-paper/70 font-mono">

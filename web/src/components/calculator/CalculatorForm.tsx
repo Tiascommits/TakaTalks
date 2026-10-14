@@ -7,7 +7,7 @@ import { TAX_RULES, TAXPAYER_CATEGORIES } from "@/config/tax-rules-2025-26";
 import { calculateTax } from "@/lib/tax/calculate";
 import { calculateOptimizer } from "@/lib/tax/optimizer";
 import { EMPTY_TAX_INPUT, type TaxCalculatorInput } from "@/lib/tax/types";
-import { CheckField, Fieldset, NumberField, SelectField } from "@/components/ui/fields";
+import { CheckField, FOCUS_RING, Fieldset, NumberField, SelectField } from "@/components/ui/fields";
 import { TaxBreakdown } from "./TaxBreakdown";
 import { RebateOptimizer } from "./RebateOptimizer";
 import { TaxSlipModal } from "./TaxSlipModal";
@@ -58,24 +58,55 @@ function parseSharedLinkPatch(params: URLSearchParams): Partial<TaxCalculatorInp
   return patch;
 }
 
-export function CalculatorForm({ initial }: { initial?: Partial<TaxCalculatorInput> }) {
+/**
+ * The page is static, so the shared-link query string is only known in the browser:
+ * the server sends the empty form as the Suspense fallback, and the browser swaps in
+ * the form with the link's values (and the tracker prefill) applied.
+ */
+export function CalculatorForm() {
   return (
-    <Suspense fallback={null}>
-      <CalculatorFormInner initial={initial} />
+    <Suspense fallback={<CalculatorFormInner patch={{}} loadTracker={false} />}>
+      <CalculatorFormFromUrl />
     </Suspense>
   );
 }
 
-function CalculatorFormInner({ initial }: { initial?: Partial<TaxCalculatorInput> }) {
-  const { t } = useLanguage();
+function CalculatorFormFromUrl() {
   const searchParams = useSearchParams();
-  // Lazy initializer: runs once, so the URL patch is folded into the very
-  // first render instead of arriving a tick later via setState-in-effect.
-  const [input, setInput] = useState<TaxCalculatorInput>(() => ({
-    ...EMPTY_TAX_INPUT,
-    ...initial,
-    ...parseSharedLinkPatch(searchParams),
-  }));
+  const patch = useMemo(() => parseSharedLinkPatch(searchParams), [searchParams]);
+  return <CalculatorFormInner patch={patch} loadTracker />;
+}
+
+function CalculatorFormInner({
+  patch,
+  loadTracker,
+}: {
+  patch: Partial<TaxCalculatorInput>;
+  loadTracker: boolean;
+}) {
+  const { t } = useLanguage();
+  // Lazy initializer: runs once, so the URL patch is part of the very first render.
+  const [initialInput] = useState<TaxCalculatorInput>(() => ({ ...EMPTY_TAX_INPUT, ...patch }));
+  const [input, setInput] = useState(initialInput);
+
+  // Someone who logged income in the tracker shouldn't have to retype it. A shared
+  // link's values still win over the tracker's.
+  useEffect(() => {
+    if (!loadTracker) return;
+    let cancelled = false;
+    fetch("/api/calculator/prefill")
+      .then((res) => (res.ok ? res.json() : null))
+      .then((body: { initial: Partial<TaxCalculatorInput> | null } | null) => {
+        if (cancelled || !body?.initial) return;
+        // Every edit makes a new object, so `prev === initialInput` means untouched:
+        // a late prefill never overwrites what the person typed.
+        setInput((prev) => (prev === initialInput ? { ...prev, ...body.initial, ...patch } : prev));
+      })
+      .catch(() => {}); // prefill is a convenience; the form works without it
+    return () => {
+      cancelled = true;
+    };
+  }, [loadTracker, patch, initialInput]);
   const [wealthOpen, setWealthOpen] = useState(false);
   const [showSlipModal, setShowSlipModal] = useState(false);
 
@@ -283,28 +314,28 @@ function CalculatorFormInner({ initial }: { initial?: Partial<TaxCalculatorInput
             {...n("aitPaid")}
           />
 
-          <button
-            type="button"
-            onClick={() => {
-              const next = !wealthOpen;
-              setWealthOpen(next);
-              if (!next) setInput({ ...input, netWealth: 0, multiCar: false, bigHouse: false });
-            }}
-            className="w-full text-left flex items-center gap-2.5 px-3 py-2.5 mt-3.5 bg-[#FBFAF6] border border-dashed border-line text-[13.5px] text-green-deep"
-          >
-            <input type="checkbox" checked={wealthOpen} readOnly className="w-auto" />
+          <label className="w-full flex items-center gap-2.5 px-3 py-2.5 mt-3.5 bg-[#FBFAF6] border border-dashed border-line text-[13.5px] text-green-deep cursor-pointer">
+            <input
+              type="checkbox"
+              checked={wealthOpen}
+              onChange={(e) => {
+                setWealthOpen(e.target.checked);
+                if (!e.target.checked) setInput({ ...input, netWealth: 0, multiCar: false, bigHouse: false });
+              }}
+              className={`w-5 h-5 shrink-0 ${FOCUS_RING}`}
+            />
             {t(
               "Do you have significant assets / property? (doesn't apply to most people)",
-              "তোমার significant সম্পদ / সম্পত্তি আছে? (বেশিরভাগ মানুষের জন্য এটা প্রযোজ্য না)"
+              "আপনার কি উল্লেখযোগ্য সম্পদ বা সম্পত্তি আছে? (বেশিরভাগ মানুষের ক্ষেত্রে প্রযোজ্য নয়)"
             )}
-          </button>
+          </label>
 
           {wealthOpen && (
             <div className="pt-3">
               <p className="text-xs text-muted mb-2.5">
                 {t(
                   "If your net wealth is under ৳4 crore, and you don't have multiple cars or 8,000+ sqft of property, this section isn't for you.",
-                  "Net wealth ৪ কোটির নিচে হলে, ba multiple car/8000+ sqft property na thakle, এই section তোমার জন্য না।"
+                  "নিট সম্পদ ৪ কোটি টাকার কম হলে, আর একাধিক গাড়ি বা ৮,০০০ বর্গফুটের বেশি সম্পত্তি না থাকলে, এই অংশ আপনার জন্য নয়।"
                 )}
               </p>
               <NumberField
@@ -335,7 +366,7 @@ function CalculatorFormInner({ initial }: { initial?: Partial<TaxCalculatorInput
             ESTIMATE
           </span>
           <h2 className="font-serif font-semibold text-[17px] mb-3.5 pb-2 border-b-2 border-green text-green-deep">
-            {t("Your estimate, step by step", "তোমার এস্টিমেট, ধাপে ধাপে")}
+            {t("Your estimate, step by step", "আপনার এস্টিমেট, ধাপে ধাপে")}
           </h2>
           <TaxBreakdown r={result} ait={input.aitPaid} />
 

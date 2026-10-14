@@ -15,7 +15,7 @@ describe("calculateOptimizer — normal cases", () => {
     expect(opt.hasTaxableIncome).toBe(false);
   });
 
-  it("suggests filling the sanchay/bond/MF group first", () => {
+  it("suggests filling the sanchay/bond group first", () => {
     const { opt } = optimizerFor({ businessAnnual: 5000000 });
     expect(opt.hasTaxableIncome).toBe(true);
     expect(opt.suggestions[0].instrumentId).toBe("sanchay_group");

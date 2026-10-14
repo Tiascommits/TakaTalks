@@ -9,6 +9,15 @@
 // (tools/fdr-comparison/fdr-dps-comparison.html).
 export const FDR_TERMS_MONTHS = [3, 6, 12] as const;
 
+// A scraped FDR rate outside this band is a wrong-column parse (a term, a fee,
+// a year), not a rate: the run logs a failure and keeps the last good value.
+// Bangladesh FDR rates have sat between about 4% and 13% for a decade.
+export const PLAUSIBLE_FDR_RATE_PCT = { min: 1, max: 20 } as const;
+
+// The rate scrape runs daily. With no attempt at all for this long, the cron
+// itself has stopped, so every rate is flagged unverified until it runs again.
+export const MAX_HOURS_WITHOUT_SCRAPE = 48;
+
 // A day-over-day rate move at or above this many percentage points is
 // flagged in the admin digest as worth a human look.
 export const SIGNIFICANT_CHANGE_THRESHOLD_PCT = 0.25;

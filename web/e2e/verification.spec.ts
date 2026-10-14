@@ -1,4 +1,4 @@
-import { randomBytes } from "node:crypto";
+import { createHash, randomBytes } from "node:crypto";
 import { test, expect, type APIRequestContext, type Page } from "@playwright/test";
 import { PrismaClient } from "@prisma/client";
 import { TEST_DATABASE_URL } from "./test-db";
@@ -13,6 +13,9 @@ test.afterAll(async () => {
   await prisma.$disconnect();
 });
 
+// The app stores only a SHA-256 of each token (src/lib/notify/verification.ts).
+const hashed = (token: string) => createHash("sha256").update(token).digest("hex");
+
 const uniquePhone = () => `+8801${Math.floor(Math.random() * 1e9).toString().padStart(9, "0")}`;
 
 async function seedOtp(phone: string, code: string) {
@@ -22,7 +25,7 @@ async function seedOtp(phone: string, code: string) {
       userId: user.id,
       channel: "PHONE",
       destination: phone,
-      token: `${phone}:${code}`,
+      token: hashed(`${phone}:${code}`),
       expiresAt: new Date(Date.now() + 10 * 60 * 1000),
     },
   });
@@ -48,7 +51,7 @@ test.describe("Phone OTP guessing limit (/api/account/verify)", () => {
     expect(correctButLate.status).toBe(429);
     expect(correctButLate.body.error).toBe("too_many_attempts");
 
-    const token = await prisma.verificationToken.findUnique({ where: { token: `${phone}:424242` } });
+    const token = await prisma.verificationToken.findUnique({ where: { token: hashed(`${phone}:424242`) } });
     expect(token?.attempts).toBe(5);
     expect(token?.consumedAt).toBeNull(); // the account was not verified
   });
@@ -109,7 +112,7 @@ async function seedEmailLink(email: string, requesterId?: string) {
       userId,
       channel: "EMAIL",
       destination: email,
-      token,
+      token: hashed(token),
       expiresAt: new Date(Date.now() + 15 * 60 * 1000),
     },
   });
@@ -125,7 +128,7 @@ test.describe("Magic-link confirmation screen", () => {
     await expect(target).toContainText("a•••@example.com");
     await expect(target).not.toContainText("alice."); // the address itself is never shown
 
-    await page.getByRole("button", { name: /নিশ্চিত করো ও ট্র্যাকারে যাও/ }).click();
+    await page.getByRole("button", { name: /নিশ্চিত করুন ও ট্র্যাকারে যান/ }).click();
     await expect(page).toHaveURL(/\/tracker\?linked=1/);
   });
 
@@ -136,7 +139,7 @@ test.describe("Magic-link confirmation screen", () => {
       expect(res.status()).toBe(200);
       expect((await res.json()).destination).toMatch(/^b•••@example\.com$/);
     }
-    const row = await prisma.verificationToken.findUnique({ where: { token } });
+    const row = await prisma.verificationToken.findUnique({ where: { token: hashed(token) } });
     expect(row?.consumedAt).toBeNull();
   });
 
@@ -153,7 +156,7 @@ test.describe("Magic-link confirmation screen", () => {
 
   test("an unknown token shows no target, and the confirm button is still offered", async ({ page }) => {
     await page.goto("/account/verify?token=not-a-real-token");
-    await expect(page.getByRole("button", { name: /নিশ্চিত করো ও ট্র্যাকারে যাও/ })).toBeVisible();
+    await expect(page.getByRole("button", { name: /নিশ্চিত করুন ও ট্র্যাকারে যান/ })).toBeVisible();
     await expect(page.getByTestId("verify-target")).toHaveCount(0);
   });
 });

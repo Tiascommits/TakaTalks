@@ -3,7 +3,7 @@ import { IncomeFrequency } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { clientIp, overLimit, tooManyRequests } from "@/lib/rate-limit";
 import { getCurrentUserId, getOrCreateUserId } from "@/lib/tracker/session";
-import { MAX_AMOUNT_TAKA, MAX_LABEL_LENGTH, MAX_SOURCE_LENGTH } from "@/lib/tracker/limits";
+import { MAX_AMOUNT_TAKA, MAX_LABEL_LENGTH, MAX_SOURCE_LENGTH, MAX_ENTRIES_PER_USER } from "@/lib/tracker/limits";
 
 export async function GET() {
   const userId = await getCurrentUserId();
@@ -37,6 +37,9 @@ export async function POST(request: Request) {
   }
 
   const userId = await getOrCreateUserId();
+  if ((await prisma.incomeEntry.count({ where: { userId } })) >= MAX_ENTRIES_PER_USER) {
+    return NextResponse.json({ error: "too_many_entries" }, { status: 409 });
+  }
   const entry = await prisma.incomeEntry.create({
     data: {
       userId,

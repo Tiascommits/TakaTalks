@@ -1,6 +1,7 @@
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { BANKS } from "@/config/banks";
+import { PLAUSIBLE_FDR_RATE_PCT } from "@/config/rate-monitoring";
 import { RATE_ADAPTERS } from "./adapters/registry";
 
 export type RunScrapeSummary = {
@@ -48,6 +49,14 @@ export async function runScrape(): Promise<RunScrapeSummary> {
 
     try {
       const rates = await adapter.scrape();
+      const implausible = rates.find(
+        (r) => !(r.ratePct >= PLAUSIBLE_FDR_RATE_PCT.min && r.ratePct <= PLAUSIBLE_FDR_RATE_PCT.max)
+      );
+      if (implausible) {
+        throw new Error(
+          `Implausible rate ${implausible.ratePct}% for ${implausible.termMonths} months; nothing stored`
+        );
+      }
       // A dated (manual) figure is stored once; re-storing it every day would
       // pile up identical rows that all count as "latest".
       const toStore: typeof rates = [];

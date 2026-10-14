@@ -4,7 +4,8 @@
  * in both places — the two used to drift because each kept its own list.
  */
 
-export type ToolCategoryId = "tax" | "earn" | "save" | "borrow";
+// "more" holds side tools frozen while the core ones are kept correct; it stays last.
+export type ToolCategoryId = "tax" | "earn" | "save" | "zakat" | "more";
 
 export type ToolCategory = {
   id: ToolCategoryId;
@@ -52,11 +53,19 @@ export const TOOL_CATEGORIES: ToolCategory[] = [
     },
   },
   {
-    id: "borrow",
-    label: { en: "Borrow & Give", bn: "ঋণ ও যাকাত" },
+    id: "zakat",
+    label: { en: "Zakat", bn: "যাকাত" },
     blurb: {
-      en: "The cost of a loan, and the calculation of what you owe others.",
-      bn: "ঋণের প্রকৃত খরচ, আর অন্যের প্রাপ্য হিসাব।",
+      en: "How much zakat is due on your savings, gold and shares.",
+      bn: "আপনার সঞ্চয়, সোনা ও শেয়ারে কত যাকাত দিতে হবে।",
+    },
+  },
+  {
+    id: "more",
+    label: { en: "More", bn: "আরও" },
+    blurb: {
+      en: "Extra planners. They work, but we check them less often than the tools above.",
+      bn: "অতিরিক্ত প্ল্যানার। এগুলো কাজ করে, তবে ওপরের টুলগুলোর মতো নিয়মিত যাচাই করা হয় না।",
     },
   },
 ];
@@ -100,7 +109,7 @@ export const TOOLS: Tool[] = [
   },
   {
     href: "/cars",
-    category: "tax",
+    category: "more",
     icon: "🚗",
     tag: { en: "CC SLABS & MULTI-CAR AIT", bn: "সিসি স্ল্যাব ও এআইটি" },
     title: { en: "Car Buying & Tax Decision Engine", bn: "গাড়ি কেনা ও এআইটি কর বিশ্লেষণ" },
@@ -136,7 +145,7 @@ export const TOOLS: Tool[] = [
   },
   {
     href: "/habits",
-    category: "earn",
+    category: "more",
     icon: "🧋",
     tag: { en: "SMALL SPENDS, REAL TOTAL", bn: "ছোট খরচ, আসল হিসাব" },
     title: { en: "Money Habit Tracker & Guide", bn: "মানি হ্যাবিট ট্র্যাকার ও গাইড" },
@@ -185,7 +194,7 @@ export const TOOLS: Tool[] = [
   },
   {
     href: "/goals",
-    category: "save",
+    category: "more",
     icon: "🎯",
     tag: { en: "BEAT INFLATION", bn: "মূল্যস্ফীতি জয়" },
     title: { en: "Life Goal & Wealth Planner", bn: "ভবিষ্যৎ লক্ষ্য ও অবসর প্ল্যানার" },
@@ -197,7 +206,7 @@ export const TOOLS: Tool[] = [
   },
   {
     href: "/freedom",
-    category: "save",
+    category: "more",
     icon: "🏝️",
     tag: { en: "YOUR FREEDOM NUMBER", bn: "স্বাধীনতার অঙ্ক" },
     title: { en: "Financial Freedom Calculator & Roadmap", bn: "আর্থিক স্বাধীনতা ক্যালকুলেটর ও রোডম্যাপ" },
@@ -209,7 +218,7 @@ export const TOOLS: Tool[] = [
   },
   {
     href: "/loans",
-    category: "borrow",
+    category: "more",
     icon: "🏠",
     tag: { en: "PREPAYMENT SAVER", bn: "সুদ সাশ্রয়" },
     title: { en: "Loan & Home EMI Accelerator", bn: "লোন ও গৃহঋণ ইএমআই প্ল্যানার" },
@@ -221,7 +230,7 @@ export const TOOLS: Tool[] = [
   },
   {
     href: "/zakat",
-    category: "borrow",
+    category: "zakat",
     icon: "🌙",
     tag: { en: "2.5% PURIFICATION", bn: "২.৫% যাকাত" },
     title: { en: "Bangladesh Zakat Calculator", bn: "যাকাত ক্যালকুলেটর বাংলাদেশ" },
@@ -229,6 +238,18 @@ export const TOOLS: Tool[] = [
     desc: {
       en: "Gold & Silver Nisab, Sanchayapatra, DSE stocks, and bank interest purification under Hanafi fiqh.",
       bn: "স্বর্ণ-রৌপ্য নিসাব, সঞ্চয়পত্র, শেয়ার ও ব্যাংক সুদের পরিশুদ্ধির শরিয়তসম্মত আনুমানিক হিসাব।",
+    },
+  },
+  {
+    href: "/viz",
+    category: "more",
+    icon: "🖼️",
+    tag: { en: "SHAREABLE POSTERS", bn: "শেয়ারযোগ্য পোস্টার" },
+    title: { en: "Money Visualizers", bn: "টাকার ভিজ্যুয়ালাইজার" },
+    navLabel: { en: "Visualizers", bn: "ভিজ্যুয়ালাইজার" },
+    desc: {
+      en: "Turn a money idea into a picture you can share: salary in kacchi plates, a shrinking taka and more.",
+      bn: "টাকার হিসাবকে শেয়ারযোগ্য ছবিতে দেখুন: কাচ্চির প্লেটে বেতন, ছোট হতে থাকা টাকা ও আরও কিছু।",
     },
   },
 ];

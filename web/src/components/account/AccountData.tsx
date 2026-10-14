@@ -21,12 +21,12 @@ export function AccountData({ saved }: { saved: Saved }) {
   return (
     <section className="bg-card border border-line p-5">
       <h1 className="font-serif font-semibold text-2xl text-green-deep mb-3 pb-2 border-b-2 border-green">
-        {t("Your account and data", "তোমার অ্যাকাউন্ট ও ডেটা")}
+        {t("Your account and data", "আপনার অ্যাকাউন্ট ও ডেটা")}
       </h1>
 
       {step === "done" && (
         <p role="status" className="text-sm mb-3">
-          {t("Your data has been deleted.", "তোমার ডেটা মুছে ফেলা হয়েছে।")}
+          {t("Your data has been deleted.", "আপনার ডেটা মুছে ফেলা হয়েছে।")}
         </p>
       )}
 
@@ -34,7 +34,7 @@ export function AccountData({ saved }: { saved: Saved }) {
         <p className="text-sm text-muted">
           {t("Nothing is saved for this browser. ", "এই ব্রাউজারের জন্য কিছু সেভ করা নেই। ")}
           <Link href="/tracker" className="underline text-green-deep">
-            {t("Go to the tracker", "ট্র্যাকারে যাও")}
+            {t("Go to the tracker", "ট্র্যাকারে যান")}
           </Link>
         </p>
       ) : (
@@ -49,17 +49,17 @@ export function AccountData({ saved }: { saved: Saved }) {
             ))}
           </ul>
 
-          <h2 className="font-serif font-semibold text-lg text-green-deep mb-2">{t("Delete my data", "আমার ডেটা মুছে ফেলো")}</h2>
+          <h2 className="font-serif font-semibold text-lg text-green-deep mb-2">{t("Delete my data", "আমার ডেটা মুছে ফেলুন")}</h2>
           <p className="text-sm text-muted mb-3">
             {t(
               "This permanently deletes your income and investment entries, tax profile, reminders and email or phone from our server, and signs out every browser linked to this account. It can't be undone.",
-              "এটা আমাদের সার্ভার থেকে তোমার আয় ও বিনিয়োগের এন্ট্রি, ট্যাক্স প্রোফাইল, রিমাইন্ডার আর ইমেইল বা ফোন নম্বর স্থায়ীভাবে মুছে দেবে, আর এই অ্যাকাউন্টে যুক্ত সব ব্রাউজার থেকে সাইন আউট করবে। এটা ফেরানো যাবে না।"
+              "এটা আমাদের সার্ভার থেকে আপনার আয় ও বিনিয়োগের এন্ট্রি, ট্যাক্স প্রোফাইল, রিমাইন্ডার আর ইমেইল বা ফোন নম্বর স্থায়ীভাবে মুছে দেবে, আর এই অ্যাকাউন্টে যুক্ত সব ব্রাউজার থেকে সাইন আউট করবে। এটা ফেরানো যাবে না।"
             )}
           </p>
 
           {step === "idle" || step === "error" ? (
             <button onClick={() => setStep("confirm")} className="border border-red text-red px-4 py-2 text-sm font-medium">
-              {t("Delete my data", "আমার ডেটা মুছে ফেলো")}
+              {t("Delete my data", "আমার ডেটা মুছে ফেলুন")}
             </button>
           ) : (
             <div className="flex flex-wrap items-center gap-3">
@@ -69,7 +69,7 @@ export function AccountData({ saved }: { saved: Saved }) {
                 disabled={step === "deleting"}
                 className="bg-red text-paper px-4 py-2 text-sm font-medium disabled:opacity-50"
               >
-                {t("Yes, delete everything", "হ্যাঁ, সব মুছে ফেলো")}
+                {t("Yes, delete everything", "হ্যাঁ, সব মুছে ফেলুন")}
               </button>
               <button onClick={() => setStep("idle")} disabled={step === "deleting"} className="text-sm text-muted hover:underline">
                 {t("Cancel", "বাতিল")}
@@ -79,7 +79,7 @@ export function AccountData({ saved }: { saved: Saved }) {
 
           {step === "error" && (
             <p role="alert" className="text-xs text-red mt-2">
-              {t("Couldn't delete. Please try again.", "মুছে ফেলা যায়নি। আবার চেষ্টা করো।")}
+              {t("Couldn't delete. Please try again.", "মুছে ফেলা যায়নি। আবার চেষ্টা করুন।")}
             </p>
           )}
         </>

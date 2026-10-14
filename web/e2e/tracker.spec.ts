@@ -10,15 +10,15 @@ async function noGarbageOnPage(page: Page) {
 test.describe("Tracker — normal cases", () => {
   test("loads empty for a first-time visitor", async ({ page }) => {
     await page.goto("/tracker");
-    await expect(page.getByText("এখনো কোনো আয়ের উৎস যোগ করোনি।")).toBeVisible();
-    await expect(page.getByText("এখনো কোনো বিনিয়োগ যোগ করোনি।")).toBeVisible();
+    await expect(page.getByText("এখনো কোনো আয়ের উৎস যোগ করেননি।")).toBeVisible();
+    await expect(page.getByText("এখনো কোনো বিনিয়োগ যোগ করেননি।")).toBeVisible();
   });
 
   test("adding an income entry shows it in the list with formatted amount", async ({ page }) => {
     await page.goto("/tracker");
     await page.getByLabel("লেবেল").first().fill("মূল বেতন");
     await page.getByLabel("পরিমাণ (৳)").fill("50000");
-    await page.getByRole("button", { name: "যোগ করো" }).first().click();
+    await page.getByRole("button", { name: "যোগ করুন" }).first().click();
 
     await expect(page.getByText("মূল বেতন")).toBeVisible();
     await expect(page.getByText("৳50,000")).toBeVisible();
@@ -29,7 +29,7 @@ test.describe("Tracker — normal cases", () => {
     await page.goto("/tracker");
     await page.getByLabel("লেবেল").first().fill("ফ্রিল্যান্স ইনকাম");
     await page.getByLabel("পরিমাণ (৳)").fill("15000");
-    await page.getByRole("button", { name: "যোগ করো" }).first().click();
+    await page.getByRole("button", { name: "যোগ করুন" }).first().click();
     await expect(page.getByText("ফ্রিল্যান্স ইনকাম")).toBeVisible();
 
     await page.getByRole("button", { name: "মুছুন" }).first().click();
@@ -47,7 +47,7 @@ test.describe("Tracker — normal cases", () => {
     await investmentForm.getByLabel("আসল (৳)").fill("100000");
     await investmentForm.getByLabel("মেয়াদ (মাস)").fill("1");
     await investmentForm.getByLabel("প্রত্যাশিত রেট (%)").fill("11.5");
-    await investmentForm.getByRole("button", { name: "যোগ করো" }).click();
+    await investmentForm.getByRole("button", { name: "যোগ করুন" }).click();
 
     // Shows up both in the investment list and (maturing within 90 days) the
     // maturity dashboard above it — expect at least one, not exactly one.
@@ -67,17 +67,17 @@ test.describe("Tracker — normal cases", () => {
     await investmentForm.getByLabel("আসল (৳)").fill("100000");
     await investmentForm.getByLabel("শুরুর তারিখ").fill("2020-01-01");
     await investmentForm.getByLabel("মেয়াদ (মাস)").fill("1");
-    await investmentForm.getByRole("button", { name: "যোগ করো" }).click();
+    await investmentForm.getByRole("button", { name: "যোগ করুন" }).click();
 
-    await expect(page.getByText("মেয়াদ শেষ, পেমেন্ট নিশ্চিত করো:")).toBeVisible();
+    await expect(page.getByText("মেয়াদ শেষ, পেমেন্ট নিশ্চিত করুন:")).toBeVisible();
     // Both the maturity panel's "matured" row and the plain investment list
     // show this label — disambiguate by the confirm-payout control, which
     // only the matured row has.
     const maturedRow = page
       .locator("li")
-      .filter({ has: page.getByRole("button", { name: "পেমেন্ট নিশ্চিত করো" }) });
-    await maturedRow.locator('input[type="number"]').fill("111500");
-    await maturedRow.getByRole("button", { name: "পেমেন্ট নিশ্চিত করো" }).click();
+      .filter({ has: page.getByRole("button", { name: "পেমেন্ট নিশ্চিত করুন" }) });
+    await maturedRow.getByRole("textbox", { name: /প্রাপ্ত পরিমাণ|Amount received/ }).fill("111500");
+    await maturedRow.getByRole("button", { name: "পেমেন্ট নিশ্চিত করুন" }).click();
 
     // Appears both in the reinvestable-cash summary and in the investment
     // list's "payout confirmed" badge — at least one occurrence is enough.
@@ -91,7 +91,7 @@ test.describe("Tracker — normal cases", () => {
     await page.getByLabel("প্রতিবন্ধী সন্তান সংখ্যা").fill("2");
     await Promise.all([
       page.waitForResponse((res) => res.url().includes("/api/profile") && res.request().method() === "PUT"),
-      page.getByRole("button", { name: "প্রোফাইল সেভ করো" }).click(),
+      page.getByRole("button", { name: "প্রোফাইল সেভ করুন" }).click(),
     ]);
 
     await page.reload();
@@ -106,7 +106,7 @@ test.describe("Tracker — weird / adversarial input", () => {
     await page.goto("/tracker");
     await page.getByLabel("লেবেল").first().fill("শূন্য আয়");
     await page.getByLabel("পরিমাণ (৳)").fill("0");
-    await page.getByRole("button", { name: "যোগ করো" }).first().click();
+    await page.getByRole("button", { name: "যোগ করুন" }).first().click();
 
     await expect(page.getByRole("alert").first()).toBeVisible();
     await expect(page.getByText("শূন্য আয়")).toHaveCount(0);
@@ -116,7 +116,7 @@ test.describe("Tracker — weird / adversarial input", () => {
     await page.goto("/tracker");
     await page.getByLabel("লেবেল").first().fill("ঋণাত্মক আয়");
     await page.getByLabel("পরিমাণ (৳)").fill("-5000");
-    await page.getByRole("button", { name: "যোগ করো" }).first().click();
+    await page.getByRole("button", { name: "যোগ করুন" }).first().click();
 
     await expect(page.getByRole("alert").first()).toBeVisible();
     await expect(page.locator("ul").getByText("ঋণাত্মক আয়")).toHaveCount(0);
@@ -125,7 +125,7 @@ test.describe("Tracker — weird / adversarial input", () => {
   test("rejects an income entry with no label", async ({ page }) => {
     await page.goto("/tracker");
     await page.getByLabel("পরিমাণ (৳)").fill("10000");
-    await page.getByRole("button", { name: "যোগ করো" }).first().click();
+    await page.getByRole("button", { name: "যোগ করুন" }).first().click();
     await expect(page.getByRole("alert").first()).toBeVisible();
   });
 
@@ -134,7 +134,7 @@ test.describe("Tracker — weird / adversarial input", () => {
     const investmentForm = page.locator("section", { hasText: "বিনিয়োগ" }).last();
     await investmentForm.getByLabel("লেবেল").fill("খারাপ বিনিয়োগ");
     await investmentForm.getByLabel("আসল (৳)").fill("-100000");
-    await investmentForm.getByRole("button", { name: "যোগ করো" }).click();
+    await investmentForm.getByRole("button", { name: "যোগ করুন" }).click();
 
     await expect(page.getByRole("alert").first()).toBeVisible();
     await expect(page.locator("ul").getByText("খারাপ বিনিয়োগ")).toHaveCount(0);
@@ -146,7 +146,7 @@ test.describe("Tracker — weird / adversarial input", () => {
     await investmentForm.getByLabel("লেবেল").fill("শূন্য মেয়াদ");
     await investmentForm.getByLabel("আসল (৳)").fill("50000");
     await investmentForm.getByLabel("মেয়াদ (মাস)").fill("0");
-    await investmentForm.getByRole("button", { name: "যোগ করো" }).click();
+    await investmentForm.getByRole("button", { name: "যোগ করুন" }).click();
 
     await expect(page.getByRole("alert").first()).toBeVisible();
     await expect(page.getByText("শূন্য মেয়াদ")).toHaveCount(0);
@@ -159,7 +159,7 @@ test.describe("Tracker — weird / adversarial input", () => {
     await investmentForm.getByLabel("লেবেল").fill("বিশাল বিনিয়োগ");
     await investmentForm.getByLabel("আসল (৳)").fill("100000000000");
     await investmentForm.getByLabel("মেয়াদ (মাস)").fill("12");
-    await investmentForm.getByRole("button", { name: "যোগ করো" }).click();
+    await investmentForm.getByRole("button", { name: "যোগ করুন" }).click();
 
     await expect(page.getByText("বিশাল বিনিয়োগ")).toBeVisible();
     await noGarbageOnPage(page);
@@ -173,7 +173,7 @@ test.describe("Tracker — weird / adversarial input", () => {
     await investmentForm.getByLabel("লেবেল").fill("সীমার বাইরের বিনিয়োগ");
     await investmentForm.getByLabel("আসল (৳)").fill("100000000001");
     await investmentForm.getByLabel("মেয়াদ (মাস)").fill("12");
-    await investmentForm.getByRole("button", { name: "যোগ করো" }).click();
+    await investmentForm.getByRole("button", { name: "যোগ করুন" }).click();
 
     // A specific "at most ৳…" message, not the generic "couldn't save, try again".
     await expect(page.getByRole("alert").filter({ hasText: "সর্বোচ্চ" })).toBeVisible();
@@ -188,7 +188,7 @@ test.describe("Tracker — weird / adversarial input", () => {
     await page.goto("/tracker");
     await page.getByLabel("লেবেল").first().fill("সীমার বাইরের আয়");
     await page.getByLabel("পরিমাণ (৳)").fill("100000000001");
-    await page.getByRole("button", { name: "যোগ করো" }).first().click();
+    await page.getByRole("button", { name: "যোগ করুন" }).first().click();
 
     await expect(page.getByRole("alert").filter({ hasText: "সর্বোচ্চ" })).toBeVisible();
     await expect(page.getByText("সেভ করা যায়নি")).toHaveCount(0);

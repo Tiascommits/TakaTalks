@@ -43,7 +43,7 @@ test.describe("Calculator — normal cases", () => {
     await page.getByLabel("ব্যবসা / পেশার নেট মুনাফা (annual)").fill("2000000");
     await expect(page.getByLabel("মোট নেট সম্পদ (statement of assets, if known)")).toHaveCount(0);
 
-    await page.getByRole("button", { name: /significant সম্পদ/ }).click();
+    await page.getByRole("checkbox", { name: /উল্লেখযোগ্য সম্পদ|significant assets/ }).click();
     await expect(page.getByLabel("মোট নেট সম্পদ (statement of assets, if known)")).toBeVisible();
 
     await page.getByLabel("মোট নেট সম্পদ (statement of assets, if known)").fill("600000000");
@@ -51,7 +51,7 @@ test.describe("Calculator — normal cases", () => {
     await noGarbageOnPage(page);
 
     // Closing the toggle should reset the fields (trust-first: don't keep opted-out data around)
-    await page.getByRole("button", { name: /significant সম্পদ/ }).click();
+    await page.getByRole("checkbox", { name: /উল্লেখযোগ্য সম্পদ|significant assets/ }).click();
     await expect(page.getByLabel("মোট নেট সম্পদ (statement of assets, if known)")).toHaveCount(0);
   });
 
@@ -152,7 +152,7 @@ test.describe("Calculator — weird / adversarial input", () => {
   }) => {
     await page.goto("/calculator");
     await page.getByLabel("ব্যবসা / পেশার নেট মুনাফা (annual)").fill("450000");
-    await page.getByRole("button", { name: /significant সম্পদ/ }).click();
+    await page.getByRole("checkbox", { name: /উল্লেখযোগ্য সম্পদ|significant assets/ }).click();
     await page.getByLabel(/একাধিক গাড়ি আছে/).check();
     await page.getByLabel(/৮,০০০ বর্গফুটের বেশি/).check();
     await noGarbageOnPage(page);

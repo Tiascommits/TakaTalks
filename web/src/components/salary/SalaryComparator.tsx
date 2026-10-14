@@ -225,7 +225,7 @@ export function SalaryComparator() {
             <span className="font-serif font-semibold text-base">
               {offerA.label}
             </span>
-            <span className="text-[10.5px] font-mono text-gold font-semibold uppercase">
+            <span className="text-[10.5px] font-mono text-gold-light font-semibold uppercase">
               {resOfferA.netMonthlyInHand >= resCurrent.netMonthlyInHand
                 ? t("HIGHER IN-HAND", "বেশি ইন-হ্যান্ড")
                 : t("LOWER IN-HAND", "কম ইন-হ্যান্ড")}

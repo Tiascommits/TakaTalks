@@ -55,11 +55,11 @@ export function RebateOptimizer({ opt }: { opt: OptimizerResult }) {
             {opt.cappedByMinimumTax
               ? t(
                   "✓ Your tax is already at the minimum tax. Investing more won't lower it.",
-                  "✓ তোমার কর ইতিমধ্যে ন্যূনতম করে আছে। আর invest করলেও tax কমবে না।"
+                  "✓ আপনার কর ইতিমধ্যে ন্যূনতম করে আছে। আরও বিনিয়োগ করলেও কর কমবে না।"
                 )
               : t(
                   "✓ You're already getting the maximum rebate — 3% of income or ৳7.5 lakh, whichever is lower. Investing more won't lower your tax further.",
-                  "✓ তুমি ইতিমধ্যে সর্বোচ্চ rebate পাচ্ছো — আয়ের 3% বা ৳৭.৫ লাখ, যেটা কম। আর invest করলেও tax কমবে না।"
+                  "✓ আপনি ইতিমধ্যে সর্বোচ্চ রেয়াত পাচ্ছেন — আয়ের ৩% বা ৳৭.৫ লাখ, যেটি কম। আরও বিনিয়োগ করলেও কর কমবে না।"
                 )}
           </p>
           <ProgressBar pct={100} current={fmtTaka(opt.maxRebate)} max={fmtTaka(opt.maxRebate)} />
@@ -112,7 +112,7 @@ export function RebateOptimizer({ opt }: { opt: OptimizerResult }) {
               </div>
               <div className="text-right">
                 <div className="font-mono font-bold text-teal whitespace-nowrap">
-                  {t(`Invest ${fmtTaka(s.investMore)}`, `${fmtTaka(s.investMore)} invest করো`)}
+                  {t(`Invest ${fmtTaka(s.investMore)}`, `${fmtTaka(s.investMore)} বিনিয়োগ করুন`)}
                 </div>
                 <div className="text-[11px] text-muted">
                   {t(`→ tax drops by ${fmtTaka(s.taxSavingFromThis)}`, `→ tax কমবে ${fmtTaka(s.taxSavingFromThis)}`)}
@@ -126,7 +126,7 @@ export function RebateOptimizer({ opt }: { opt: OptimizerResult }) {
       <p className="text-[11px] text-muted mt-3 pt-2.5 border-t border-[#D4A83260]">
         {t(
           "This is pure arithmetic — rebate is calculated at 10% of investment. Sub-cap rules are simplified. Which investment gives the best return isn't covered here — that's your call. The rebate cap is 3% of your taxable income or ৳7,50,000, whichever is lower.",
-          "এটা pure arithmetic — বিনিয়োগের 10% হারে rebate হিসাব হয়। Sub-cap rules simplified। Investment কোনটা সবচেয়ে ভালো return দেবে সেটা এখানে নেই — সেটা তোমার সিদ্ধান্ত। Rebate পাওয়ার সর্বোচ্চ সীমা হলো তোমার taxable income এর 3% বা ৳৭,৫০,০০০, যেটা কম।"
+          "এটি শুধু অঙ্ক — বিনিয়োগের ১০% হারে রেয়াত হিসাব হয়। খাতভিত্তিক সীমার নিয়ম সরল করা হয়েছে। কোন বিনিয়োগে সবচেয়ে ভালো মুনাফা, তা এখানে বলা হয় না — সেটি আপনার সিদ্ধান্ত। রেয়াতের সর্বোচ্চ সীমা আপনার করযোগ্য আয়ের ৩% বা ৳৭,৫০,০০০, যেটি কম।"
         )}
       </p>
     </div>

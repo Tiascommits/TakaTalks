@@ -4,6 +4,7 @@ import { isAuthorizedCronRequest } from "@/lib/cron/auth";
 import { daysUntil } from "@/lib/tracker/derive";
 import { channelsAvailableForUser, notifyMaturityReminder, type NotifyChannel } from "@/lib/notify";
 import { getReinvestContextForUser, logReinvestSuggestion } from "@/lib/reinvest/log";
+import { DEFAULT_INFLATION_PCT } from "@/config/inflation";
 
 // Smallest first: an entry only gets the tightest window it is inside.
 const REMINDER_WINDOWS_DAYS = [1, 7] as const;
@@ -79,7 +80,7 @@ export async function GET(request: Request) {
         reinvestAmount: inv.principalAmount,
         horizonYears: Math.max(0.5, inv.termMonths / 12),
         hasPSR: true,
-        inflationPct: 8.5,
+        inflationPct: DEFAULT_INFLATION_PCT,
         taxResult: ctx.taxResult,
       });
       reinvestLink = `${appUrl}/reinvest?investmentEntryId=${inv.id}`;

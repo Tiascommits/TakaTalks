@@ -1,3 +1,5 @@
+import { DEFAULT_INFLATION_PCT } from "@/config/inflation";
+
 /**
  * Comparative yield and after-tax return matrix for Bangladeshi savings and
  * investment instruments.
@@ -280,7 +282,7 @@ export function compareInstruments({
   amount,
   tenureYears = 3,
   hasPSR = true,
-  inflationPct = 8.5,
+  inflationPct = DEFAULT_INFLATION_PCT,
 }: {
   amount: number;
   tenureYears?: number;

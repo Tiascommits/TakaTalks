@@ -5,6 +5,7 @@ import { compareInstruments } from "@/lib/instruments/instruments";
 import { fmtTaka } from "@/lib/format";
 import { NumberField } from "@/components/ui/fields";
 import { useLanguage } from "@/lib/i18n";
+import { DEFAULT_INFLATION_PCT } from "@/config/inflation";
 
 export function InstrumentMatrix() {
   const { t, lang } = useLanguage();
@@ -12,7 +13,7 @@ export function InstrumentMatrix() {
   const [amount, setAmount] = useState<number>(500_000);
   const [tenureYears, setTenureYears] = useState<number>(3);
   const [hasPSR, setHasPSR] = useState<boolean>(true);
-  const [inflationPct, setInflationPct] = useState<number>(8.5);
+  const [inflationPct, setInflationPct] = useState<number>(DEFAULT_INFLATION_PCT);
 
   const results = useMemo(
     () =>
