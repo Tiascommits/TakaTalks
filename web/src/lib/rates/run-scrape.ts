@@ -11,9 +11,8 @@ export type RunScrapeSummary = {
 };
 
 /**
- * Manual-trigger entry point for module 3 (no cron wired up yet — see
- * prompts/02-rate-monitoring-and-scorecard.md, this project runs it from
- * the admin "Run scrape now" button). Upserts the configured bank list so
+ * Entry point for module 3, run by the daily cron (/api/cron/rate-scrape)
+ * and the admin "Run scrape now" button. Upserts the configured bank list so
  * adding a bank to config/banks.ts is enough to make it show up, then runs
  * whichever adapter is registered for each one. A failing adapter only logs
  * a failure for its own bank — it never stops the run for the others.
@@ -61,6 +60,7 @@ export async function runScrape(): Promise<RunScrapeSummary> {
               ratePct: r.ratePct,
               method: r.method,
               source: r.source,
+              scrapedAt: r.asOf, // undefined = now, for a live read
             },
           })
         ),

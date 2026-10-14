@@ -238,7 +238,7 @@ export function RateScorecard({
                   {t("Statement", "বিবরণী")}
                 </th>
                 <th className="py-2 px-2 border-b-2 border-green text-green-deep font-semibold">
-                  {t("Source / last verified", "উৎস / সর্বশেষ যাচাই")}
+                  {t("Source / date", "উৎস / তারিখ")}
                 </th>
               </tr>
             </thead>
@@ -292,12 +292,14 @@ export function RateScorecard({
                         {row.method === "MANUAL" ? t("Manual: ", "ম্যানুয়াল: ") : t("Scraped: ", "স্ক্র্যাপড: ")}
                         {row.source}
                         <br />
-                        {t("Last verified", "সর্বশেষ যাচাই")} {fmtDate(row.lastVerifiedAt)}
+                        {row.method === "MANUAL"
+                          ? t(`Source dated ${fmtDate(row.asOf)}`, `সূত্রের তারিখ ${fmtDate(row.asOf)}`)
+                          : t(`Last checked ${fmtDate(row.asOf)}`, `সর্বশেষ যাচাই ${fmtDate(row.asOf)}`)}
                         {row.unverified && (
                           <>
                             {" "}
                             <span className="text-red font-semibold">
-                              {t(`— unverified since ${fmtDate(row.lastVerifiedAt)}`, `— অযাচাইকৃত, ${fmtDate(row.lastVerifiedAt)} থেকে`)}
+                              {t(`— unverified since ${fmtDate(row.asOf)}`, `— অযাচাইকৃত, ${fmtDate(row.asOf)} থেকে`)}
                             </span>
                           </>
                         )}

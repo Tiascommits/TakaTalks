@@ -15,7 +15,7 @@ export type CurrentRateRow = {
   ratePct: number | null;
   method: RateSourceMethod | null;
   source: string | null;
-  lastVerifiedAt: Date | null;
+  asOf: Date | null;
   unverified: boolean;
 };
 
@@ -55,7 +55,7 @@ export async function getCurrentFdrRates(): Promise<CurrentRateRow[]> {
         ratePct: snapshot?.ratePct ?? null,
         method: snapshot?.method ?? null,
         source: snapshot?.source ?? null,
-        lastVerifiedAt: snapshot?.scrapedAt ?? null,
+        asOf: snapshot?.scrapedAt ?? null,
         unverified: isRateStale(
           snapshot?.scrapedAt ?? null,
           latestLog?.attemptedAt ?? null,

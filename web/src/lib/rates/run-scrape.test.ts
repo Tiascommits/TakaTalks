@@ -1,0 +1,34 @@
+import { beforeEach, describe, expect, it, vi } from "vitest";
+
+const { prisma } = vi.hoisted(() => ({
+  prisma: {
+    bank: { upsert: vi.fn(), findMany: vi.fn() },
+    scrapeLog: { create: vi.fn() },
+    rateSnapshot: { create: vi.fn() },
+    $transaction: vi.fn(),
+  },
+}));
+vi.mock("@/lib/prisma", () => ({ prisma }));
+
+import { runScrape } from "./run-scrape";
+import { SEED_AS_OF } from "./seed-rates";
+
+beforeEach(() => {
+  vi.resetAllMocks();
+  prisma.bank.findMany.mockResolvedValue([{ id: "b1", shortCode: "MIDLAND" }]);
+  prisma.rateSnapshot.create.mockImplementation((args) => args);
+  prisma.$transaction.mockResolvedValue([]);
+});
+
+describe("runScrape", () => {
+  it("dates a manual-seed rate by its source, not by today's run", async () => {
+    await runScrape();
+    const writes = prisma.rateSnapshot.create.mock.calls.map(([args]) => args.data);
+    expect(writes.length).toBeGreaterThan(0);
+    for (const data of writes) {
+      expect(data.method).toBe("MANUAL");
+      expect(data.scrapedAt).toBeInstanceOf(Date);
+      expect(data.scrapedAt).toEqual(SEED_AS_OF);
+    }
+  });
+});
