@@ -6,6 +6,26 @@ Everything still open that only you can do, in order, with the exact page for ea
 **No secret ever goes in this repo.** Values below are described, not pasted. The YouTube
 API key is in your developer's message; keep it there and in Vercel, nowhere else.
 
+## Added 2026-10-15: give Preview its own database and secrets (blocks the load test)
+
+Preview uses production's `DATABASE_URL` today, so a load test against a preview URL would
+write into the live database. In Vercel, add these with the environment set to **Preview only**:
+
+1. **`DATABASE_URL`**: a new Neon branch, schema only (a full copy brings real users' emails
+   and phone numbers along). Use the pooled `-pooler` host. Preview builds don't run
+   migrations, so run `cd web && npx prisma migrate deploy` against it whenever a branch
+   adds one.
+2. **`SESSION_SECRET`, `ADMIN_SECRET`, `CRON_SECRET`**: new values, different from
+   production's (generate them with the command below). If Preview shared production's
+   session secret, a cookie made on Preview would work on production.
+3. **Leave unset for Preview:** `NEXT_PUBLIC_APP_URL` (login links would point at
+   production), `RESEND_API_KEY`, `EMAIL_FROM` and the `WHATSAPP_*` variables, so the load
+   test can't send real messages. Login-link requests then return 503 `not_configured`.
+4. **Smoke workflow:** if Deployment Protection is on, add a `VERCEL_AUTOMATION_BYPASS_SECRET`
+   GitHub repo secret so it can reach preview URLs.
+5. **Audit:** check that no production value, especially `DATABASE_URL`, is scoped to
+   "All Environments".
+
 ## Where every variable goes
 
 One place, for all of them:
@@ -19,7 +39,7 @@ keep a copy in a password manager). Use **Config** for public values.
 
 | Variable | State |
 |---|---|
-| `DATABASE_URL` | Set (Production + Preview) |
+| `DATABASE_URL` | Set (Production + Preview). **Preview shares production's database: see the Preview section above.** |
 | `NEXT_PUBLIC_GOATCOUNTER_CODE` = `takatalks` | Set (Production only). Live; the count request returns 200. |
 | `YOUTUBE_CHANNEL_ID` | Set (Production + Preview) |
 | Everything in the next table | **Not set yet** |
@@ -28,13 +48,13 @@ keep a copy in a password manager). Use **Config** for public values.
 
 | Variable | Where the value comes from | Type · environments |
 |---|---|---|
-| `CRON_SECRET` | Generate it (command below) | Secret · Production + Preview |
-| `SESSION_SECRET` | Generate it, a different value | Secret · Production + Preview |
-| `ADMIN_SECRET` | Generate it, a different value. Gates `/admin/*` and creates your first admin login at `/admin/setup`. | Secret · Production + Preview |
+| `CRON_SECRET` | Generate it (command below) | Secret · Production; Preview gets its own value (see above) |
+| `SESSION_SECRET` | Generate it, a different value | Secret · Production; Preview gets its own value (see above) |
+| `ADMIN_SECRET` | Generate it, a different value. Gates `/admin/*` and creates your first admin login at `/admin/setup`. | Secret · Production; Preview gets its own value (see above) |
 | `YOUTUBE_API_KEY` | Your developer's message | Secret · Production + Preview |
 | `NEXT_PUBLIC_APP_URL` | `https://www.takatalks.com` | Config · Production only |
-| `RESEND_API_KEY` | <https://resend.com/api-keys> | Secret · Production + Preview |
-| `EMAIL_FROM` | `TakaTalks <reminders@your-verified-domain>`; the domain must be verified at <https://resend.com/domains> | Config · Production + Preview |
+| `RESEND_API_KEY` | <https://resend.com/api-keys> | Secret · Production |
+| `EMAIL_FROM` | `TakaTalks <reminders@your-verified-domain>`; the domain must be verified at <https://resend.com/domains> | Config · Production |
 | `ADMIN_EMAIL` | Your email; the daily rate digest goes here | Config · Production |
 | `WHATSAPP_ACCESS_TOKEN` | Meta app, WhatsApp setup | Secret · Production |
 | `WHATSAPP_PHONE_NUMBER_ID` | Same page in Meta | Config · Production |
