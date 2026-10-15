@@ -1,17 +1,20 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-const { overLimit, getOrCreateUserId, getCurrentUserId, prisma, requestEmailLink } = vi.hoisted(() => ({
+const { overLimit, overWriteLimit, getOrCreateUserId, getCurrentUserId, signedCookieUserId, prisma, requestEmailLink } = vi.hoisted(() => ({
   overLimit: vi.fn(),
+  overWriteLimit: vi.fn(),
   getOrCreateUserId: vi.fn(),
   getCurrentUserId: vi.fn(),
+  signedCookieUserId: vi.fn(),
   prisma: { adminUser: { findUnique: vi.fn(), count: vi.fn() }, investmentEntry: { findUnique: vi.fn() } },
   requestEmailLink: vi.fn(),
 }));
 vi.mock("@/lib/rate-limit", async (importOriginal) => ({
   ...(await importOriginal<typeof import("@/lib/rate-limit")>()),
   overLimit,
+  overWriteLimit,
 }));
-vi.mock("@/lib/tracker/session", () => ({ getOrCreateUserId, getCurrentUserId }));
+vi.mock("@/lib/tracker/session", () => ({ getOrCreateUserId, getCurrentUserId, signedCookieUserId }));
 vi.mock("@/lib/prisma", () => ({ prisma }));
 vi.mock("@/lib/notify/verification", () => ({ requestEmailLink, requestPhoneOtp: vi.fn() }));
 
@@ -51,9 +54,12 @@ describe("POST routes refuse callers over their rate limit before doing any work
 
   it.each(cases)("%s", async (_name, bucket, call) => {
     overLimit.mockResolvedValue(true);
+    overWriteLimit.mockResolvedValue(true);
     const res = await call();
     expect(res.status).toBe(429);
-    expect(overLimit).toHaveBeenCalledWith(bucket, "203.0.113.7");
+    // Saves go through overWriteLimit (per signed-in user, shared carrier IPs); login links and admin sign-in stay per IP.
+    if (bucket === "write") expect(overWriteLimit).toHaveBeenCalledWith(expect.any(Request));
+    else expect(overLimit).toHaveBeenCalledWith(bucket, "203.0.113.7");
     expect(getOrCreateUserId).not.toHaveBeenCalled();
     expect(getCurrentUserId).not.toHaveBeenCalled();
     expect(prisma.adminUser.findUnique).not.toHaveBeenCalled();

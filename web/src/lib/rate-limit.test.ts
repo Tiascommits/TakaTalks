@@ -1,23 +1,39 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-const { prisma } = vi.hoisted(() => ({
+const { prisma, jar } = vi.hoisted(() => ({
   prisma: { rateLimit: { upsert: vi.fn(), deleteMany: vi.fn() } },
+  jar: { taka_uid: undefined as string | undefined },
 }));
 vi.mock("@/lib/prisma", () => ({ prisma }));
+vi.mock("next/headers", () => ({
+  cookies: async () => ({ get: () => (jar.taka_uid ? { value: jar.taka_uid } : undefined) }),
+}));
 
-import { clientIp, overLimit } from "./rate-limit";
+import { clientIp, overLimit, overWriteLimit } from "./rate-limit";
+import { signUserId } from "@/lib/tracker/session";
 
 beforeEach(() => {
   vi.resetAllMocks();
   vi.useRealTimers();
   prisma.rateLimit.deleteMany.mockResolvedValue({ count: 0 });
+  jar.taka_uid = undefined;
 });
 
+/** An in-memory RateLimit table, so counts add up the way Postgres would. */
+function countInMemory() {
+  const counts = new Map<string, number>();
+  prisma.rateLimit.upsert.mockImplementation(async ({ where }: { where: { key: string } }) => {
+    counts.set(where.key, (counts.get(where.key) ?? 0) + 1);
+    return { count: counts.get(where.key) };
+  });
+}
+
 describe("overLimit", () => {
-  it("allows hits up to the bucket's limit and refuses the next one", async () => {
-    prisma.rateLimit.upsert.mockResolvedValueOnce({ count: 3 }).mockResolvedValueOnce({ count: 4 });
-    expect(await overLimit("linkTo", "a@example.com")).toBe(false); // linkTo allows 3
+  it("allows hits up to the bucket's limit and refuses the next one: the same address hits its link limit", async () => {
+    countInMemory();
+    for (let i = 0; i < 3; i++) expect(await overLimit("linkTo", "a@example.com")).toBe(false); // linkTo allows 3
     expect(await overLimit("linkTo", "a@example.com")).toBe(true);
+    expect(await overLimit("linkTo", "b@example.com")).toBe(false);
   });
 
   it("counts atomically in the database, keyed by a hash that holds no IP or address", async () => {
@@ -53,6 +69,38 @@ describe("overLimit", () => {
     await overLimit("adminLogin", "ip1");
     const keys = new Set(prisma.rateLimit.upsert.mock.calls.map(([arg]) => arg.where.key));
     expect(keys.size).toBe(3);
+  });
+});
+
+describe("overWriteLimit", () => {
+  const sharedIp = new Request("http://x/", { headers: { "x-real-ip": "203.0.113.7" } });
+  const save = (cookie?: string) => {
+    jar.taka_uid = cookie;
+    return overWriteLimit(sharedIp);
+  };
+
+  beforeEach(() => {
+    countInMemory();
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-10-15T10:01:00Z")); // all hits in one 10-minute window
+  });
+
+  it("gives two signed-in users behind one shared IP their own save budgets", async () => {
+    for (let i = 0; i < 60; i++) expect(await save(signUserId("alice"))).toBe(false); // write allows 60
+    expect(await save(signUserId("alice"))).toBe(true);
+    expect(await save(signUserId("bob"))).toBe(false);
+  });
+
+  it("counts against the IP with no session cookie or a forged one", async () => {
+    for (let i = 0; i < 30; i++) expect(await save()).toBe(false);
+    for (let i = 0; i < 30; i++) expect(await save(`alice.${"0".repeat(64)}`)).toBe(false);
+    expect(await save()).toBe(true);
+    expect(await save(signUserId("alice"))).toBe(false);
+  });
+
+  it("stops one IP multiplying its budget with throwaway sessions", async () => {
+    for (let i = 0; i < 600; i++) expect(await save(signUserId(`throwaway${i}`))).toBe(false); // writeIp allows 600
+    expect(await save(signUserId("fresh"))).toBe(true);
   });
 });
 

@@ -1,10 +1,10 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { clientIp, overLimit, tooManyRequests } from "@/lib/rate-limit";
+import { overWriteLimit, tooManyRequests } from "@/lib/rate-limit";
 import { getCurrentUserId } from "@/lib/tracker/session";
 
 export async function POST(request: Request, { params }: { params: Promise<{ id: string }> }) {
-  if (await overLimit("write", clientIp(request))) return tooManyRequests();
+  if (await overWriteLimit(request)) return tooManyRequests();
   const userId = await getCurrentUserId();
   if (!userId) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
