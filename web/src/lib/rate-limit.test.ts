@@ -9,7 +9,7 @@ vi.mock("next/headers", () => ({
   cookies: async () => ({ get: () => (jar.taka_uid ? { value: jar.taka_uid } : undefined) }),
 }));
 
-import { clientIp, overLimit, writeKey } from "./rate-limit";
+import { clientIp, overLimit, overWriteLimit } from "./rate-limit";
 import { signUserId } from "@/lib/tracker/session";
 
 beforeEach(() => {
@@ -72,28 +72,35 @@ describe("overLimit", () => {
   });
 });
 
-describe("writeKey", () => {
+describe("overWriteLimit", () => {
   const sharedIp = new Request("http://x/", { headers: { "x-real-ip": "203.0.113.7" } });
+  const save = (cookie?: string) => {
+    jar.taka_uid = cookie;
+    return overWriteLimit(sharedIp);
+  };
 
-  it("gives two signed-in users behind one shared IP their own save budgets", async () => {
+  beforeEach(() => {
     countInMemory();
     vi.useFakeTimers();
     vi.setSystemTime(new Date("2026-10-15T10:01:00Z")); // all hits in one 10-minute window
-    const save = async (userId: string) => {
-      jar.taka_uid = signUserId(userId);
-      return overLimit("write", await writeKey(sharedIp));
-    };
-    for (let i = 0; i < 60; i++) expect(await save("alice")).toBe(false); // write allows 60
-    expect(await save("alice")).toBe(true);
-    expect(await save("bob")).toBe(false);
   });
 
-  it("falls back to the IP with no session cookie or a forged one", async () => {
-    expect(await writeKey(sharedIp)).toBe("203.0.113.7");
-    jar.taka_uid = `alice.${"0".repeat(64)}`;
-    expect(await writeKey(sharedIp)).toBe("203.0.113.7");
-    jar.taka_uid = signUserId("alice");
-    expect(await writeKey(sharedIp)).toBe("user:alice");
+  it("gives two signed-in users behind one shared IP their own save budgets", async () => {
+    for (let i = 0; i < 60; i++) expect(await save(signUserId("alice"))).toBe(false); // write allows 60
+    expect(await save(signUserId("alice"))).toBe(true);
+    expect(await save(signUserId("bob"))).toBe(false);
+  });
+
+  it("counts against the IP with no session cookie or a forged one", async () => {
+    for (let i = 0; i < 30; i++) expect(await save()).toBe(false);
+    for (let i = 0; i < 30; i++) expect(await save(`alice.${"0".repeat(64)}`)).toBe(false);
+    expect(await save()).toBe(true);
+    expect(await save(signUserId("alice"))).toBe(false);
+  });
+
+  it("stops one IP multiplying its budget with throwaway sessions", async () => {
+    for (let i = 0; i < 600; i++) expect(await save(signUserId(`throwaway${i}`))).toBe(false); // writeIp allows 600
+    expect(await save(signUserId("fresh"))).toBe(true);
   });
 });
 

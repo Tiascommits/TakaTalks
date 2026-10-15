@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { overLimit, tooManyRequests, writeKey } from "@/lib/rate-limit";
+import { overWriteLimit, tooManyRequests } from "@/lib/rate-limit";
 import { getOrCreateUserId } from "@/lib/tracker/session";
 import { getReinvestContextForUser, logReinvestSuggestion } from "@/lib/reinvest/log";
 import { DEFAULT_INFLATION_PCT } from "@/config/inflation";
@@ -16,7 +16,7 @@ import { DEFAULT_INFLATION_PCT } from "@/config/inflation";
  * (that's still reserved for turning on email/WhatsApp reminders).
  */
 export async function POST(request: Request) {
-  if (await overLimit("write", await writeKey(request))) return tooManyRequests();
+  if (await overWriteLimit(request)) return tooManyRequests();
   const body = await request.json().catch(() => null);
   const reinvestAmount = body?.reinvestAmount;
   const horizonYears = body?.horizonYears;

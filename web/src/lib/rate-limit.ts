@@ -7,7 +7,8 @@ const MINUTE = 60_000;
 
 /** Hits allowed per fixed window. Generous for a person, low enough to stop a script filling the database or the mail quota. */
 const LIMITS = {
-  write: { limit: 60, windowMs: 10 * MINUTE }, // tracker saves, per session user (per IP before the first save), see writeKey
+  write: { limit: 60, windowMs: 10 * MINUTE }, // tracker saves, per session user (per IP before the first save), see overWriteLimit
+  writeIp: { limit: 600, windowMs: 10 * MINUTE }, // tracker saves, per IP: only a backstop, since anonymous sessions are free to mint
   link: { limit: 100, windowMs: 60 * MINUTE }, // login link / code requests, per IP: only a backstop, since one carrier IP (CGNAT) can front thousands of people
   linkTo: { limit: 3, windowMs: 15 * MINUTE }, // login link / code requests, per address: the real limit, stops one inbox or phone being flooded
   adminLogin: { limit: 10, windowMs: 15 * MINUTE }, // admin sign-in and setup, per IP
@@ -23,13 +24,16 @@ export function clientIp(request: Request): string {
 }
 
 /**
- * Who a tracker save counts against: the user in the signed session cookie, so people
- * sharing one carrier IP (CGNAT) don't use up each other's budget. Never a body field or
- * unsigned header. No valid session yet (the first save creates it) falls back to the IP.
+ * Whether a tracker save is over its limit. It counts against the user in the signed session
+ * cookie, so people sharing one carrier IP (CGNAT) don't use up each other's budget; never a
+ * body field or unsigned header. No valid session yet (the first save creates it) counts
+ * against the IP. A high per-IP backstop stops one IP multiplying its budget with throwaway sessions.
  */
-export async function writeKey(request: Request): Promise<string> {
+export async function overWriteLimit(request: Request): Promise<boolean> {
+  const ip = clientIp(request);
+  if (await overLimit("writeIp", ip)) return true;
   const userId = await signedCookieUserId();
-  return userId ? `user:${userId}` : clientIp(request);
+  return overLimit("write", userId ? `user:${userId}` : ip);
 }
 
 /**
