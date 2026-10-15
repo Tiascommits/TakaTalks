@@ -13,9 +13,10 @@ if (!base || !/^https?:\/\//.test(base)) {
 // Key text is the start of each page's <title> (its `metadata` export) plus the
 // share-card tag, so copy changes in page bodies don't break the check.
 const OG = 'property="og:image"';
+const CANONICAL = 'rel="canonical"';
 const CHECKS = [
   ["/", ["TakaTalks", OG]],
-  ["/calculator", ["আয়কর এস্টিমেটর", OG]],
+  ["/calculator", ["আয়কর এস্টিমেটর", OG, CANONICAL]],
   ["/tax_basic_calculation", ["বেসিক ইনকাম ট্যাক্স হিসাব", OG]],
   ["/salary", ["স্যালারি অফার তুলনাকারী ও ইন-হ্যান্ড পে", OG]],
   ["/freelance", ["ফ্রিল্যান্স ট্যাক্স ও রেমিট্যান্স ক্যালকুলেটর", OG]],
@@ -29,6 +30,8 @@ const CHECKS = [
   ["/terms", ["ব্যবহারের শর্তাবলি", OG]],
   ["/api/health", ['"dbReachable":true']],
   ["/opengraph-image", ["PNG"]], // the PNG file signature
+  ["/robots.txt", ["Sitemap: https://www.takatalks.com/sitemap.xml"]],
+  ["/sitemap.xml", ["https://www.takatalks.com/calculator"]],
 ];
 
 const secret = process.env.VERCEL_AUTOMATION_BYPASS_SECRET;

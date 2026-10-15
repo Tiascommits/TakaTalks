@@ -7,6 +7,7 @@ import { SiteFooter } from "@/components/SiteFooter";
 import { Analytics } from "@/components/Analytics";
 import { RatesLiveProvider } from "@/components/rates/RatesLive";
 import { hasRateData } from "@/lib/rates/current-rates";
+import { SITE_URL } from "@/config/site";
 
 const newsreader = Newsreader({
   variable: "--font-newsreader",
@@ -27,7 +28,7 @@ const plexMono = IBM_Plex_Mono({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://www.takatalks.com"),
+  metadataBase: new URL(SITE_URL),
   title: "TakaTalks — আয়কর ও বিনিয়োগ ট্র্যাকার",
   description:
     "Personal finance tools for a Bangladesh audience: tax calculator, rebate optimizer, and income/investment tracker.",
@@ -35,6 +36,8 @@ export const metadata: Metadata = {
   // twitter: tags, and the image comes from app/opengraph-image.tsx. A page
   // that sets its own `openGraph` replaces this whole object, image included.
   openGraph: { siteName: "TakaTalks", type: "website" },
+  // "./" resolves against each page's own path, so every page gets its own canonical URL without query strings.
+  alternates: { canonical: "./" },
 };
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
