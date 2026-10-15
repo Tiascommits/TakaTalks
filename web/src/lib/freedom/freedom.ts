@@ -1,3 +1,5 @@
+import { DEFAULT_INFLATION_PCT } from "@/config/inflation";
+
 /**
  * Financial-freedom (FIRE) engine: what corpus a household actually needs to stop
  * depending on a salary, how long it takes to get there, and how the corpus is
@@ -427,7 +429,7 @@ function normalise(input: FreedomInput): FreedomInput {
     monthlyExpenseToday: Math.max(0, Number.isFinite(input.monthlyExpenseToday) ? input.monthlyExpenseToday : 0),
     lifestyle: LIFESTYLE_PRESETS[input.lifestyle] ? input.lifestyle : "FULL_STOP",
     lightWorkIncomeToday: Math.max(0, Number.isFinite(input.lightWorkIncomeToday) ? input.lightWorkIncomeToday : 0),
-    inflationPct: clamp(input.inflationPct, 0, 25, 8.5),
+    inflationPct: clamp(input.inflationPct, 0, 25, DEFAULT_INFLATION_PCT),
     preFreedomReturnPct: clamp(input.preFreedomReturnPct, 0, 30, 9),
     postFreedomReturnPct: clamp(input.postFreedomReturnPct, 0, 30, 8),
     existingCorpus: Math.max(0, Number.isFinite(input.existingCorpus) ? input.existingCorpus : 0),

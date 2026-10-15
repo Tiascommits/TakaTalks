@@ -15,7 +15,8 @@ export type CurrentRateRowDTO = {
   ratePct: number | null;
   method: RateSourceMethodCode | null;
   source: string | null;
-  lastVerifiedAt: string | null;
+  /** Scraped: when we last read it. Manual: the source's own date. */
+  asOf: string | null;
   unverified: boolean;
 };
 

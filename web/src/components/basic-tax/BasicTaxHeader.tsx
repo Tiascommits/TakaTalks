@@ -17,7 +17,7 @@ export function BasicTaxHeader() {
         <p className="text-sm text-[#DCE6DD]">
           {t(
             "Enter your total yearly income and see the basic slab tax — the same formula from the video, worked out for your own numbers.",
-            "তোমার বছরের মোট ইনকাম দিয়ে দেখো basic slab tax কত হয় — ভিডিওতে দেখানো একই formula, তোমার নিজের হিসাবে।"
+            "আপনার বছরের মোট আয় দিয়ে দেখুন স্ল্যাব অনুযায়ী মূল কর কত হয় — ভিডিওতে দেখানো একই হিসাব, আপনার নিজের অঙ্কে।"
           )}
         </p>
       </div>

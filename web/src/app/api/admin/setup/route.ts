@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { clientIp, overLimit, tooManyRequests } from "@/lib/rate-limit";
 import { adminUserCount, createAdminSession, hashPassword } from "@/lib/admin/auth";
 import { adminSecretMatches } from "@/lib/admin/secret";
 
@@ -7,6 +8,7 @@ const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 /** One-time bootstrap: creates the first AdminUser, gated by ADMIN_SECRET. */
 export async function POST(request: Request) {
+  if (await overLimit("adminLogin", clientIp(request))) return tooManyRequests();
   if ((await adminUserCount()) > 0) {
     return NextResponse.json({ error: "Already set up — use /admin/login" }, { status: 409 });
   }

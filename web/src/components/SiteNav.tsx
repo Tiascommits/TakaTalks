@@ -5,7 +5,8 @@ import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useLanguage } from "@/lib/i18n";
-import { TOOL_CATEGORIES, toolsInCategory } from "@/config/tools";
+import { TOOL_CATEGORIES, toolsInCategory, type ToolCategoryId } from "@/config/tools";
+import { useRatesLive } from "@/components/rates/RatesLive";
 
 function LanguageToggle({ className = "" }: { className?: string }) {
   const { lang, setLang, t } = useLanguage();
@@ -19,8 +20,8 @@ function LanguageToggle({ className = "" }: { className?: string }) {
         type="button"
         onClick={() => setLang("en")}
         aria-pressed={lang === "en"}
-        className={`px-2.5 py-1 text-xs font-mono transition-colors ${
-          lang === "en" ? "bg-gold text-ink font-semibold" : "hover:bg-paper/10"
+        className={`px-3 py-1.5 text-xs font-mono transition-colors ${
+          lang === "en" ? "bg-gold-light text-ink font-semibold" : "hover:bg-paper/10"
         }`}
       >
         EN
@@ -29,8 +30,8 @@ function LanguageToggle({ className = "" }: { className?: string }) {
         type="button"
         onClick={() => setLang("bn")}
         aria-pressed={lang === "bn"}
-        className={`px-2.5 py-1 text-xs font-mono transition-colors border-l border-paper/40 ${
-          lang === "bn" ? "bg-gold text-ink font-semibold" : "hover:bg-paper/10"
+        className={`px-3 py-1.5 text-xs font-mono transition-colors border-l border-paper/40 ${
+          lang === "bn" ? "bg-gold-light text-ink font-semibold" : "hover:bg-paper/10"
         }`}
       >
         বাং
@@ -43,31 +44,44 @@ function LanguageToggle({ className = "" }: { className?: string }) {
  *  the mobile sheet so the two can't drift apart. */
 function ToolMenuPanel({ onNavigate }: { onNavigate: () => void }) {
   const { t } = useLanguage();
-  return (
-    <div className="grid gap-x-8 gap-y-5 sm:grid-cols-2">
-      {TOOL_CATEGORIES.map((category) => (
-        <div key={category.id}>
-          <p className="font-mono text-[10px] tracking-wider text-gold mb-2">
-            {t(category.label.en, category.label.bn).toUpperCase()}
-          </p>
-          <ul className="flex flex-col gap-1.5">
-            {toolsInCategory(category.id).map((tool) => (
-              <li key={tool.href}>
-                <Link
-                  href={tool.href}
-                  onClick={onNavigate}
-                  className="flex items-center gap-2.5 text-sm hover:text-gold transition-colors"
-                >
-                  <span aria-hidden="true" className="text-base">
-                    {tool.icon}
-                  </span>
-                  {t(tool.navLabel.en, tool.navLabel.bn)}
-                </Link>
-              </li>
-            ))}
-          </ul>
-        </div>
+  const ratesLive = useRatesLive();
+  const list = (id: ToolCategoryId, className = "") => (
+    <ul className={`grid ${className}`}>
+      {toolsInCategory(id, ratesLive).map((tool) => (
+        <li key={tool.href}>
+          <Link
+            href={tool.href}
+            onClick={onNavigate}
+            className="flex items-center gap-2.5 py-1.5 text-sm hover:text-gold-light transition-colors"
+          >
+            <span aria-hidden="true" className="text-base">
+              {tool.icon}
+            </span>
+            {t(tool.navLabel.en, tool.navLabel.bn)}
+          </Link>
+        </li>
       ))}
+    </ul>
+  );
+  const groupLabel = "font-mono text-[10px] tracking-wider text-gold-light";
+  return (
+    <div className="grid gap-x-8 gap-y-4 sm:grid-cols-2">
+      {TOOL_CATEGORIES.map((category) =>
+        category.id === "more" ? (
+          // Frozen side tools stay one tap away, folded so the core tools lead.
+          <details key={category.id} className="sm:col-span-2 border-t border-paper/15 pt-3">
+            <summary className={`${groupLabel} cursor-pointer py-1.5`}>
+              {t(category.label.en, category.label.bn).toUpperCase()}
+            </summary>
+            {list(category.id, "sm:grid-cols-2 sm:gap-x-8")}
+          </details>
+        ) : (
+          <div key={category.id}>
+            <p className={`${groupLabel} mb-1`}>{t(category.label.en, category.label.bn).toUpperCase()}</p>
+            {list(category.id)}
+          </div>
+        )
+      )}
     </div>
   );
 }
@@ -108,7 +122,6 @@ export function SiteNav() {
   }, [toolsOpen]);
 
   const demoActive = pathname === "/videos";
-  const vizActive = pathname.startsWith("/viz");
 
   return (
     <nav className="bg-green-deep text-paper border-b-4 border-gold relative z-40">
@@ -124,7 +137,7 @@ export function SiteNav() {
             onClick={() => setToolsOpen((v) => !v)}
             aria-expanded={toolsOpen}
             aria-haspopup="true"
-            className="flex items-center gap-1.5 text-sm hover:text-gold transition-colors"
+            className="flex items-center gap-1.5 text-sm hover:text-gold-light transition-colors"
           >
             {t("Tools", "টুলস")}
             <span
@@ -143,18 +156,9 @@ export function SiteNav() {
         </div>
 
         <Link
-          href="/viz"
-          className={`hidden md:block text-sm transition-colors ${
-            vizActive ? "text-gold" : "hover:text-gold"
-          }`}
-        >
-          {t("Visualizers", "ভিজ্যুয়ালাইজার")}
-        </Link>
-
-        <Link
           href="/videos"
           className={`hidden md:block text-sm transition-colors ${
-            demoActive ? "text-gold" : "hover:text-gold"
+            demoActive ? "text-gold-light" : "hover:text-gold-light"
           }`}
         >
           {t("Demo", "ডেমো")}
@@ -168,7 +172,7 @@ export function SiteNav() {
           aria-expanded={menuOpen}
           aria-controls="mobile-nav-menu"
           aria-label={t("Menu", "মেনু")}
-          className="md:hidden ml-auto flex flex-col justify-center gap-1.5 w-8 h-8"
+          className="md:hidden ml-auto -mr-2 flex flex-col justify-center gap-1.5 w-11 h-11 px-2"
         >
           <span className={`block h-0.5 bg-paper transition-transform ${menuOpen ? "translate-y-2 rotate-45" : ""}`} />
           <span className={`block h-0.5 bg-paper transition-opacity ${menuOpen ? "opacity-0" : ""}`} />
@@ -182,16 +186,9 @@ export function SiteNav() {
           className="md:hidden border-t border-paper/20 px-5 py-4 flex flex-col gap-4 max-h-[75vh] overflow-y-auto"
         >
           <Link
-            href="/viz"
-            onClick={() => setMenuOpen(false)}
-            className="text-sm font-semibold hover:text-gold transition-colors"
-          >
-            {t("Visualizers", "ভিজ্যুয়ালাইজার")}
-          </Link>
-          <Link
             href="/videos"
             onClick={() => setMenuOpen(false)}
-            className="text-sm font-semibold hover:text-gold transition-colors"
+            className="text-sm font-semibold hover:text-gold-light transition-colors"
           >
             {t("Demo", "ডেমো")}
           </Link>

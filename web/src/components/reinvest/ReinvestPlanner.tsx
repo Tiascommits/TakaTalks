@@ -9,6 +9,7 @@ import type { TaxCalculationResult } from "@/lib/tax/types";
 import { fmtTaka } from "@/lib/format";
 import { NumberField } from "@/components/ui/fields";
 import { useLanguage } from "@/lib/i18n";
+import { DEFAULT_INFLATION_PCT } from "@/config/inflation";
 
 const HORIZON_FIT_STYLE: Record<ReinvestCategoryScore["horizonFit"], string> = {
   good: "bg-[#EAF5EC] text-green border-green/30",
@@ -38,7 +39,7 @@ export function ReinvestPlanner({
     Math.round(Math.max(1, Math.min(20, initialHorizonYears)))
   );
   const [hasPSR, setHasPSR] = useState(true);
-  const [inflationPct, setInflationPct] = useState(8.5);
+  const [inflationPct, setInflationPct] = useState(DEFAULT_INFLATION_PCT);
 
   const [suggestionId, setSuggestionId] = useState<string | null>(null);
   const [dismissed, setDismissed] = useState(false);
@@ -289,7 +290,7 @@ export function ReinvestPlanner({
           >
             {saveState === "saving"
               ? t("Saving…", "সেভ হচ্ছে…")
-              : t("Save this suggestion", "এই পরামর্শ সেভ করো")}
+              : t("Save this suggestion", "এই পরামর্শ সেভ করুন")}
           </button>
         )}
         {saveState === "saved" && (

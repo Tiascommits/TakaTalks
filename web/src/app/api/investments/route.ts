@@ -1,8 +1,9 @@
 import { NextResponse } from "next/server";
 import { InstrumentType } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
+import { clientIp, overLimit, tooManyRequests } from "@/lib/rate-limit";
 import { getCurrentUserId, getOrCreateUserId } from "@/lib/tracker/session";
-import { MAX_AMOUNT_TAKA, MAX_LABEL_LENGTH, MAX_RATE_PCT, MAX_TERM_MONTHS } from "@/lib/tracker/limits";
+import { MAX_AMOUNT_TAKA, MAX_LABEL_LENGTH, MAX_RATE_PCT, MAX_TERM_MONTHS, MAX_ENTRIES_PER_USER } from "@/lib/tracker/limits";
 
 const VALID_INSTRUMENTS = Object.values(InstrumentType);
 
@@ -28,6 +29,7 @@ function addMonthsSafe(date: Date, months: number): Date {
 }
 
 export async function POST(request: Request) {
+  if (await overLimit("write", clientIp(request))) return tooManyRequests();
   const body = await request.json().catch(() => null);
   const { label, instrumentType, principalAmount, startDate, termMonths, expectedRatePct } =
     body ?? {};
@@ -62,6 +64,9 @@ export async function POST(request: Request) {
   const maturityDate = addMonthsSafe(start, termMonths);
 
   const userId = await getOrCreateUserId();
+  if ((await prisma.investmentEntry.count({ where: { userId } })) >= MAX_ENTRIES_PER_USER) {
+    return NextResponse.json({ error: "too_many_entries" }, { status: 409 });
+  }
   const entry = await prisma.investmentEntry.create({
     data: {
       userId,

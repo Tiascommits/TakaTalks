@@ -222,13 +222,13 @@ export function GoalPlanner() {
         <div className="flex flex-col gap-4 sticky top-4">
           {/* Inflation Impact Card */}
           <div className="bg-green-deep text-paper p-5 rounded-sm border-t-4 border-gold shadow-sm">
-            <span className="inline-block font-mono text-[10px] text-gold border border-gold/60 px-1.5 py-0.5 mb-2">
+            <span className="inline-block font-mono text-[10px] text-gold-light border border-gold-light/60 px-1.5 py-0.5 mb-2">
               {t("INFLATION REALITY", "মূল্যস্ফীতি হিসাব")}
             </span>
             <div className="text-xs text-paper/80 mb-1">
               {t("In", "আজকের")} {fmtTaka(result.presentCost)} {t("today will cost:", "ভবিষ্যতে দাঁড়াবে:")}
             </div>
-            <div className="font-mono font-bold text-2xl text-gold mb-2">
+            <div className="font-mono font-bold text-2xl text-gold-light mb-2">
               {fmtTaka(result.futureNominalCost)}
             </div>
             <p className="text-[11.5px] text-paper/70 leading-relaxed border-t border-paper/20 pt-2">
@@ -264,7 +264,7 @@ export function GoalPlanner() {
                         : isDPS
                         ? "bg-[#FAF8F3] border-gold"
                         : isSavings
-                        ? "bg-[#FFF9F9] border-red/30 opacity-80"
+                        ? "bg-[#FFF9F9] border-red/30"
                         : "bg-card border-line"
                     }`}
                   >

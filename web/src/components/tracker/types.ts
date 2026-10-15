@@ -44,7 +44,6 @@ export type TaxpayerCategoryCode =
 export interface TaxProfileDTO {
   category: TaxpayerCategoryCode;
   disabledChildren: number;
-  firstTimeFiler: boolean;
   netWealth: number;
   multiCar: boolean;
   bigHouse: boolean;

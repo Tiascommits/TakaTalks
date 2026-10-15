@@ -4,7 +4,8 @@
  * in both places — the two used to drift because each kept its own list.
  */
 
-export type ToolCategoryId = "tax" | "earn" | "save" | "borrow";
+// "more" holds side tools frozen while the core ones are kept correct; it stays last.
+export type ToolCategoryId = "tax" | "earn" | "save" | "zakat" | "more";
 
 export type ToolCategory = {
   id: ToolCategoryId;
@@ -22,6 +23,8 @@ export type Tool = {
   /** Short label for the nav menu, where the full title is too long. */
   navLabel: { en: string; bn: string };
   desc: { en: string; bn: string };
+  /** Hidden from the nav and homepage until some bank has rate data (see hasRateData). */
+  needsRateData?: true;
 };
 
 export const TOOL_CATEGORIES: ToolCategory[] = [
@@ -50,11 +53,19 @@ export const TOOL_CATEGORIES: ToolCategory[] = [
     },
   },
   {
-    id: "borrow",
-    label: { en: "Borrow & Give", bn: "ঋণ ও যাকাত" },
+    id: "zakat",
+    label: { en: "Zakat", bn: "যাকাত" },
     blurb: {
-      en: "The cost of a loan, and the calculation of what you owe others.",
-      bn: "ঋণের প্রকৃত খরচ, আর অন্যের প্রাপ্য হিসাব।",
+      en: "How much zakat is due on your savings, gold and shares.",
+      bn: "আপনার সঞ্চয়, সোনা ও শেয়ারে কত যাকাত দিতে হবে।",
+    },
+  },
+  {
+    id: "more",
+    label: { en: "More", bn: "আরও" },
+    blurb: {
+      en: "Extra planners. They work, but we check them less often than the tools above.",
+      bn: "অতিরিক্ত প্ল্যানার। এগুলো কাজ করে, তবে ওপরের টুলগুলোর মতো নিয়মিত যাচাই করা হয় না।",
     },
   },
 ];
@@ -68,8 +79,8 @@ export const TOOLS: Tool[] = [
     title: { en: "Tax Calculator & Rebate Optimizer", bn: "আয়কর ও রিবেট অপটিমাইজার" },
     navLabel: { en: "Tax Calculator", bn: "আয়কর" },
     desc: {
-      en: "Estimate what you owe under Assessment Year 2025-26 rules. Maximize your legal tax rebate.",
-      bn: "করবর্ষ ২০২৫-২৬ অনুযায়ী ট্যাক্স প্রাক্কলন করুন। সর্বোচ্চ আইনসম্মত কর রেয়াত অর্জন করুন।",
+      en: "Estimate what you owe for income year 2025-26 (assessment year 2026-27). Maximize your legal tax rebate.",
+      bn: "আয়বর্ষ ২০২৫-২৬ (করবর্ষ ২০২৬-২৭) অনুযায়ী ট্যাক্স প্রাক্কলন করুন। সর্বোচ্চ আইনসম্মত কর রেয়াত অর্জন করুন।",
     },
   },
   {
@@ -98,7 +109,7 @@ export const TOOLS: Tool[] = [
   },
   {
     href: "/cars",
-    category: "tax",
+    category: "more",
     icon: "🚗",
     tag: { en: "CC SLABS & MULTI-CAR AIT", bn: "সিসি স্ল্যাব ও এআইটি" },
     title: { en: "Car Buying & Tax Decision Engine", bn: "গাড়ি কেনা ও এআইটি কর বিশ্লেষণ" },
@@ -116,8 +127,8 @@ export const TOOLS: Tool[] = [
     title: { en: "Salary Offer & In-Hand Analyzer", bn: "স্যালারি অফার ও ইন-হ্যান্ড পে" },
     navLabel: { en: "Salary Analyzer", bn: "স্যালারি তুলনাকারী" },
     desc: {
-      en: "Compare job offers side-by-side. See exact monthly bank credit after 10% PF and Section 86 monthly TDS.",
-      bn: "চাকরির অফার পাশাপাশি তুলনা করুন। ১০% পিএফ ও মাসিক কর কর্তনের পর প্রকৃত ব্যাংক জমা দেখুন।",
+      en: "Compare job offers side-by-side. Estimate the monthly bank credit after 10% PF and Section 86 monthly TDS.",
+      bn: "চাকরির অফার পাশাপাশি তুলনা করুন। ১০% পিএফ ও মাসিক কর কর্তনের পর আনুমানিক ব্যাংক জমা দেখুন।",
     },
   },
   {
@@ -134,7 +145,7 @@ export const TOOLS: Tool[] = [
   },
   {
     href: "/habits",
-    category: "earn",
+    category: "more",
     icon: "🧋",
     tag: { en: "SMALL SPENDS, REAL TOTAL", bn: "ছোট খরচ, আসল হিসাব" },
     title: { en: "Money Habit Tracker & Guide", bn: "মানি হ্যাবিট ট্র্যাকার ও গাইড" },
@@ -159,13 +170,14 @@ export const TOOLS: Tool[] = [
   {
     href: "/rates",
     category: "save",
+    needsRateData: true,
     icon: "🏦",
-    tag: { en: "LIVE RATES + AUDITED DATA", bn: "লাইভ রেট + অডিট ডাটা" },
+    tag: { en: "PUBLISHED RATES + AUDITED DATA", bn: "প্রকাশিত রেট + অডিট তথ্য" },
     title: { en: "Bank Rates & Health Scorecard", bn: "ব্যাংক রেট ও স্বাস্থ্য স্কোরকার্ড" },
     navLabel: { en: "Bank Rates", bn: "ব্যাংক রেট" },
     desc: {
-      en: "Commercial bank deposit rates with audited Basel III health disclosures (CAR, NPL, ROA).",
-      bn: "বাণিজ্যিক ব্যাংকের আমানত রেট এবং অডিটেড মূলধন পর্যাপ্ততা (CAR) ও খেলাপি ঋণ (NPL) তথ্য।",
+      en: "Banks' published FDR rates side by side, with audited health figures (CAR, NPL, ROA) where available.",
+      bn: "ব্যাংকগুলোর প্রকাশিত FDR রেট পাশাপাশি, আর যেখানে পাওয়া যায় সেখানে নিরীক্ষিত মূলধন পর্যাপ্ততা (CAR) ও খেলাপি ঋণ (NPL) তথ্য।",
     },
   },
   {
@@ -176,13 +188,13 @@ export const TOOLS: Tool[] = [
     title: { en: "Reinvestment Suggestion", bn: "পুনঃবিনিয়োগ পরামর্শ" },
     navLabel: { en: "Reinvest", bn: "পুনঃবিনিয়োগ" },
     desc: {
-      en: "When an investment matures, see which instrument category fits — by after-tax return, tax-rebate room, and your timeline.",
-      bn: "বিনিয়োগের মেয়াদ শেষ হলে কোন ক্যাটাগরি উপযুক্ত দেখুন — ট্যাক্স-পরবর্তী মুনাফা, রেয়াতের সুযোগ ও সময়সীমা অনুযায়ী।",
+      en: "When an investment matures, see instrument categories ranked by a fixed formula — after-tax return, tax-rebate room and your timeline. Not AI, not advice.",
+      bn: "বিনিয়োগের মেয়াদ শেষ হলে একটি নির্দিষ্ট সূত্রে ক্যাটাগরিগুলোর ক্রম দেখুন — ট্যাক্স-পরবর্তী মুনাফা, রেয়াতের সুযোগ ও সময়সীমা অনুযায়ী। এআই বা পরামর্শ নয়।",
     },
   },
   {
     href: "/goals",
-    category: "save",
+    category: "more",
     icon: "🎯",
     tag: { en: "BEAT INFLATION", bn: "মূল্যস্ফীতি জয়" },
     title: { en: "Life Goal & Wealth Planner", bn: "ভবিষ্যৎ লক্ষ্য ও অবসর প্ল্যানার" },
@@ -194,7 +206,7 @@ export const TOOLS: Tool[] = [
   },
   {
     href: "/freedom",
-    category: "save",
+    category: "more",
     icon: "🏝️",
     tag: { en: "YOUR FREEDOM NUMBER", bn: "স্বাধীনতার অঙ্ক" },
     title: { en: "Financial Freedom Calculator & Roadmap", bn: "আর্থিক স্বাধীনতা ক্যালকুলেটর ও রোডম্যাপ" },
@@ -206,7 +218,7 @@ export const TOOLS: Tool[] = [
   },
   {
     href: "/loans",
-    category: "borrow",
+    category: "more",
     icon: "🏠",
     tag: { en: "PREPAYMENT SAVER", bn: "সুদ সাশ্রয়" },
     title: { en: "Loan & Home EMI Accelerator", bn: "লোন ও গৃহঋণ ইএমআই প্ল্যানার" },
@@ -218,18 +230,30 @@ export const TOOLS: Tool[] = [
   },
   {
     href: "/zakat",
-    category: "borrow",
+    category: "zakat",
     icon: "🌙",
     tag: { en: "2.5% PURIFICATION", bn: "২.৫% যাকাত" },
     title: { en: "Bangladesh Zakat Calculator", bn: "যাকাত ক্যালকুলেটর বাংলাদেশ" },
     navLabel: { en: "Zakat", bn: "যাকাত" },
     desc: {
       en: "Gold & Silver Nisab, Sanchayapatra, DSE stocks, and bank interest purification under Hanafi fiqh.",
-      bn: "স্বর্ণ-রৌপ্য নিসাব, সঞ্চয়পত্র, শেয়ার ও ব্যাংক সুদের পরিশুদ্ধির শরিয়তসম্মত নির্ভুল হিসাব।",
+      bn: "স্বর্ণ-রৌপ্য নিসাব, সঞ্চয়পত্র, শেয়ার ও ব্যাংক সুদের পরিশুদ্ধির শরিয়তসম্মত আনুমানিক হিসাব।",
+    },
+  },
+  {
+    href: "/viz",
+    category: "more",
+    icon: "🖼️",
+    tag: { en: "SHAREABLE POSTERS", bn: "শেয়ারযোগ্য পোস্টার" },
+    title: { en: "Money Visualizers", bn: "টাকার ভিজ্যুয়ালাইজার" },
+    navLabel: { en: "Visualizers", bn: "ভিজ্যুয়ালাইজার" },
+    desc: {
+      en: "Turn a money idea into a picture you can share: salary in kacchi plates, a shrinking taka and more.",
+      bn: "টাকার হিসাবকে শেয়ারযোগ্য ছবিতে দেখুন: কাচ্চির প্লেটে বেতন, ছোট হতে থাকা টাকা ও আরও কিছু।",
     },
   },
 ];
 
-export function toolsInCategory(id: ToolCategoryId): Tool[] {
-  return TOOLS.filter((tool) => tool.category === id);
+export function toolsInCategory(id: ToolCategoryId, ratesLive: boolean): Tool[] {
+  return TOOLS.filter((tool) => tool.category === id && (ratesLive || !tool.needsRateData));
 }

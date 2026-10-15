@@ -6,6 +6,8 @@ export type ScrapedRate = {
   ratePct: number;
   method: RateSourceMethod;
   source: string;
+  /** When the source itself last confirmed this rate. Omit for a live read, which is dated now. */
+  asOf?: Date;
 };
 
 /**

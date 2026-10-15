@@ -1,8 +1,9 @@
 "use client";
 
 import { useId, useState } from "react";
+import { cleanNumberText } from "@/lib/format";
 
-const FOCUS_RING =
+export const FOCUS_RING =
   "focus:outline-none focus:border-green focus:ring-2 focus:ring-green/30";
 
 function formatDisplay(n: number): string {
@@ -32,9 +33,7 @@ export function NumberField({
   const displayValue = focused ? text : currency ? formatDisplay(value) : value ? String(value) : "";
 
   function handleChange(raw: string) {
-    const isNegative = raw.trim().startsWith("-");
-    const digitsOnly = raw.replace(/[^\d.]/g, "");
-    const cleaned = isNegative ? `-${digitsOnly}` : digitsOnly;
+    const cleaned = cleanNumberText(raw);
     setText(cleaned);
     const n = parseFloat(cleaned);
     onChange(Number.isFinite(n) ? n : 0);
@@ -87,9 +86,11 @@ export function CheckField({
         type="checkbox"
         checked={checked}
         onChange={(e) => onChange(e.target.checked)}
-        className={`w-auto ${FOCUS_RING}`}
+        className={`w-5 h-5 shrink-0 ${FOCUS_RING}`}
       />
-      <label htmlFor={id}>{label}</label>
+      <label htmlFor={id} className="py-1">
+        {label}
+      </label>
     </div>
   );
 }

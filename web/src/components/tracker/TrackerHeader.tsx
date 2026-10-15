@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useLanguage } from "@/lib/i18n";
 
 export function TrackerHeader() {
@@ -12,13 +13,16 @@ export function TrackerHeader() {
           INCOME &amp; INVESTMENT TRACKER
         </p>
         <h1 className="font-serif font-semibold text-2xl sm:text-3xl mb-1.5">
-          {t("Your income and investments, in one place", "তোমার আয় ও বিনিয়োগ, একটা জায়গায়")}
+          {t("Your income and investments, in one place", "আপনার আয় ও বিনিয়োগ, এক জায়গায়")}
         </h1>
         <p className="max-w-[700px] text-sm text-[#DCE6DD]">
           {t(
             "Adding an entry saves automatically — a lightweight account is created on your first save, no email or password needed.",
-            "যোগ করলেই save হবে, প্রথমবার save করার সময় হালকা একটা account তৈরি হয় — কোনো ইমেইল বা পাসওয়ার্ড লাগবে না।"
-          )}
+            "যোগ করলেই সেভ হয়। প্রথমবার সেভ করার সময় একটি হালকা অ্যাকাউন্ট তৈরি হয় — কোনো ইমেইল বা পাসওয়ার্ড লাগে না।"
+          )}{" "}
+          <Link href="/account" className="underline text-paper">
+            {t("See or delete your saved data", "সেভ করা ডেটা দেখুন বা মুছে ফেলুন")}
+          </Link>
         </p>
       </div>
     </header>

@@ -1,7 +1,9 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { clientIp, overLimit, tooManyRequests } from "@/lib/rate-limit";
 import { getOrCreateUserId } from "@/lib/tracker/session";
 import { getReinvestContextForUser, logReinvestSuggestion } from "@/lib/reinvest/log";
+import { DEFAULT_INFLATION_PCT } from "@/config/inflation";
 
 /**
  * Persists a computed suggestion. Only called from tracker-integrated
@@ -14,12 +16,13 @@ import { getReinvestContextForUser, logReinvestSuggestion } from "@/lib/reinvest
  * (that's still reserved for turning on email/WhatsApp reminders).
  */
 export async function POST(request: Request) {
+  if (await overLimit("write", clientIp(request))) return tooManyRequests();
   const body = await request.json().catch(() => null);
   const reinvestAmount = body?.reinvestAmount;
   const horizonYears = body?.horizonYears;
   const hasPSR = typeof body?.hasPSR === "boolean" ? body.hasPSR : true;
   const inflationPct =
-    typeof body?.inflationPct === "number" && Number.isFinite(body.inflationPct) ? body.inflationPct : 8.5;
+    typeof body?.inflationPct === "number" && Number.isFinite(body.inflationPct) ? body.inflationPct : DEFAULT_INFLATION_PCT;
   const investmentEntryId = typeof body?.investmentEntryId === "string" ? body.investmentEntryId : null;
 
   if (typeof reinvestAmount !== "number" || !Number.isFinite(reinvestAmount) || reinvestAmount <= 0) {

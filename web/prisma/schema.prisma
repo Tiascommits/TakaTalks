@@ -57,6 +57,17 @@ model VerificationToken {
   @@index([userId])
 }
 
+// Fixed-window request counters for abuse limits (src/lib/rate-limit.ts). In
+// Postgres, not memory, because serverless instances share none. `key` hashes
+// bucket + client + window, so no IP or address is stored in clear.
+model RateLimit {
+  key       String   @id
+  count     Int      @default(0)
+  expiresAt DateTime
+
+  @@index([expiresAt])
+}
+
 enum IncomeFrequency {
   MONTHLY
   ANNUAL
@@ -145,7 +156,6 @@ model TaxProfile {
   user              User             @relation(fields: [userId], references: [id], onDelete: Cascade)
   category          TaxpayerCategory @default(GENERAL)
   disabledChildren  Int              @default(0)
-  firstTimeFiler    Boolean          @default(false)
 
   netWealth         Float            @default(0)
   multiCar          Boolean          @default(false)
@@ -342,11 +352,12 @@ model AdminSession {
 // Written on every admin action worth attributing: bank field edits,
 // ExtractedFigure approve/reject, manual rate/BB-aggregate entry, scrape
 // trigger. `detail` is a free-form snapshot of what changed, not a strict
-// schema, since the set of admin actions will keep growing.
+// schema, since the set of admin actions will keep growing. Restrict, not
+// Cascade: deleting an admin must never erase the trail of what they did.
 model AdminAuditLog {
   id          String    @id @default(cuid())
   adminUserId String
-  adminUser   AdminUser @relation(fields: [adminUserId], references: [id], onDelete: Cascade)
+  adminUser   AdminUser @relation(fields: [adminUserId], references: [id], onDelete: Restrict)
   action      String
   targetType  String
   targetId    String

@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { calculateAfterTaxReturn } from "./after-tax";
+import { FDR_SOURCE_TAX } from "@/config/rate-monitoring";
 
 describe("calculateAfterTaxReturn", () => {
   it("computes gross/net interest for a 12-month term at a flat marginal rate", () => {
@@ -29,5 +30,11 @@ describe("calculateAfterTaxReturn", () => {
     const r = calculateAfterTaxReturn(0, 10, 12, 0.1);
     expect(r.effectiveAfterTaxRatePct).toBe(0);
     expect(Number.isFinite(r.effectiveAfterTaxRatePct)).toBe(true);
+  });
+
+  it("nets FDR interest of the bank's source tax: 10% with proof of return, 15% without", () => {
+    // ৳1,00,000 at 10% for a year earns ৳10,000; the bank keeps ৳1,000 (PSR) or ৳1,500 (no PSR).
+    expect(calculateAfterTaxReturn(100000, 10, 12, FDR_SOURCE_TAX.withPsr).netInterest).toBeCloseTo(9000, 6);
+    expect(calculateAfterTaxReturn(100000, 10, 12, FDR_SOURCE_TAX.withoutPsr).netInterest).toBeCloseTo(8500, 6);
   });
 });

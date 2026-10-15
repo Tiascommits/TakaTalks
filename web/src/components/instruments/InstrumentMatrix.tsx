@@ -5,6 +5,7 @@ import { compareInstruments } from "@/lib/instruments/instruments";
 import { fmtTaka } from "@/lib/format";
 import { NumberField } from "@/components/ui/fields";
 import { useLanguage } from "@/lib/i18n";
+import { DEFAULT_INFLATION_PCT } from "@/config/inflation";
 
 export function InstrumentMatrix() {
   const { t, lang } = useLanguage();
@@ -12,7 +13,7 @@ export function InstrumentMatrix() {
   const [amount, setAmount] = useState<number>(500_000);
   const [tenureYears, setTenureYears] = useState<number>(3);
   const [hasPSR, setHasPSR] = useState<boolean>(true);
-  const [inflationPct, setInflationPct] = useState<number>(8.5);
+  const [inflationPct, setInflationPct] = useState<number>(DEFAULT_INFLATION_PCT);
 
   const results = useMemo(
     () =>
@@ -156,6 +157,9 @@ export function InstrumentMatrix() {
                     <span className="font-mono text-sm line-through text-muted">
                       {item.nominalGrossRatePct}%
                     </span>
+                    <span className="text-[10px] text-muted block">
+                      {t(`as of ${item.asOf}`, `${item.asOf} অনুযায়ী`)}
+                    </span>
                   </div>
                   <div>
                     <span className="text-[10.5px] text-muted block">{t("After-Tax Net Yield", "ট্যাক্স-পরবর্তী নেট")}</span>
@@ -221,6 +225,9 @@ export function InstrumentMatrix() {
                   {lang === "bn" ? item.liquidityBn : item.liquidityEn}
                 </div>
               </div>
+              <div className="pt-1.5 text-[10.5px] text-muted">
+                {t(`Rate and source tax as of ${item.asOf}: ${item.source}`, `হার ও উৎসে কর ${item.asOf} অনুযায়ী: ${item.source}`)}
+              </div>
             </div>
           );
         })}
@@ -229,8 +236,8 @@ export function InstrumentMatrix() {
       {/* Statutory Disclaimer */}
       <div className="mt-6 bg-[#FAF9F5] border border-line p-4 rounded-sm text-xs text-muted leading-relaxed">
         {t(
-          "Statutory Disclaimer: Sanchayapatra slab rules and limits follow National Savings Directorate gazettes. Bank deposit insurance is governed by the Bank Deposit Protection Act 2026 (BDT 2,00,000 per depositor per bank in the event of formal liquidation). This matrix presents mathematical after-tax yields and does not constitute investment advice or endorsement.",
-          "আইনগত সতর্কতা: সঞ্চয়পত্রের নিয়মাবলী জাতীয় সঞ্চয় অধিদপ্তরের প্রজ্ঞাপন অনুযায়ী প্রণীত। ব্যাংক আমানত সুরক্ষা আইন ২০২৬ অনুযায়ী আনুষ্ঠানিক লিকুইডেশনের ক্ষেত্রে প্রতি ব্যাংকে আমানতকারী প্রতি সর্বোচ্চ ২,০০,০০০ টাকা বিমাকৃত। এই তুলনামূলক তালিকা শুধুমাত্র গাণিতিক ট্যাক্স-পরবর্তী মুনাফা প্রদর্শন করে, কোনো নির্দিষ্ট প্রতিষ্ঠানে বিনিয়োগের পরামর্শ প্রদান করে না।"
+          "Statutory Disclaimer: Sanchayapatra rates and limits follow National Savings Directorate notices. One rate applies to your whole holding: the lower rate once your total Sanchayapatra holding is above ৳7.5 lakh. Bank deposit insurance is governed by the Bank Deposit Protection Act 2026 (BDT 2,00,000 per depositor per bank in the event of formal liquidation). This matrix presents mathematical after-tax yields and does not constitute investment advice or endorsement.",
+          "আইনগত সতর্কতা: সঞ্চয়পত্রের হার ও সীমা জাতীয় সঞ্চয় অধিদপ্তরের প্রজ্ঞাপন অনুযায়ী। পুরো বিনিয়োগে একটিই হার: মোট সঞ্চয়পত্র ৭.৫ লাখ টাকার বেশি হলে কম হার। ব্যাংক আমানত সুরক্ষা আইন ২০২৬ অনুযায়ী আনুষ্ঠানিক লিকুইডেশনের ক্ষেত্রে প্রতি ব্যাংকে আমানতকারী প্রতি সর্বোচ্চ ২,০০,০০০ টাকা বিমাকৃত। এই তুলনামূলক তালিকা শুধুমাত্র গাণিতিক ট্যাক্স-পরবর্তী মুনাফা প্রদর্শন করে, কোনো নির্দিষ্ট প্রতিষ্ঠানে বিনিয়োগের পরামর্শ প্রদান করে না।"
         )}
       </div>
     </div>

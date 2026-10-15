@@ -40,11 +40,11 @@ function VerifyContent() {
   const messages: Record<VerifyError, string> = {
     missing: t(
       "Missing or invalid verification link. Please request a new link from the Tracker.",
-      "ভেরিফিকেশন লিংকটি নেই বা ঠিক নেই। ট্র্যাকার থেকে নতুন লিংক চেয়ে নাও।"
+      "ভেরিফিকেশন লিংকটি নেই বা ঠিক নেই। ট্র্যাকার থেকে নতুন লিংক চেয়ে নিন।"
     ),
     already_used: t(
       "This link has already been used. Please request a new link from the Tracker.",
-      "এই লিংকটি আগেই ব্যবহার করা হয়েছে। ট্র্যাকার থেকে নতুন লিংক চেয়ে নাও।"
+      "এই লিংকটি আগেই ব্যবহার করা হয়েছে। ট্র্যাকার থেকে নতুন লিংক চেয়ে নিন।"
     ),
     expired: t(
       "This link has expired. Magic links are valid for 15 minutes.",
@@ -52,15 +52,15 @@ function VerifyContent() {
     ),
     too_many_attempts: t(
       "Too many attempts. Please wait a while and try again.",
-      "অনেকবার চেষ্টা করা হয়েছে। কিছুক্ষণ অপেক্ষা করে আবার চেষ্টা করো।"
+      "অনেকবার চেষ্টা করা হয়েছে। কিছুক্ষণ অপেক্ষা করে আবার চেষ্টা করুন।"
     ),
     failed: t(
       "Verification failed. Please check your link or request a new one.",
-      "ভেরিফাই করা যায়নি। লিংকটি ঠিক আছে কিনা দেখো, অথবা নতুন লিংক চেয়ে নাও।"
+      "ভেরিফাই করা যায়নি। লিংকটি ঠিক আছে কিনা দেখুন, অথবা নতুন লিংক চেয়ে নিন।"
     ),
     network: t(
       "Network error. Please try again or check your internet connection.",
-      "নেটওয়ার্কে সমস্যা হয়েছে। ইন্টারনেট সংযোগ দেখে আবার চেষ্টা করো।"
+      "নেটওয়ার্কে সমস্যা হয়েছে। ইন্টারনেট সংযোগ দেখে আবার চেষ্টা করুন।"
     ),
   };
 
@@ -102,23 +102,23 @@ function VerifyContent() {
       </div>
 
       <h1 className="text-xl font-semibold text-slate-100 mb-2">
-        {t("Confirm Your TakaTalks Login", "তোমার TakaTalks লগইন নিশ্চিত করো")}
+        {t("Confirm Your TakaTalks Login", "আপনার TakaTalks লগইন নিশ্চিত করুন")}
       </h1>
       <p className="text-sm text-slate-400 mb-6">
         {t(
           "Click below to verify your email address and activate your maturity reminders.",
-          "ইমেইল ভেরিফাই করে মেয়াদ পূর্তির রিমাইন্ডার চালু করতে নিচের বাটনে ক্লিক করো।"
+          "ইমেইল ভেরিফাই করে মেয়াদ পূর্তির রিমাইন্ডার চালু করতে নিচের বাটনে ক্লিক করুন।"
         )}
       </p>
 
       {target && !error && (
         <p className="text-sm text-slate-200 mb-6" data-testid="verify-target">
-          {t("You're confirming the login for", "তুমি এই লগইনটি নিশ্চিত করছ:")}{" "}
+          {t("You're confirming the login for", "আপনি এই লগইনটি নিশ্চিত করছেন:")}{" "}
           <span className="font-semibold text-emerald-300">{target}</span>
           {". "}
           {t(
             "If that isn't your email, don't continue — just close this page.",
-            "এটা তোমার ইমেইল না হলে এগিয়ো না — এই পেজ বন্ধ করে দাও।"
+            "এটি আপনার ইমেইল না হলে এগোবেন না — এই পাতা বন্ধ করে দিন।"
           )}
         </p>
       )}
@@ -134,7 +134,7 @@ function VerifyContent() {
               href="/tracker"
               className="text-xs font-semibold text-rose-300 hover:text-rose-200 underline"
             >
-              {t("← Back to Tracker", "← ট্র্যাকারে ফিরে যাও")}
+              {t("← Back to Tracker", "← ট্র্যাকারে ফিরে যান")}
             </Link>
           </div>
         </div>
@@ -146,14 +146,14 @@ function VerifyContent() {
         >
           {loading
             ? t("Verifying...", "ভেরিফাই হচ্ছে...")
-            : t("Confirm & Continue to Tracker →", "নিশ্চিত করো ও ট্র্যাকারে যাও →")}
+            : t("Confirm & Continue to Tracker →", "নিশ্চিত করুন ও ট্র্যাকারে যান →")}
         </button>
       )}
 
       <p className="text-xs text-slate-400 mt-6">
         {t(
-          "Calculations and data stay on your device. Only email and maturity dates are securely synchronized.",
-          "হিসাব ও ডেটা তোমার ডিভাইসেই থাকে। শুধু ইমেইল আর মেয়াদ পূর্তির তারিখ নিরাপদে সিঙ্ক হয়।"
+          "This signs in this browser. Entries saved in another browser stay there; to link them, ask for a link from that browser and open it there.",
+          "এটা এই ব্রাউজারে লগইন করায়। অন্য ব্রাউজারে সেভ করা তথ্য সেখানেই থাকে; সেগুলো যুক্ত করতে ওই ব্রাউজার থেকে লিংক চেয়ে সেখানেই খুলুন।"
         )}
       </p>
     </div>

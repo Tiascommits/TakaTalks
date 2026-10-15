@@ -1,9 +1,9 @@
 "use client";
 
 import { useId, useMemo, useState } from "react";
-import { fmtTaka } from "@/lib/format";
+import { cleanNumberText, fmtTaka } from "@/lib/format";
 import { calculateAfterTaxReturn } from "@/lib/rates/after-tax";
-import { DEPOSIT_INSURANCE_COVER_BDT, MARGINAL_TAX_RATE_OPTIONS } from "@/config/rate-monitoring";
+import { DEPOSIT_INSURANCE_COVER_BDT, FDR_SOURCE_TAX } from "@/config/rate-monitoring";
 import type { BankTypeCode, BBAggregateRateDTO, CurrentRateRowDTO } from "./types";
 import { useLanguage } from "@/lib/i18n";
 
@@ -22,6 +22,8 @@ type SortDirection = "asc" | "desc";
 function pct(n: number): string {
   return n.toFixed(2) + "%";
 }
+
+const pctOf = (rate: number) => `${Math.round(rate * 100)}%`;
 
 function fmtDate(iso: string | null): string {
   if (!iso) return "—";
@@ -42,7 +44,7 @@ export function RateScorecard({
 
   const [amount, setAmount] = useState(100000);
   const [termMonths, setTermMonths] = useState<number>(12);
-  const [taxRate, setTaxRate] = useState<number>(0.1);
+  const [taxRate, setTaxRate] = useState<number>(FDR_SOURCE_TAX.withPsr);
   const [sortColumn, setSortColumn] = useState<SortColumn>("bank");
   const [sortDirection, setSortDirection] = useState<SortDirection>("asc");
 
@@ -87,28 +89,44 @@ export function RateScorecard({
     return sortDirection === "asc" ? " ▲" : " ▼";
   }
 
+  // A real button inside the <th>, so keyboard users can sort and screen
+  // readers hear the current order.
+  function sortableHeader(column: SortColumn, label: string, align = "") {
+    const ariaSort = sortColumn !== column ? "none" : sortDirection === "asc" ? "ascending" : "descending";
+    return (
+      <th aria-sort={ariaSort} className={`py-2 px-2 border-b-2 border-green text-green-deep font-semibold ${align}`}>
+        <button type="button" onClick={() => toggleSort(column)} className="font-semibold cursor-pointer select-none">
+          {label}
+          <span aria-hidden="true">{sortIndicator(column)}</span>
+        </button>
+      </th>
+    );
+  }
+
   const notAvailable = t("not available", "নেই");
 
   return (
-    <div className="max-w-[1160px] mx-auto px-5 mt-6 mb-16 flex flex-col gap-5">
+    // w-full + min-w-0 on the fieldsets: without them the 9-column table's
+    // width pushed the whole column (warning boxes included) past a phone screen.
+    <div className="w-full max-w-[1160px] mx-auto px-5 mt-6 mb-16 flex flex-col gap-5">
       {/* Permanent, non-dismissible — deposit insurance context stays visible regardless of scroll/interaction. */}
       <div className="bg-amber-bg border border-amber-border px-4 py-3 text-[13px] text-[#7A5A12]">
         <strong>{t("Deposit protection:", "আমানত সুরক্ষা:")}</strong>{" "}
         {t(
-          "Bangladesh's Deposit Protection Act covers up to",
-          "Bangladesh's Deposit Protection Act covers up to"
+          "Bangladesh's Deposit Protection Ordinance 2025 covers up to",
+          "আমানত সুরক্ষা অধ্যাদেশ ২০২৫ অনুযায়ী প্রতি ব্যাংকে একজন আমানতকারীর সর্বোচ্চ"
         )}{" "}
         <strong>{fmtTaka(DEPOSIT_INSURANCE_COVER_BDT)}</strong>{" "}
         {t(
-          "per depositor per bank, and only pays out if a bank is formally liquidated. Anything above that, at a single bank, isn't protected. Spreading a large amount across multiple banks reduces this exposure.",
-          "per depositor per bank, and only pays out if a bank is formally liquidated. এর বেশি যেকোনো amount, single bank e, protected না। বড় amount হলে একাধিক ব্যাংকে ছড়িয়ে রাখলে এই exposure কমে।"
+          "per depositor per bank, paid only if the bank is liquidated or put into resolution. Anything above that at one bank isn't protected; spreading a large amount across banks lowers this risk.",
+          "পর্যন্ত সুরক্ষিত, যা দেওয়া হয় কেবল ব্যাংক অবসায়ন বা রেজল্যুশনে গেলে। এক ব্যাংকে এর বেশি টাকা সুরক্ষিত নয়; বড় অঙ্ক কয়েকটি ব্যাংকে ভাগ করে রাখলে এই ঝুঁকি কমে।"
         )}
       </div>
 
       <div className="bg-[#FBEFEF] border border-red px-4 py-3 text-[13px] text-red">
         {t(
-          "Rates and disclosed figures are self-reported by banks and may lag real conditions. Verify at the bank yourself before depositing, especially for larger amounts. This is not investment advice.",
-          "Rates এবং disclosed figures গুলো bank নিজে self-report করে, real condition থেকে lag করতে পারে। Deposit করার আগে, বিশেষ করে বড় amount হলে, নিজে bank e গিয়ে verify করো। This is not investment advice."
+          "Rates and disclosed figures are self-reported by banks and may lag real conditions. Check with the bank before depositing, especially for larger amounts. This is not investment advice.",
+          "রেট ও প্রকাশিত তথ্য ব্যাংক নিজে প্রকাশ করে, বাস্তব অবস্থার চেয়ে পিছিয়ে থাকতে পারে। টাকা রাখার আগে, বিশেষ করে বড় অঙ্ক হলে, ব্যাংকে নিজে যাচাই করুন। এটি বিনিয়োগ পরামর্শ নয়।"
         )}
       </div>
 
@@ -120,15 +138,15 @@ export function RateScorecard({
           <span className="text-muted">
             {t(
               "This is an official aggregate, not a specific product's rate — it won't match any individual bank's rate.",
-              "এটা official aggregate, নির্দিষ্ট কোনো product rate না — individual bank er rate এর সাথে মিলবে না।"
+              "এটি সরকারি গড় হার, নির্দিষ্ট কোনো স্কিমের রেট নয় — কোনো একক ব্যাংকের রেটের সাথে মিলবে না।"
             )}
           </span>
         </div>
       )}
 
-      <fieldset className="border border-line bg-card px-4 pt-4 pb-4.5">
+      <fieldset className="min-w-0 border border-line bg-card px-4 pt-4 pb-4.5">
         <legend className="font-serif font-semibold text-[15.5px] text-green-deep px-1.5">
-          {t("Your calculation", "তোমার হিসাব")}
+          {t("Your calculation", "আপনার হিসাব")}
         </legend>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
           <div>
@@ -137,10 +155,10 @@ export function RateScorecard({
             </label>
             <input
               id={amountId}
-              type="number"
-              min={0}
+              type="text"
+              inputMode="numeric"
               value={amount}
-              onChange={(e) => setAmount(parseFloat(e.target.value) || 0)}
+              onChange={(e) => setAmount(parseFloat(cleanNumberText(e.target.value)) || 0)}
               className="w-full px-2.5 py-2 border border-line bg-[#FCFBF8] text-sm"
             />
           </div>
@@ -163,7 +181,7 @@ export function RateScorecard({
           </div>
           <div>
             <label htmlFor={taxId} className="block text-xs text-[#555] mb-1">
-              {t("Your marginal/AIT tax rate (estimate)", "তোমার marginal/AIT tax rate (estimate)")}
+              {t("Source tax the bank deducts", "ব্যাংক যে উৎসে কর কাটবে")}
             </label>
             <select
               id={taxId}
@@ -171,48 +189,43 @@ export function RateScorecard({
               onChange={(e) => setTaxRate(parseFloat(e.target.value))}
               className="w-full px-2.5 py-2 border border-line bg-[#FCFBF8] text-sm"
             >
-              {MARGINAL_TAX_RATE_OPTIONS.map((r) => (
-                <option key={r} value={r}>
-                  {r === 0 ? t("0% (below tax-free limit)", "0% (tax-free সীমার নিচে)") : `${Math.round(r * 100)}%`}
-                </option>
-              ))}
+              <option value={FDR_SOURCE_TAX.withPsr}>
+                {pctOf(FDR_SOURCE_TAX.withPsr)} {t("— I can show proof of return (PSR)", "— রিটার্ন জমার প্রমাণ (PSR) আছে")}
+              </option>
+              <option value={FDR_SOURCE_TAX.withoutPsr}>
+                {pctOf(FDR_SOURCE_TAX.withoutPsr)} {t("— no proof of return", "— রিটার্ন জমার প্রমাণ নেই")}
+              </option>
             </select>
           </div>
         </div>
+        <p className="text-xs text-muted mt-2.5">
+          {t(
+            "Net interest is what is left after the bank's source tax. Your tax return settles the final tax on this interest.",
+            "নীট সুদ = ব্যাংকের উৎসে কর কাটার পর যা থাকে। এই সুদের চূড়ান্ত কর ঠিক হয় আপনার আয়কর রিটার্নে।"
+          )}
+        </p>
       </fieldset>
 
-      <fieldset className="border border-line bg-card px-4 pt-4 pb-4.5">
+      <fieldset className="min-w-0 border border-line bg-card px-4 pt-4 pb-4.5">
         <legend className="font-serif font-semibold text-[15.5px] text-green-deep px-1.5">
           {t("FDR comparison", "FDR তুলনা")}
         </legend>
         <p className="text-xs text-muted mb-2.5">
           {t(
-            "Click a column header to sort by it. There's no “best” ranking or badge — sorting is just for convenience, not a verdict.",
-            "Column header ক্লিক করলে সেই column অনুযায়ী sort হবে। কোনো “best” ranking বা badge নেই — sort টা শুধু দেখার সুবিধার জন্য, কোনো verdict না।"
+            "Tap a column heading to sort by it. There's no “best” ranking or badge — sorting is just for convenience, not a verdict.",
+            "কলামের শিরোনামে চাপ দিলে সেই কলাম অনুযায়ী সাজানো হবে। কোনো “সেরা” তালিকা বা ব্যাজ নেই — সাজানো শুধু দেখার সুবিধার জন্য, কোনো রায় নয়।"
           )}
+        </p>
+        <p className="sm:hidden text-xs text-muted mb-2.5">
+          {t("Swipe the table sideways to see every column.", "সব কলাম দেখতে টেবিলটি পাশে সরান।")}
         </p>
         <div className="overflow-x-auto">
           <table className="w-full text-[13.5px] border-collapse">
             <thead>
               <tr className="text-left">
-                <th
-                  className="py-2 px-2 border-b-2 border-green text-green-deep font-semibold cursor-pointer select-none"
-                  onClick={() => toggleSort("bank")}
-                >
-                  {t("Bank", "ব্যাংক")}{sortIndicator("bank")}
-                </th>
-                <th
-                  className="py-2 px-2 border-b-2 border-green text-green-deep font-semibold cursor-pointer select-none"
-                  onClick={() => toggleSort("type")}
-                >
-                  {t("Type", "ধরন")}{sortIndicator("type")}
-                </th>
-                <th
-                  className="py-2 px-2 border-b-2 border-green text-green-deep font-semibold cursor-pointer select-none text-right"
-                  onClick={() => toggleSort("rate")}
-                >
-                  {t("Gross rate", "মোট হার")}{sortIndicator("rate")}
-                </th>
+                {sortableHeader("bank", t("Bank", "ব্যাংক"))}
+                {sortableHeader("type", t("Type", "ধরন"))}
+                {sortableHeader("rate", t("Gross rate", "মোট হার"), "text-right")}
                 <th className="py-2 px-2 border-b-2 border-green text-green-deep font-semibold text-right">
                   {t("Gross interest", "মোট সুদ")}
                 </th>
@@ -229,7 +242,7 @@ export function RateScorecard({
                   {t("Statement", "বিবরণী")}
                 </th>
                 <th className="py-2 px-2 border-b-2 border-green text-green-deep font-semibold">
-                  {t("Source / last verified", "উৎস / সর্বশেষ যাচাই")}
+                  {t("Source / date", "উৎস / তারিখ")}
                 </th>
               </tr>
             </thead>
@@ -277,18 +290,20 @@ export function RateScorecard({
                       <span className="text-muted">{notAvailable}</span>
                     )}
                   </td>
-                  <td className="py-2 px-2 text-[11px] text-muted">
+                  <td className="py-2 px-2 text-[11px] text-muted min-w-56">
                     {row.source ? (
                       <>
-                        {row.method === "MANUAL" ? t("Manual: ", "ম্যানুয়াল: ") : t("Scraped: ", "স্ক্র্যাপড: ")}
+                        {row.method === "MANUAL" ? t("Manual: ", "হাতে সংগৃহীত: ") : t("From the bank's site: ", "ব্যাংকের সাইট থেকে: ")}
                         {row.source}
                         <br />
-                        {t("Last verified", "সর্বশেষ যাচাই")} {fmtDate(row.lastVerifiedAt)}
+                        {row.method === "MANUAL"
+                          ? t(`Source dated ${fmtDate(row.asOf)}`, `সূত্রের তারিখ ${fmtDate(row.asOf)}`)
+                          : t(`Last checked ${fmtDate(row.asOf)}`, `সর্বশেষ যাচাই ${fmtDate(row.asOf)}`)}
                         {row.unverified && (
                           <>
                             {" "}
                             <span className="text-red font-semibold">
-                              {t(`— unverified since ${fmtDate(row.lastVerifiedAt)}`, `— অযাচাইকৃত, ${fmtDate(row.lastVerifiedAt)} থেকে`)}
+                              {t(`— unverified since ${fmtDate(row.asOf)}`, `— অযাচাইকৃত, ${fmtDate(row.asOf)} থেকে`)}
                             </span>
                           </>
                         )}

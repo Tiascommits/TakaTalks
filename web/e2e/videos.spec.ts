@@ -16,16 +16,17 @@ test.describe("Videos (/videos)", () => {
     await expect(page.getByRole("heading", { name: /Shortform|শর্টফর্ম/ })).toBeVisible();
     await expect(page.getByRole("heading", { name: /Longform|লংফর্ম/ })).toBeVisible();
 
-    // The videos render as either HTML5 video elements or embed iframes.
-    await expect(page.locator("video, iframe").first()).toBeVisible();
+    // YouTube videos show a play button first and load the player on a tap.
+    await expect(page.getByRole("button", { name: /Play video|ভিডিও চালান/ }).first()).toBeVisible();
   });
 });
 
 test.describe("Homepage video reel (/)", () => {
   test("shows the reel with a real embed and links through to the videos page", async ({ page }) => {
     await page.goto("/");
-    // The reel embeds the actual video, not placeholder art.
-    await expect(page.locator("video, iframe").first()).toBeVisible();
+    // The reel shows the video's still; a tap swaps in the real player.
+    await page.getByRole("button", { name: /Play video|ভিডিও চালান/ }).first().click();
+    await expect(page.locator('iframe[src*="youtube-nocookie.com/embed/"]').first()).toBeVisible();
 
     // The reel's "see all" link, copy is "SEE ALL VIDEOS →" / "সব ভিডিও →".
     await page.getByRole("link", { name: /see all videos|সব ভিডিও/i }).first().click();

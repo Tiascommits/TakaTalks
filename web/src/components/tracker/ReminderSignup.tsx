@@ -66,15 +66,17 @@ export function ReminderSignup({
   function describeError(code: string): string {
     switch (code) {
       case "too_soon":
-        return t("Please wait a minute before requesting another code.", "আরেকটা কোড চাইতে এক মিনিট অপেক্ষা করো।");
+        return t("Please wait a minute before requesting another code.", "আরেকটি কোড চাইতে এক মিনিট অপেক্ষা করুন।");
+      case "too_many_requests":
+        return t("Too many requests. Please wait a few minutes and try again.", "অনেকবার চাওয়া হয়েছে। কয়েক মিনিট পরে আবার চেষ্টা করুন।");
       case "too_many_attempts":
-        return t("Too many wrong codes. Please request a new one.", "অনেকবার ভুল কোড দেওয়া হয়েছে। নতুন কোড চেয়ে নাও।");
+        return t("Too many wrong codes. Please request a new one.", "অনেকবার ভুল কোড দেওয়া হয়েছে। নতুন কোড চেয়ে নিন।");
       case "invalid":
         return t("That code isn't right.", "কোডটা ঠিক নেই।");
       case "expired":
-        return t("That code has expired. Please request a new one.", "কোডটার মেয়াদ শেষ। নতুন কোড চেয়ে নাও।");
+        return t("That code has expired. Please request a new one.", "কোডটার মেয়াদ শেষ। নতুন কোড চেয়ে নিন।");
       case "already_used":
-        return t("That code was already used. Please request a new one.", "কোডটা আগেই ব্যবহার করা হয়েছে। নতুন কোড চেয়ে নাও।");
+        return t("That code was already used. Please request a new one.", "কোডটা আগেই ব্যবহার করা হয়েছে। নতুন কোড চেয়ে নিন।");
       default:
         return code;
     }
@@ -123,7 +125,7 @@ export function ReminderSignup({
     <div className="bg-card border border-line px-3.5 py-3 text-sm">
       {linkError && (
         <p className="text-xs text-red mb-2">
-          {t("That link didn't work, try again.", "সেই লিংকটা কাজ করেনি, আবার চেষ্টা করো।")}
+          {t("That link didn't work, try again.", "সেই লিংকটা কাজ করেনি, আবার চেষ্টা করুন।")}
         </p>
       )}
 
@@ -132,7 +134,7 @@ export function ReminderSignup({
           onClick={() => setStep("choose")}
           className="text-green-deep underline text-xs font-medium"
         >
-          {t("Get notified when an investment matures", "বিনিয়োগের মেয়াদ শেষ হলে জানাও")}
+          {t("Get notified when an investment matures", "বিনিয়োগের মেয়াদ শেষ হলে খবর পান")}
         </button>
       )}
 
@@ -141,7 +143,7 @@ export function ReminderSignup({
           <p className="text-xs text-muted">
             {t(
               "We'll need to save this one detail so we can reach you.",
-              "তোমাকে জানানোর জন্য এই একটা তথ্য save করতে হবে।"
+              "আপনাকে জানাতে শুধু এই একটি তথ্য সেভ করতে হবে।"
             )}
           </p>
           <div className="flex gap-2">
@@ -150,7 +152,7 @@ export function ReminderSignup({
                 onClick={() => setStep("enter-email")}
                 className="bg-green-deep text-paper px-3 py-1.5 text-xs font-medium"
               >
-                {t("Email me", "Email এ জানাও")}
+                {t("Email me", "ইমেইলে জানান")}
               </button>
             )}
             {whatsappAvailable && (
@@ -158,7 +160,7 @@ export function ReminderSignup({
                 onClick={() => setStep("enter-phone")}
                 className="border border-green-deep text-green-deep px-3 py-1.5 text-xs font-medium"
               >
-                {t("WhatsApp me", "WhatsApp এ জানাও")}
+                {t("WhatsApp me", "WhatsApp-এ জানান")}
               </button>
             )}
           </div>
@@ -230,7 +232,7 @@ export function ReminderSignup({
             disabled={submitting || code.length < 4}
             className="bg-green-deep text-paper px-3 py-1.5 text-xs font-medium disabled:opacity-50"
           >
-            {t("Confirm", "নিশ্চিত করো")}
+            {t("Confirm", "নিশ্চিত করুন")}
           </button>
         </div>
       )}
@@ -239,7 +241,7 @@ export function ReminderSignup({
         <p className="text-xs text-green-deep">
           {t(
             `Check ${destination} for a login link.`,
-            `${destination} এ পাঠানো লিংকটা দেখো।`
+            `${destination} এ পাঠানো লিংকটি দেখুন।`
           )}
         </p>
       )}

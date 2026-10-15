@@ -8,6 +8,8 @@ import { IncomeSection } from "./IncomeSection";
 import { InvestmentSection } from "./InvestmentSection";
 import { ReminderSignup, type ContactStatus } from "./ReminderSignup";
 import { useLanguage } from "@/lib/i18n";
+import { cleanNumberText } from "@/lib/format";
+import { requestErrorMessage } from "@/lib/tracker/request-error";
 import type {
   IncomeEntryDTO,
   IncomeFrequency,
@@ -26,6 +28,25 @@ type NewInvestment = {
   termMonths: number;
   expectedRatePct: number;
 };
+
+type Message = { en: string; bn: string };
+
+/** fetch that never throws: the JSON body on success, or a message saying why it failed. */
+async function send<T>(url: string, init?: RequestInit): Promise<{ data: T | null; error: Message | null }> {
+  try {
+    const res = await fetch(url, init);
+    if (!res.ok) return { data: null, error: requestErrorMessage(res.status) };
+    return { data: (await res.json().catch(() => null)) as T | null, error: null };
+  } catch {
+    return { data: null, error: requestErrorMessage(null) };
+  }
+}
+
+const jsonInit = (method: string, body: unknown): RequestInit => ({
+  method,
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify(body),
+});
 
 const CATEGORY_TO_CODE: Record<string, TaxpayerCategoryCode> = {
   general: "GENERAL",
@@ -61,82 +82,84 @@ export function TrackerDashboard({
     initialProfile ?? {
       category: "GENERAL",
       disabledChildren: 0,
-      firstTimeFiler: false,
       netWealth: 0,
       multiCar: false,
       bigHouse: false,
     }
   );
   const [savingProfile, setSavingProfile] = useState(false);
+  // Failures of actions that have no form of their own: delete, payout, profile.
+  const [actionError, setActionError] = useState<Message | null>(null);
   const categoryId = useId();
   const disabledChildrenId = useId();
 
-  async function addIncome(e: NewIncome): Promise<boolean> {
-    const res = await fetch("/api/income", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(e),
-    });
-    if (res.ok) {
-      const { entry } = await res.json();
-      setIncome((prev) => [entry, ...prev]);
-      return true;
-    }
-    return false;
+  async function addIncome(e: NewIncome): Promise<Message | null> {
+    const { data, error } = await send<{ entry: IncomeEntryDTO }>("/api/income", jsonInit("POST", e));
+    if (data) setIncome((prev) => [data.entry, ...prev]);
+    return error;
   }
 
   async function deleteIncome(id: string) {
-    const res = await fetch(`/api/income/${id}`, { method: "DELETE" });
-    if (res.ok) setIncome((prev) => prev.filter((e) => e.id !== id));
+    setActionError(null);
+    const { error } = await send(`/api/income/${id}`, { method: "DELETE" });
+    if (error) setActionError(error);
+    else setIncome((prev) => prev.filter((e) => e.id !== id));
   }
 
-  async function addInvestment(e: NewInvestment): Promise<boolean> {
-    const res = await fetch("/api/investments", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(e),
-    });
-    if (res.ok) {
-      const { entry } = await res.json();
-      setInvestments((prev) => [...prev, entry].sort((a, b) => a.maturityDate.localeCompare(b.maturityDate)));
-      return true;
+  async function addInvestment(e: NewInvestment): Promise<Message | null> {
+    const { data, error } = await send<{ entry: InvestmentEntryDTO }>("/api/investments", jsonInit("POST", e));
+    if (data) {
+      setInvestments((prev) =>
+        [...prev, data.entry].sort((a, b) => a.maturityDate.localeCompare(b.maturityDate))
+      );
     }
-    return false;
+    return error;
   }
 
   async function deleteInvestment(id: string) {
-    const res = await fetch(`/api/investments/${id}`, { method: "DELETE" });
-    if (res.ok) setInvestments((prev) => prev.filter((e) => e.id !== id));
+    setActionError(null);
+    const { error } = await send(`/api/investments/${id}`, { method: "DELETE" });
+    if (error) setActionError(error);
+    else setInvestments((prev) => prev.filter((e) => e.id !== id));
   }
 
   async function confirmPayout(id: string, payoutAmount: number) {
-    const res = await fetch(`/api/investments/${id}/confirm-payout`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ payoutAmount }),
-    });
-    if (res.ok) {
-      const { entry } = await res.json();
-      setInvestments((prev) => prev.map((e) => (e.id === id ? entry : e)));
-    }
+    setActionError(null);
+    const { data, error } = await send<{ entry: InvestmentEntryDTO }>(
+      `/api/investments/${id}/confirm-payout`,
+      jsonInit("POST", { payoutAmount })
+    );
+    if (error) setActionError(error);
+    else if (data) setInvestments((prev) => prev.map((e) => (e.id === id ? data.entry : e)));
   }
 
   async function saveProfile() {
+    setActionError(null);
     setSavingProfile(true);
-    const res = await fetch("/api/profile", {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(profile),
-    });
-    if (res.ok) {
-      const { profile: saved } = await res.json();
-      setProfile(saved);
-    }
+    const { data, error } = await send<{ profile: TaxProfileDTO }>("/api/profile", jsonInit("PUT", profile));
+    if (error) setActionError(error);
+    else if (data) setProfile(data.profile);
     setSavingProfile(false);
   }
 
   return (
     <div className="max-w-[1160px] mx-auto px-5 mt-6 mb-16 flex flex-col gap-5">
+      {actionError && (
+        <p
+          role="alert"
+          className="sticky top-2 z-10 flex items-start justify-between gap-3 bg-[#FFF9F9] border border-red/30 text-red text-sm px-3 py-2"
+        >
+          {t(actionError.en, actionError.bn)}
+          <button
+            type="button"
+            onClick={() => setActionError(null)}
+            aria-label={t("Dismiss", "বন্ধ করুন")}
+            className="shrink-0 px-2 -my-1 text-lg leading-none"
+          >
+            ×
+          </button>
+        </p>
+      )}
       <ReminderSignup
         contact={contact}
         emailAvailable={emailAvailable}
@@ -185,11 +208,11 @@ export function TrackerDashboard({
             </label>
             <input
               id={disabledChildrenId}
-              type="number"
-              min={0}
+              type="text"
+              inputMode="numeric"
               value={profile.disabledChildren}
               onChange={(e) =>
-                setProfile({ ...profile, disabledChildren: parseInt(e.target.value) || 0 })
+                setProfile({ ...profile, disabledChildren: parseInt(cleanNumberText(e.target.value)) || 0 })
               }
               className="w-full px-2.5 py-2 border border-line bg-[#FCFBF8] text-sm"
             />
@@ -200,7 +223,7 @@ export function TrackerDashboard({
           disabled={savingProfile}
           className="mt-3 bg-green-deep text-paper px-4 py-2 text-sm font-medium disabled:opacity-50"
         >
-          {t("Save profile", "প্রোফাইল সেভ করো")}
+          {t("Save profile", "প্রোফাইল সেভ করুন")}
         </button>
       </section>
     </div>

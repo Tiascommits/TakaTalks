@@ -1,0 +1,1 @@
+{ "name": "branch-guard", "version": "0.1.0", "description": "Blocks git commits, pushes and merges on protected branches, plus commit -a, hard resets, cleans and branch deletion, and shows the current branch in the status line." }

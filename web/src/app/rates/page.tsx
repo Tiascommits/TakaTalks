@@ -6,9 +6,12 @@ import {
 import { RateScorecard } from "@/components/rates/RateScorecard";
 import { BankHealthPanel } from "@/components/rates/BankHealthPanel";
 import { RatesHeader } from "@/components/rates/RatesHeader";
+import { RatesEmptyState } from "@/components/rates/RatesEmptyState";
 
 export const metadata = {
   title: "ব্যাংক রেট তুলনা — TakaTalks",
+  description:
+    "Bangladesh banks' published FDR rates side by side, each with its source and the date it was collected.",
 };
 
 // Rates change (and staleness flags depend on the latest scrape attempt),
@@ -23,18 +26,29 @@ export default async function RatesPage() {
     getApprovedBankHealthFigures(),
   ]);
 
+  // No bank has a rate yet (the scrape has never succeeded): say so plainly
+  // instead of drawing an empty table. Flips back on its own once data lands.
+  const hasRates = rows.some((r) => r.ratePct !== null);
+
   return (
     <>
       <RatesHeader />
 
-      <RateScorecard
-        rows={JSON.parse(JSON.stringify(rows))}
-        bbAggregate={bbAggregate ? JSON.parse(JSON.stringify(bbAggregate)) : null}
-      />
+      {hasRates ? (
+        <RateScorecard
+          rows={JSON.parse(JSON.stringify(rows))}
+          bbAggregate={bbAggregate ? JSON.parse(JSON.stringify(bbAggregate)) : null}
+        />
+      ) : (
+        <RatesEmptyState />
+      )}
 
-      <div className="max-w-[1160px] mx-auto px-5 mb-16">
-        <BankHealthPanel rows={JSON.parse(JSON.stringify(bankHealthRows))} />
-      </div>
+      {/* Same rule for bank health: only figures an admin has approved, else nothing. */}
+      {bankHealthRows.some((r) => r.figures.length > 0) && (
+        <div className="w-full max-w-[1160px] mx-auto px-5 mb-16">
+          <BankHealthPanel rows={JSON.parse(JSON.stringify(bankHealthRows))} />
+        </div>
+      )}
     </>
   );
 }

@@ -1,17 +1,18 @@
 "use client";
 
-import { Suspense, useMemo, useState } from "react";
+import { Suspense, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { TAXPAYER_CATEGORIES, type TaxLocation } from "@/config/tax-rules-2025-26";
+import { TAX_RULES, TAXPAYER_CATEGORIES } from "@/config/tax-rules-2025-26";
 import { calculateTax } from "@/lib/tax/calculate";
 import { calculateOptimizer } from "@/lib/tax/optimizer";
 import { EMPTY_TAX_INPUT, type TaxCalculatorInput } from "@/lib/tax/types";
-import { CheckField, Fieldset, NumberField, SelectField } from "@/components/ui/fields";
+import { CheckField, FOCUS_RING, Fieldset, NumberField, SelectField } from "@/components/ui/fields";
 import { TaxBreakdown } from "./TaxBreakdown";
 import { RebateOptimizer } from "./RebateOptimizer";
 import { TaxSlipModal } from "./TaxSlipModal";
 import { useLanguage } from "@/lib/i18n";
+import { fmtTaka, toAsciiDigits } from "@/lib/format";
 
 function field<K extends keyof TaxCalculatorInput>(
   input: TaxCalculatorInput,
@@ -34,7 +35,7 @@ function parseSharedLinkPatch(params: URLSearchParams): Partial<TaxCalculatorInp
   const parseNum = (k: string) => {
     const v = params.get(k);
     if (v) {
-      const n = parseFloat(v);
+      const n = parseFloat(toAsciiDigits(v));
       if (Number.isFinite(n) && n > 0) return n;
     }
     return undefined;
@@ -50,30 +51,62 @@ function parseSharedLinkPatch(params: URLSearchParams): Partial<TaxCalculatorInp
   // Shared alongside the amount: without it a shared link would show
   // exempt freelance income as fully taxed.
   if (params.get("freelanceBank") === "1") patch.freelanceBankTransferCompliant = true;
+  if (params.get("first") === "1") patch.firstTimeFiler = true;
   const ait = parseNum("ait"); if (ait !== undefined) patch.aitPaid = ait;
   const cat = params.get("cat"); if (cat) patch.categoryId = cat;
 
   return patch;
 }
 
-export function CalculatorForm({ initial }: { initial?: Partial<TaxCalculatorInput> }) {
+/**
+ * The page is static, so the shared-link query string is only known in the browser:
+ * the server sends the empty form as the Suspense fallback, and the browser swaps in
+ * the form with the link's values (and the tracker prefill) applied.
+ */
+export function CalculatorForm() {
   return (
-    <Suspense fallback={null}>
-      <CalculatorFormInner initial={initial} />
+    <Suspense fallback={<CalculatorFormInner patch={{}} loadTracker={false} />}>
+      <CalculatorFormFromUrl />
     </Suspense>
   );
 }
 
-function CalculatorFormInner({ initial }: { initial?: Partial<TaxCalculatorInput> }) {
-  const { t } = useLanguage();
+function CalculatorFormFromUrl() {
   const searchParams = useSearchParams();
-  // Lazy initializer: runs once, so the URL patch is folded into the very
-  // first render instead of arriving a tick later via setState-in-effect.
-  const [input, setInput] = useState<TaxCalculatorInput>(() => ({
-    ...EMPTY_TAX_INPUT,
-    ...initial,
-    ...parseSharedLinkPatch(searchParams),
-  }));
+  const patch = useMemo(() => parseSharedLinkPatch(searchParams), [searchParams]);
+  return <CalculatorFormInner patch={patch} loadTracker />;
+}
+
+function CalculatorFormInner({
+  patch,
+  loadTracker,
+}: {
+  patch: Partial<TaxCalculatorInput>;
+  loadTracker: boolean;
+}) {
+  const { t } = useLanguage();
+  // Lazy initializer: runs once, so the URL patch is part of the very first render.
+  const [initialInput] = useState<TaxCalculatorInput>(() => ({ ...EMPTY_TAX_INPUT, ...patch }));
+  const [input, setInput] = useState(initialInput);
+
+  // Someone who logged income in the tracker shouldn't have to retype it. A shared
+  // link's values still win over the tracker's.
+  useEffect(() => {
+    if (!loadTracker) return;
+    let cancelled = false;
+    fetch("/api/calculator/prefill")
+      .then((res) => (res.ok ? res.json() : null))
+      .then((body: { initial: Partial<TaxCalculatorInput> | null } | null) => {
+        if (cancelled || !body?.initial) return;
+        // Every edit makes a new object, so `prev === initialInput` means untouched:
+        // a late prefill never overwrites what the person typed.
+        setInput((prev) => (prev === initialInput ? { ...prev, ...body.initial, ...patch } : prev));
+      })
+      .catch(() => {}); // prefill is a convenience; the form works without it
+    return () => {
+      cancelled = true;
+    };
+  }, [loadTracker, patch, initialInput]);
   const [wealthOpen, setWealthOpen] = useState(false);
   const [showSlipModal, setShowSlipModal] = useState(false);
 
@@ -89,6 +122,7 @@ function CalculatorFormInner({ initial }: { initial?: Partial<TaxCalculatorInput
     if (input.freelanceAnnual) params.set("freelance", String(input.freelanceAnnual));
     if (input.freelanceAnnual && input.freelanceBankTransferCompliant) params.set("freelanceBank", "1");
     if (input.aitPaid) params.set("ait", String(input.aitPaid));
+    if (input.firstTimeFiler) params.set("first", "1");
     if (input.categoryId && input.categoryId !== "general") params.set("cat", input.categoryId);
     const qs = params.toString();
     return `${window.location.origin}/calculator${qs ? `?${qs}` : ""}`;
@@ -96,6 +130,14 @@ function CalculatorFormInner({ initial }: { initial?: Partial<TaxCalculatorInput
 
   const result = useMemo(() => calculateTax(input), [input]);
   const optimizer = useMemo(() => calculateOptimizer(result), [result]);
+
+  // Demand signal: counts that someone got a result, never the figures. No-op
+  // unless GoatCounter is on (production only). shortcut: lost if the script has
+  // not loaded yet (a shared link opened cold); queue it if that count matters.
+  const calculated = result.slabBase > 0;
+  useEffect(() => {
+    if (calculated) window.goatcounter?.count?.({ path: "tax-calculate", event: true });
+  }, [calculated]);
 
   const n = (key: keyof TaxCalculatorInput) => field(input, setInput, key);
 
@@ -115,41 +157,28 @@ function CalculatorFormInner({ initial }: { initial?: Partial<TaxCalculatorInput
               label: `${t(c.labelEn, c.label)} — Tax-free ৳${c.taxFreeLimit.toLocaleString("en-IN")}`,
             }))}
           />
-          <div className="mt-2.5">
-            <SelectField
-              label={t("Tax Location / Jurisdiction", "কর অঞ্চল / ভৌগোলিক অবস্থান")}
-              value={input.location ?? "dhaka_ctg"}
-              onChange={(v) => setInput({ ...input, location: v as TaxLocation })}
-              options={[
-                {
-                  value: "dhaka_ctg",
-                  label: `${t("Dhaka & Chattogram City Corporation", "ঢাকা ও চট্টগ্রাম সিটি কর্পোরেশন")} — ${t("Min Tax ৳5,000", "ন্যূনতম কর ৳৫,০০০")}`,
-                },
-                {
-                  value: "other_city",
-                  label: `${t("Other City Corporations", "অন্যান্য সিটি কর্পোরেশন")} — ${t("Min Tax ৳4,000", "ন্যূনতম কর ৳৪,০০০")}`,
-                },
-                {
-                  value: "non_city",
-                  label: `${t("Non-City / District / Upazila areas", "সিটি কর্পোরেশন বহির্ভূত এলাকা / জেলা")} — ${t("Min Tax ৳3,000", "ন্যূনতম কর ৳৩,০০০")}`,
-                },
-              ]}
-            />
-          </div>
-          <div className="grid grid-cols-2 gap-2.5 mt-2">
+          <div className="mt-2">
             <NumberField
               label={t("Number of disabled children (each +৳50,000 tax-free)", "প্রতিবন্ধী সন্তান সংখ্যা (each +৳50,000 tax-free)")}
               currency={false}
               {...n("disabledChildren")}
             />
           </div>
+          <CheckField
+            label={t(
+              `This is my first tax return (minimum tax ${fmtTaka(TAX_RULES.minTaxNewTaxpayer)} instead of ${fmtTaka(TAX_RULES.minTax)})`,
+              `এটা আমার প্রথম রিটার্ন (ন্যূনতম কর ${fmtTaka(TAX_RULES.minTax)}-এর বদলে ${fmtTaka(TAX_RULES.minTaxNewTaxpayer)})`
+            )}
+            checked={Boolean(input.firstTimeFiler)}
+            onChange={(b) => setInput({ ...input, firstTimeFiler: b })}
+          />
         </Fieldset>
 
         <Fieldset
           legend={t("2. Salary income", "২. বেতন আয় (Salary income)")}
           note={t(
-            "Standard exemption = ⅓ of gross salary income or ৳4,50,000, whichever is lower.",
-            "Standard exemption = ⅓ of gross salary income বা ৳৪,৫০,০০০, যেটা কম।"
+            `Standard exemption = ⅓ of gross salary income or ${fmtTaka(TAX_RULES.salaryExemptionCap)}, whichever is lower.`,
+            `Standard exemption = ⅓ of gross salary income বা ${fmtTaka(TAX_RULES.salaryExemptionCap)}, যেটা কম।`
           )}
         >
           <div className="grid grid-cols-2 gap-2.5">
@@ -237,8 +266,8 @@ function CalculatorFormInner({ initial }: { initial?: Partial<TaxCalculatorInput
         <Fieldset
           legend={t("5. Investment (rebate eligible)", "৫. বিনিয়োগ (Investment — rebate eligible)")}
           note={t(
-            "Sanchaypatra + Govt securities + Mutual fund share a ৳5 lakh/year cap. DPS is capped at ৳1,20,000/year.",
-            "Sanchaypatra + Govt securities + Mutual fund মিলে বছরে ৫ লাখ শেয়ার্ড cap। DPS বছরে ৳1,20,000 পর্যন্ত।"
+            `Sanchaypatra + Govt securities share a ${fmtTaka(TAX_RULES.sharedGroupCap)}/year cap. Mutual funds have no cap. DPS is capped at ${fmtTaka(TAX_RULES.dpsCap)}/year.`,
+            `সঞ্চয়পত্র + সরকারি সিকিউরিটিজ মিলে বছরে ${fmtTaka(TAX_RULES.sharedGroupCap)} শেয়ার্ড cap। মিউচুয়াল ফান্ডে cap নেই। DPS বছরে ${fmtTaka(TAX_RULES.dpsCap)} পর্যন্ত।`
           )}
         >
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
@@ -285,28 +314,28 @@ function CalculatorFormInner({ initial }: { initial?: Partial<TaxCalculatorInput
             {...n("aitPaid")}
           />
 
-          <button
-            type="button"
-            onClick={() => {
-              const next = !wealthOpen;
-              setWealthOpen(next);
-              if (!next) setInput({ ...input, netWealth: 0, multiCar: false, bigHouse: false });
-            }}
-            className="w-full text-left flex items-center gap-2.5 px-3 py-2.5 mt-3.5 bg-[#FBFAF6] border border-dashed border-line text-[13.5px] text-green-deep"
-          >
-            <input type="checkbox" checked={wealthOpen} readOnly className="w-auto" />
+          <label className="w-full flex items-center gap-2.5 px-3 py-2.5 mt-3.5 bg-[#FBFAF6] border border-dashed border-line text-[13.5px] text-green-deep cursor-pointer">
+            <input
+              type="checkbox"
+              checked={wealthOpen}
+              onChange={(e) => {
+                setWealthOpen(e.target.checked);
+                if (!e.target.checked) setInput({ ...input, netWealth: 0, multiCar: false, bigHouse: false });
+              }}
+              className={`w-5 h-5 shrink-0 ${FOCUS_RING}`}
+            />
             {t(
               "Do you have significant assets / property? (doesn't apply to most people)",
-              "তোমার significant সম্পদ / সম্পত্তি আছে? (বেশিরভাগ মানুষের জন্য এটা প্রযোজ্য না)"
+              "আপনার কি উল্লেখযোগ্য সম্পদ বা সম্পত্তি আছে? (বেশিরভাগ মানুষের ক্ষেত্রে প্রযোজ্য নয়)"
             )}
-          </button>
+          </label>
 
           {wealthOpen && (
             <div className="pt-3">
               <p className="text-xs text-muted mb-2.5">
                 {t(
                   "If your net wealth is under ৳4 crore, and you don't have multiple cars or 8,000+ sqft of property, this section isn't for you.",
-                  "Net wealth ৪ কোটির নিচে হলে, ba multiple car/8000+ sqft property na thakle, এই section তোমার জন্য না।"
+                  "নিট সম্পদ ৪ কোটি টাকার কম হলে, আর একাধিক গাড়ি বা ৮,০০০ বর্গফুটের বেশি সম্পত্তি না থাকলে, এই অংশ আপনার জন্য নয়।"
                 )}
               </p>
               <NumberField
@@ -337,7 +366,7 @@ function CalculatorFormInner({ initial }: { initial?: Partial<TaxCalculatorInput
             ESTIMATE
           </span>
           <h2 className="font-serif font-semibold text-[17px] mb-3.5 pb-2 border-b-2 border-green text-green-deep">
-            {t("Your estimate, step by step", "তোমার এস্টিমেট, ধাপে ধাপে")}
+            {t("Your estimate, step by step", "আপনার এস্টিমেট, ধাপে ধাপে")}
           </h2>
           <TaxBreakdown r={result} ait={input.aitPaid} />
 

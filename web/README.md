@@ -29,6 +29,9 @@ work with zero setup, no account, no server round-trip for the calculation itsel
 you save an entry, tracked via an httpOnly cookie — see `src/lib/tracker/session.ts`.
 `/rates` and `/admin/*` need the rate-scrape/bank-health cron jobs and an admin login
 to show live data (see `src/lib/rates/`, `src/lib/bank-health/`, `src/lib/admin/`).
+Until a scrape has stored at least one rate, `/rates` shows a "not collected yet" state and
+is left out of the nav and homepage (`hasRateData` in `src/lib/rates/current-rates.ts`); a
+successful scrape revalidates every page so the link comes back on its own.
 
 ## Deploying (Vercel)
 
@@ -43,9 +46,19 @@ to show live data (see `src/lib/rates/`, `src/lib/bank-health/`, `src/lib/admin/
    `ADMIN_SECRET` the tracker can't sign sessions). Optional: `YOUTUBE_API_KEY` +
    `YOUTUBE_CHANNEL_ID` for the `/videos` auto-feed, and the email/WhatsApp variables
    listed in `.env.example`. The variable-by-variable checklist is in `../formenow.md`.
-4. Deploy. Vercel runs the `vercel-build` script (`prisma migrate deploy &&
-   next build`), which applies any pending migrations to `DATABASE_URL`
-   before building — no separate migration step needed on future pushes.
+4. Deploy. Vercel runs the `vercel-build` script, which applies pending
+   migrations to `DATABASE_URL` and then runs `next build`. It migrates only
+   when `VERCEL_ENV=production`; preview builds never migrate.
+
+**Preview needs its own database.** Set a separate `DATABASE_URL` for the Preview
+environment (for example a Neon branch). If Preview shares the production URL, every
+preview URL reads and writes real user data. Preview builds do not migrate, so run
+`npx prisma migrate deploy` against the preview database yourself when a branch adds a
+migration.
+
+**Drop columns one release late.** Migrations are forward-only, and Vercel's instant
+rollback does not undo them. When code stops using a column, ship that code first, and
+drop the column in a later release.
 
 `vercel-build` intentionally skips the local `build` script's `prebuild`
 unit-test hook, and Vercel never runs the e2e suite (Playwright needs a browser
@@ -145,7 +158,9 @@ Playwright needs its browser installed once: `npx playwright install chromium`.
 
 ## Status
 
-Every phase in the root `README.md`'s roadmap table is built. What's left is tracked in
+Every phase in the root `README.md`'s roadmap table has code, but rate collection,
+bank-health figures and reminders are not live in production yet; the roadmap's Status
+column says why. What's left is tracked in
 `todo/`, not here: `todo/my-work/` and `todo/needs-us-both/` are items gated on the human
 owner's own accounts or judgment calls (email/WhatsApp provider setup, a couple of bank
 data-source decisions); `todo/agent-work/README.md` is the running log of autonomous work

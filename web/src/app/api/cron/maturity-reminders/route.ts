@@ -2,10 +2,12 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { isAuthorizedCronRequest } from "@/lib/cron/auth";
 import { daysUntil } from "@/lib/tracker/derive";
-import { channelsAvailableForUser, notifyMaturityReminder } from "@/lib/notify";
+import { channelsAvailableForUser, notifyMaturityReminder, type NotifyChannel } from "@/lib/notify";
 import { getReinvestContextForUser, logReinvestSuggestion } from "@/lib/reinvest/log";
+import { DEFAULT_INFLATION_PCT } from "@/config/inflation";
 
-const REMINDER_WINDOWS_DAYS = [7, 1] as const;
+// Smallest first: an entry only gets the tightest window it is inside.
+const REMINDER_WINDOWS_DAYS = [1, 7] as const;
 
 function resolveAppUrl(request: Request): string {
   if (process.env.NEXT_PUBLIC_APP_URL) return process.env.NEXT_PUBLIC_APP_URL;
@@ -14,9 +16,10 @@ function resolveAppUrl(request: Request): string {
 
 /**
  * Daily cron (see vercel.json). For each not-yet-matured, not-yet-confirmed
- * investment, sends a reminder once per window per channel — ReminderLog's
- * unique constraint is what actually prevents a double-send if this runs
- * more than once on the same day.
+ * investment, sends at most one reminder per run: for the tightest window it
+ * is inside, on each channel not yet logged for that window. The ReminderLog
+ * row is inserted before sending, so its unique constraint stops a repeated
+ * or overlapping run from sending twice.
  */
 export async function GET(request: Request) {
   if (!isAuthorizedCronRequest(request)) {
@@ -44,78 +47,53 @@ export async function GET(request: Request) {
   let attempted = 0;
   let sent = 0;
   const appUrl = resolveAppUrl(request);
-  // At most one ReinvestSuggestion row per investment per cron run, even if
-  // both the 7-day and 1-day windows happen to fire in the same run.
-  const reinvestLinkByInvestment = new Map<string, string>();
 
   for (const inv of investments) {
-    const daysLeft = daysUntil(inv.maturityDate);
-    const availableChannels = channelsAvailableForUser(inv.user);
-    if (availableChannels.length === 0) continue;
+    const window = REMINDER_WINDOWS_DAYS.find((w) => daysUntil(inv.maturityDate) <= w);
+    if (window === undefined) continue;
 
-    for (const window of REMINDER_WINDOWS_DAYS) {
-      if (daysLeft > window) continue;
-
-      const alreadySentChannels = new Set(
-        inv.reminderLogs.filter((l) => l.windowDays === window).map((l) => l.channel)
-      );
-      const channelsToSend = availableChannels.filter((c) => !alreadySentChannels.has(c));
-      if (channelsToSend.length === 0) continue;
-
-      attempted++;
-
-      // Pre-compute (and log) a reinvestment suggestion for this investment
-      // so the reminder can link straight to it — see
-      // src/lib/reinvest/log.ts and the "trigger point" note in
-      // docs/product-notes.md's Phase 5 entry. Best-effort: a failure here
-      // must never block the reminder itself from sending.
-      let reinvestLink = reinvestLinkByInvestment.get(inv.id);
-      if (!reinvestLink) {
-        try {
-          const ctx = await getReinvestContextForUser(inv.userId);
-          await logReinvestSuggestion({
-            userId: inv.userId,
-            investmentEntryId: inv.id,
-            reinvestAmount: inv.principalAmount,
-            horizonYears: Math.max(0.5, inv.termMonths / 12),
-            hasPSR: true,
-            inflationPct: 8.5,
-            taxResult: ctx.taxResult,
-          });
-          reinvestLink = `${appUrl}/reinvest?investmentEntryId=${inv.id}`;
-          reinvestLinkByInvestment.set(inv.id, reinvestLink);
-        } catch (err) {
-          console.error("[cron/maturity-reminders] reinvest suggestion failed:", err);
-        }
-      }
-
-      const results = await notifyMaturityReminder(
-        inv.user,
-        {
-          label: inv.label,
-          principalAmount: inv.principalAmount,
-          maturityDate: inv.maturityDate,
-        },
-        { reinvestLink }
-      );
-
-      for (const result of results) {
-        if (!channelsToSend.includes(result.channel)) continue;
-        if (result.sent) sent++;
-        // Log every attempt (sent or not) for this window+channel so a
-        // channel that's misconfigured doesn't get retried every single
-        // day — a human fixing it can just clear the log row if needed.
-        await prisma.reminderLog
-          .create({
-            data: {
-              investmentEntryId: inv.id,
-              windowDays: window,
-              channel: result.channel,
-            },
-          })
-          .catch(() => {});
-      }
+    // Claim each channel first. A failed send stays logged (not retried daily);
+    // a human fixing the channel can clear the row.
+    const channels: NotifyChannel[] = [];
+    for (const channel of channelsAvailableForUser(inv.user)) {
+      if (inv.reminderLogs.some((l) => l.windowDays === window && l.channel === channel)) continue;
+      const claimed = await prisma.reminderLog
+        .create({ data: { investmentEntryId: inv.id, windowDays: window, channel } })
+        .then(() => true, () => false);
+      if (claimed) channels.push(channel);
     }
+    if (channels.length === 0) continue;
+
+    attempted++;
+
+    // Pre-compute (and log) a reinvestment suggestion for this investment
+    // so the reminder can link straight to it — see
+    // src/lib/reinvest/log.ts and the "trigger point" note in
+    // docs/product-notes.md's Phase 5 entry. Best-effort: a failure here
+    // must never block the reminder itself from sending.
+    let reinvestLink: string | undefined;
+    try {
+      const ctx = await getReinvestContextForUser(inv.userId);
+      await logReinvestSuggestion({
+        userId: inv.userId,
+        investmentEntryId: inv.id,
+        reinvestAmount: inv.principalAmount,
+        horizonYears: Math.max(0.5, inv.termMonths / 12),
+        hasPSR: true,
+        inflationPct: DEFAULT_INFLATION_PCT,
+        taxResult: ctx.taxResult,
+      });
+      reinvestLink = `${appUrl}/reinvest?investmentEntryId=${inv.id}`;
+    } catch (err) {
+      console.error("[cron/maturity-reminders] reinvest suggestion failed:", err);
+    }
+
+    const results = await notifyMaturityReminder(
+      inv.user,
+      { label: inv.label, principalAmount: inv.principalAmount, maturityDate: inv.maturityDate },
+      { reinvestLink, channels }
+    );
+    sent += results.filter((r) => r.sent).length;
   }
 
   return NextResponse.json({ investmentsChecked: investments.length, attempted, sent });

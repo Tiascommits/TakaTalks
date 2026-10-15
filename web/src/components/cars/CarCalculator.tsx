@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useId, useMemo, useState } from "react";
 import {
   VEHICLE_SLABS,
   calculateCarAit,
@@ -74,6 +74,8 @@ const CAR_PRESETS: CarPreset[] = [
 
 export function CarCalculator() {
   const { t, lang } = useLanguage();
+  const categorySelectId = useId();
+  const tenureSelectId = useId();
 
   // Tab State
   const [activeTab, setActiveTab] = useState<"absorption" | "multicar" | "tco">("absorption");
@@ -228,10 +230,11 @@ export function CarCalculator() {
 
             <div className="space-y-4">
               <div>
-                <label className="block text-xs font-semibold text-muted uppercase mb-1.5">
+                <label htmlFor={categorySelectId} className="block text-xs font-semibold text-muted uppercase mb-1.5">
                   {t("Engine Capacity / Vehicle Type", "ইঞ্জিনের সিসি / গাড়ির শ্রেণি")}
                 </label>
                 <select
+                  id={categorySelectId}
                   value={category}
                   onChange={(e) => {
                     const cat = e.target.value as VehicleCategory;
@@ -360,10 +363,11 @@ export function CarCalculator() {
                   onChange={setDownPayment}
                 />
                 <div>
-                  <label className="block text-xs text-[#555] mb-1">
+                  <label htmlFor={tenureSelectId} className="block text-xs text-[#555] mb-1">
                     {t("Loan Tenure (Years)", "লোন সময়কাল (বছর)")}
                   </label>
                   <select
+                    id={tenureSelectId}
                     value={loanTenureYears}
                     onChange={(e) => setLoanTenureYears(Number(e.target.value))}
                     className="w-full text-sm bg-paper border border-line p-2.5 rounded-xs"
@@ -527,7 +531,12 @@ export function CarCalculator() {
                     "সব সিসি স্ল্যাব বনাম আপনার কর সমন্বয় তালিকা"
                   )}
                 </h3>
-                <div className="overflow-x-auto">
+                <div
+                  tabIndex={0}
+                  role="region"
+                  aria-label={t("CC slab table", "সিসি স্ল্যাব তালিকা")}
+                  className="overflow-x-auto focus:outline-none focus-visible:ring-2 focus-visible:ring-green/30"
+                >
                   <table className="w-full text-xs text-left">
                     <thead>
                       <tr className="border-b border-line text-muted font-mono">

@@ -6,6 +6,7 @@ import {
   type SalaryStructureInput,
 } from "@/lib/salary/salary";
 import { fmtTaka } from "@/lib/format";
+import { TAX_RULES } from "@/config/tax-rules-2025-26";
 import { NumberField } from "@/components/ui/fields";
 import { useLanguage } from "@/lib/i18n";
 
@@ -224,7 +225,7 @@ export function SalaryComparator() {
             <span className="font-serif font-semibold text-base">
               {offerA.label}
             </span>
-            <span className="text-[10.5px] font-mono text-gold font-semibold uppercase">
+            <span className="text-[10.5px] font-mono text-gold-light font-semibold uppercase">
               {resOfferA.netMonthlyInHand >= resCurrent.netMonthlyInHand
                 ? t("HIGHER IN-HAND", "বেশি ইন-হ্যান্ড")
                 : t("LOWER IN-HAND", "কম ইন-হ্যান্ড")}
@@ -459,8 +460,8 @@ export function SalaryComparator() {
         </h3>
         <p className="text-xs text-[#555] leading-relaxed mb-3">
           {t(
-            "Under Section 32 of the Income Tax Act 2023, employees receive a unified statutory exemption: one-third (1/3) of total employment receipts, or ৳5,00,000, whichever is less. The remaining salary is taxed according to national slab rates, and employers deduct this annually in 12 equal monthly TDS installments under Section 86.",
-            "আয়কর আইন ২০২৩-এর ধারা ৩২ অনুযায়ী চাকরি হতে আয়ের ক্ষেত্রে একটি একক সাধারণ অব্যাহতি প্রযোজ্য: মোট প্রাপ্তির এক-তৃতীয়াংশ অথবা ৫,০০,০০০ টাকা (যেটি কম)। অবশিষ্ট করযোগ্য বেতনের উপর সাধারণ স্ল্যাব হারে কর নির্ধারণ হয় এবং ধারা ৮৬ অনুযায়ী প্রতিষ্ঠান প্রতি মাসে ১২টি সমান কিস্তিতে তা উৎস কর (TDS) হিসেবে কেটে রাখে।"
+            `Under Section 32 of the Income Tax Act 2023, employees receive a unified statutory exemption: one-third (1/3) of total employment receipts, or ${fmtTaka(TAX_RULES.salaryExemptionCap)}, whichever is less. The rest is taxed at the national slab rates, less the investment rebate on your own PF contribution, and never below the minimum tax — the same calculation as the tax calculator. Employers deduct it in 12 monthly TDS installments under Section 86.`,
+            `আয়কর আইন ২০২৩-এর ধারা ৩২ অনুযায়ী চাকরি হতে আয়ের ক্ষেত্রে একটি একক সাধারণ অব্যাহতি প্রযোজ্য: মোট প্রাপ্তির এক-তৃতীয়াংশ অথবা ${fmtTaka(TAX_RULES.salaryExemptionCap)} (যেটি কম)। বাকি বেতনে সাধারণ স্ল্যাব হারে কর হয়, নিজের পিএফ জমার ওপর বিনিয়োগ রিবেট বাদ যায়, আর কর কখনো ন্যূনতম করের নিচে নামে না — আয়কর ক্যালকুলেটরের একই হিসাব। ধারা ৮৬ অনুযায়ী প্রতিষ্ঠান প্রতি মাসে ১২টি কিস্তিতে তা উৎস কর (TDS) হিসেবে কেটে রাখে।`
           )}
         </p>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">

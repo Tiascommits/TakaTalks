@@ -3,7 +3,7 @@ export function buildFacebookEmbedUrl(videoUrl: string): string {
   return `https://www.facebook.com/plugins/video.php?href=${encoded}&show_text=false`;
 }
 
-export function buildYoutubeEmbedUrl(videoUrl: string): string {
+function youtubeVideoId(videoUrl: string): string {
   const url = new URL(videoUrl);
   let videoId: string | null = null;
 
@@ -18,8 +18,16 @@ export function buildYoutubeEmbedUrl(videoUrl: string): string {
   if (!videoId) {
     throw new Error(`Could not extract a YouTube video ID from: ${videoUrl}`);
   }
+  return videoId;
+}
 
-  return `https://www.youtube.com/embed/${videoId}`;
+// The no-cookie host sets no tracking cookies until the viewer presses play.
+export function buildYoutubeEmbedUrl(videoUrl: string): string {
+  return `https://www.youtube-nocookie.com/embed/${youtubeVideoId(videoUrl)}`;
+}
+
+export function youtubeThumbnailUrl(videoUrl: string): string {
+  return `https://i.ytimg.com/vi/${youtubeVideoId(videoUrl)}/hqdefault.jpg`;
 }
 
 export function buildEmbedUrl(platform: "facebook" | "youtube", videoUrl: string): string {

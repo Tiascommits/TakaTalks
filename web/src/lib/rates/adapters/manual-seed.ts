@@ -1,5 +1,5 @@
 import type { RateAdapter, ScrapedRate } from "./types";
-import { SEED_FDR_RATES, SEED_SOURCE_LABEL } from "../seed-rates";
+import { SEED_AS_OF, SEED_FDR_RATES, SEED_SOURCE_LABEL } from "../seed-rates";
 
 /**
  * Stand-in adapter for a bank whose rate-card page hasn't been verified and
@@ -17,6 +17,7 @@ function manualSeedAdapter(bankShortCode: string): RateAdapter {
         ratePct: r.ratePct,
         method: "MANUAL",
         source: SEED_SOURCE_LABEL,
+        asOf: SEED_AS_OF,
       }));
     },
   };

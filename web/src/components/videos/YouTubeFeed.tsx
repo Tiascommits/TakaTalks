@@ -55,7 +55,7 @@ export async function YouTubeFeed() {
               <p className="text-xs text-muted mt-1.5 flex-1 line-clamp-2">
                 {video.description}
               </p>
-              <p className="text-[10px] text-muted/70 mt-3 font-mono tracking-wider">
+              <p className="text-[10px] text-muted mt-3 font-mono tracking-wider">
                 {new Date(video.publishedAt).toLocaleDateString()}
               </p>
             </div>

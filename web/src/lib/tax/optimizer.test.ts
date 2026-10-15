@@ -15,7 +15,7 @@ describe("calculateOptimizer — normal cases", () => {
     expect(opt.hasTaxableIncome).toBe(false);
   });
 
-  it("suggests filling the sanchay/bond/MF group first", () => {
+  it("suggests filling the sanchay/bond group first", () => {
     const { opt } = optimizerFor({ businessAnnual: 5000000 });
     expect(opt.hasTaxableIncome).toBe(true);
     expect(opt.suggestions[0].instrumentId).toBe("sanchay_group");
@@ -87,3 +87,33 @@ describe("calculateOptimizer — edge / weird cases", () => {
     expect(opt.maxRebate).toBeLessThanOrEqual(TAX_RULES.rebateCap);
   });
 });
+
+describe("calculateOptimizer — minimum tax floor (critique B3)", () => {
+  it("promises nothing at ৳4,00,001, where the minimum tax already replaces the slab tax", () => {
+    const { r, opt } = optimizerFor({ businessAnnual: 400001 });
+    expect(r.minApplied).toBe(true);
+    expect(opt.taxSaving).toBe(0);
+    expect(opt.additionalInvestmentNeeded).toBe(0);
+    expect(opt.suggestions).toHaveLength(0);
+    expect(opt.alreadyAtMax).toBe(true);
+    expect(opt.cappedByMinimumTax).toBe(true);
+  });
+
+  it("at ৳20 lakh with ৳10 lakh invested, the 3% ceiling binds, not the minimum tax", () => {
+    const { r, opt } = optimizerFor({ businessAnnual: 2000000, invStockAnnual: 1000000 });
+    expect(r.minApplied).toBe(false);
+    expect(opt.alreadyAtMax).toBe(true);
+    expect(opt.cappedByMinimumTax).toBe(false);
+  });
+
+  it("never promises a saving that would take tax below the minimum-tax floor", () => {
+    for (const businessAnnual of [450000, 500000, 600000, 700000, 900000]) {
+      const { r, opt } = optimizerFor({ businessAnnual });
+      expect(opt.taxSaving).toBeLessThanOrEqual(Math.max(0, r.taxAfterRebate - r.minFloor) + 1e-9);
+      // investing exactly what it says must deliver exactly the promised saving
+      const after = calculateTax({ ...EMPTY_TAX_INPUT, businessAnnual, invStockAnnual: opt.additionalInvestmentNeeded });
+      expect(r.taxAfterRebate - after.taxAfterRebate).toBeCloseTo(opt.taxSaving, 6);
+    }
+  });
+});
+

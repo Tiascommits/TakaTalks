@@ -1,5 +1,5 @@
 export type VideoFormat = "short" | "long";
-export type VideoPlatform = "facebook" | "youtube" | "local";
+export type VideoPlatform = "facebook" | "youtube";
 
 export type VideoEntry = {
   id: string;
