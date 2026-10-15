@@ -1,14 +1,15 @@
 import { createHash } from "node:crypto";
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { signedCookieUserId } from "@/lib/tracker/session";
 
 const MINUTE = 60_000;
 
 /** Hits allowed per fixed window. Generous for a person, low enough to stop a script filling the database or the mail quota. */
 const LIMITS = {
-  write: { limit: 60, windowMs: 10 * MINUTE }, // tracker saves, per IP
-  link: { limit: 10, windowMs: 60 * MINUTE }, // login link / code requests, per IP
-  linkTo: { limit: 3, windowMs: 15 * MINUTE }, // login link / code requests, per address
+  write: { limit: 60, windowMs: 10 * MINUTE }, // tracker saves, per session user (per IP before the first save), see writeKey
+  link: { limit: 100, windowMs: 60 * MINUTE }, // login link / code requests, per IP: only a backstop, since one carrier IP (CGNAT) can front thousands of people
+  linkTo: { limit: 3, windowMs: 15 * MINUTE }, // login link / code requests, per address: the real limit, stops one inbox or phone being flooded
   adminLogin: { limit: 10, windowMs: 15 * MINUTE }, // admin sign-in and setup, per IP
 } as const;
 
@@ -19,6 +20,16 @@ export function clientIp(request: Request): string {
     request.headers.get("x-forwarded-for")?.split(",")[0].trim() ??
     "unknown"
   );
+}
+
+/**
+ * Who a tracker save counts against: the user in the signed session cookie, so people
+ * sharing one carrier IP (CGNAT) don't use up each other's budget. Never a body field or
+ * unsigned header. No valid session yet (the first save creates it) falls back to the IP.
+ */
+export async function writeKey(request: Request): Promise<string> {
+  const userId = await signedCookieUserId();
+  return userId ? `user:${userId}` : clientIp(request);
 }
 
 /**
