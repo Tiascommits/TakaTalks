@@ -102,4 +102,27 @@ describe("rebate optimizer [critique B3]", () => {
     expect(opt.additionalInvestmentNeeded).toBeCloseTo(150000, 6);
     expect(tax({ businessAnnual: 600000, invStockAnnual: 150000 }).totalLiability).toBeCloseTo(5000, 6);
   });
+
+  it("at ৳6,00,000 with ৳50,000 already invested, promises only the remaining ৳10,000 for ৳1,00,000 more", () => {
+    // rebate so far 5,000, tax 15,000; it can fall 10,000 more before the ৳5,000 minimum
+    const opt = calculateOptimizer(tax({ businessAnnual: 600000, invStockAnnual: 50000 }));
+    expect(opt.taxSaving).toBeCloseTo(10000, 6);
+    expect(opt.additionalInvestmentNeeded).toBeCloseTo(100000, 6);
+  });
+
+  it("first return at ৳5,00,000: the ৳1,000 minimum binds, so ৳9,000 for ৳90,000 invested", () => {
+    // gross 10,000; 3% of income = 15,000, but tax can only fall to 1,000
+    const opt = calculateOptimizer(tax({ businessAnnual: 500000, firstTimeFiler: true }));
+    expect(opt.taxSaving).toBeCloseTo(9000, 6);
+    expect(opt.additionalInvestmentNeeded).toBeCloseTo(90000, 6);
+    expect(tax({ businessAnnual: 500000, firstTimeFiler: true, invStockAnnual: 90000 }).totalLiability).toBeCloseTo(1000, 6);
+  });
+
+  it("first return at ৳6,00,000: the 3% ceiling binds before the ৳1,000 minimum, so ৳18,000", () => {
+    // gross 20,000; 3% of income = 18,000 leaves 2,000, above the 1,000 minimum
+    const opt = calculateOptimizer(tax({ businessAnnual: 600000, firstTimeFiler: true }));
+    expect(opt.taxSaving).toBeCloseTo(18000, 6);
+    expect(opt.cappedByMinimumTax).toBe(false);
+    expect(tax({ businessAnnual: 600000, firstTimeFiler: true, invStockAnnual: 180000 }).totalLiability).toBeCloseTo(2000, 6);
+  });
 });
