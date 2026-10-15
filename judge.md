@@ -50,3 +50,23 @@ Baseline: the independent critique of 14 Oct 2026 (`CrtiQue_Oct14.md`, untracked
 6. In January, read the GoatCounter events and decide whether the tax niche earns more work (critique action 10).
 
 **Score:** not re-scored. Round 1 removes the cause of the 25% cap on this branch, but none of it is in production yet.
+
+### Update 2 (2026-10-15, agent round)
+
+**Done:**
+- Merge: there was nothing left to merge. Round 1 (`7ca7227`), round 2 (`5e3134c`) and the sweep (`b1ad596`) were already on `experimental`, and no branch holds commits that `experimental` lacks. The owner's PR #7 (`d3b29d8`) took `experimental` up to `e294460` into `main`, and production serves it: `/privacy` returns 200, and `/api/health` returns 200 with `banksWithFdrRates: 0`.
+- QA report for the 7 commits still missing from `main`: `docs/qa-report-2026-10-15-experimental.md`. It finds no migrations and recommends the merge from a QA standpoint. The merge itself is the owner's call.
+- SEO (`6981ce8`): `robots.txt` blocks `/admin`, `/api/` and `/account`. `sitemap.xml` lists the public pages and each `/viz/<slug>`, and adds `/rates` once it has data. Every page gets a canonical URL through `alternates.canonical: "./"`. `SITE_URL` now lives in `web/src/config/site.ts`, and the smoke test checks all three.
+- `/privacy` (`cdff5e0`) now lists the visualizer events (download, share, link copy, print) next to the tax events.
+
+**Checks:** `scripts/check.sh` exits 0 (559 unit tests in 42 files, plus the build). GitHub CI on `cdff5e0` passed, including 77 e2e tests. A local `next start` served the right robots, sitemap and canonical tags. Smoke on production passed 14 of 17 checks; the 3 failures are the new checks, which `main` does not have yet.
+
+**Not verified:** e2e did not run locally (no Postgres, and it needs the owner's sign-off), but CI ran it. No one has checked Search Console or the Facebook Sharing Debugger. The per-user rate limits have not been tested under load.
+
+**Still open (owner):**
+- Merge `experimental` into `main`.
+- The Vercel secrets and a Preview database.
+- A `VERCEL_AUTOMATION_BYPASS_SECRET` repo secret: the smoke workflow fails 15 of 15 checks on every preview deploy, which looks like the Deployment Protection page.
+- Submit the sitemap in Search Console after the deploy.
+- The rest of Update 1's owner list.
+- Next for agents: item 5 (Bangladesh Bank's all-bank rate table).
