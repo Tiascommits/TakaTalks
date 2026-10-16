@@ -19,7 +19,7 @@ The Lifecycle Agent prevents this loss by running automated maturity countdowns 
 ## 2. Retention Philosophy: Frictionless & Respectful
 
 - **No Spam**: The agent only messages when an actual financial event occurs (an investment is maturing or has matured).
-- **Lightweight Opt-in**: As documented in [`docs/feature-spec-tax-calculator.md`](file:///Users/blackbird/INOVACE/TakaTalks/docs/feature-spec-tax-calculator.md), users are only asked for an email or WhatsApp contact at the exact moment they configure an alert:
+- **Lightweight Opt-in**: As documented in [`docs/feature-spec-tax-calculator.md`](../../docs/feature-spec-tax-calculator.md), users are only asked for an email or WhatsApp contact at the exact moment they configure an alert:
   > *"Want us to remind you when this ৳2,00,000 FDR matures? We'll only save this contact to send you maturity alerts."*
 - **Multi-Channel Delivery**: Supports Email and WhatsApp notifications (leveraging existing WhatsApp delivery infrastructure used by Tipsoi).
 

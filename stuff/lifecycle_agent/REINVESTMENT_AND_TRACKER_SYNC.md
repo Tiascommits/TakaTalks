@@ -44,7 +44,7 @@ The payout balance is immediately added to the user's visible **Reinvestable Cas
 
 ## 3. Guiding the Reinvestment Decision (The Safe Math Boundary)
 
-As mandated by [`docs/product-notes.md`](file:///Users/blackbird/INOVACE/TakaTalks/docs/product-notes.md):
+As mandated by [`docs/product-notes.md`](../../docs/product-notes.md):
 - The app must **NEVER** display an AI recommendation like: *"You should put this ৳2,22,400 into Bank ABC"*.
 - Instead, clicking `[ Compare Fresh FDR Rates ]` sends the user to `/rates?amount=222400`:
   1. The scorecard automatically runs the after-tax calculations on that specific principal (৳2,22,400).

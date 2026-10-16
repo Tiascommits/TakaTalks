@@ -71,6 +71,9 @@ Config and business logic live under `src/config/` and `src/lib/<domain>/` as pu
 framework-free functions (easy to unit test); each domain's route(s) live under the
 matching `src/app/<domain>/` folder. `src/config/tools.ts` is the single registry that
 drives both the site nav and the homepage tool tabs — add a tool there, not in two places.
+Side tools (habits, freedom, goals, cars, loans, viz) sit under its "More" category.
+`/privacy` and `/terms` are static pages; `robots.ts`, `sitemap.ts` and `opengraph-image.tsx`
+in `src/app/` generate robots.txt, the sitemap and the site-wide share image.
 
 | Domain | Lib | Routes |
 |---|---|---|
@@ -87,11 +90,16 @@ drives both the site nav and the homepage tool tabs — add a tool there, not in
 | YouTube feed | `src/lib/videos/youtube.ts` (Data API v3, ISR-cached for an hour; needs `YOUTUBE_API_KEY` + `YOUTUBE_CHANNEL_ID`), hand-picked entries in `src/config/videos.ts` | `/videos` |
 | Zakat | `src/lib/zakat/` | `/zakat` |
 | Loan calculator | `src/lib/loans/` | `/loans` |
+| Money habit tracker | `src/lib/habits/` (`habits.ts`: unit cost × frequency, caps, alternatives; `store.ts`: browser-local only, nothing sent to the server) | `/habits` |
+| Financial freedom (FIRE) | `src/lib/freedom/` | `/freedom` |
+| Shareable visualizers | `src/lib/viz/` (`registry.ts` lists the slugs; drawing code in `src/components/viz/defs`) | `/viz`, `/viz/<slug>` |
+| Account and data deletion | `src/lib/tracker/session.ts`, `src/components/account/` | `/account` (see and delete what's saved for this browser), `/account/verify` |
 | Notifications (email/WhatsApp, no-op until env vars set) | `src/lib/notify/` | used by tracker + reinvest cron flows |
 | Admin auth + audit log | `src/lib/admin/` | `/admin/*` |
+| Health probe | `src/app/api/health/route.ts` (counts and data ages only, no user rows; used by `scripts/smoke.mjs` after each deploy) | `/api/health` |
 
 `prisma/schema.prisma` has grown accordingly — `User`, `IncomeEntry`, `InvestmentEntry`,
-`TaxProfile`, `ReminderLog`, `Bank`, `RateSnapshot`, `ScrapeLog`, `BBAggregateRate`,
+`TaxProfile`, `ReminderLog`, `VerificationToken` (hashed login links and OTP codes), `RateLimit`, `Bank`, `RateSnapshot`, `ScrapeLog`, `BBAggregateRate`,
 `AnnualReportCheckLog`, `ExtractedFigure`, `AdminUser`, `AdminSession`, `AdminAuditLog`,
 `ReinvestSuggestion`.
 

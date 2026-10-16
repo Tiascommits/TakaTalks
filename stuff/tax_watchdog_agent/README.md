@@ -7,9 +7,9 @@ The **NBR Tax Policy Watchdog Agent** is an automated compliance and code mainte
 ## 1. Architectural Philosophy: The Config Boundary
 
 In TakaTalks, all tax rates, progressive slabs, standard deduction limits, rebate caps, and surcharge tiers are strictly isolated in a single configuration file:
-- [`web/src/config/tax-rules-2025-26.ts`](file:///Users/blackbird/INOVACE/TakaTalks/web/src/config/tax-rules-2025-26.ts)
+- [`web/src/config/tax-rules-2025-26.ts`](../../web/src/config/tax-rules-2025-26.ts)
 
-The calculation engine functions in [`web/src/lib/tax/calculate.ts`](file:///Users/blackbird/INOVACE/TakaTalks/web/src/lib/tax/calculate.ts) and [`web/src/lib/tax/optimizer.ts`](file:///Users/blackbird/INOVACE/TakaTalks/web/src/lib/tax/optimizer.ts) contain **zero hardcoded numbers**. They accept the rules config as an immutable parameter.
+The calculation engine functions in [`web/src/lib/tax/calculate.ts`](../../web/src/lib/tax/calculate.ts) and [`web/src/lib/tax/optimizer.ts`](../../web/src/lib/tax/optimizer.ts) contain **zero hardcoded numbers**. They accept the rules config as an immutable parameter.
 
 The Tax Watchdog Agent's responsibility is to:
 1. Detect legislative tax changes as soon as the Finance Bill is tabled or gazetted.

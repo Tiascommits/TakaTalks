@@ -1,0 +1,598 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>TakaTalks Feature Tour</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@6..72,500;6..72,600;6..72,700&family=Noto+Sans+Bengali:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#f6f3ec;--ink:#1b1b18;--green-deep:#07352a;--green:#0b4f3f;--gold:#b98a2e;--teal:#0a6e5b;
+  --red:#a62e2e;--line:#d8d2c2;--card:#fff;--muted:#7a7566;--amber-bg:#fdf8ec;--amber-border:#d4a832;
+  --serif:"Newsreader",Georgia,serif;--sans:"Noto Sans Bengali",system-ui,-apple-system,"Segoe UI",sans-serif;--mono:"IBM Plex Mono",ui-monospace,Menlo,monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;background:#0d1f1a;color:var(--ink);font-family:var(--sans);overflow:hidden}
+#viewport{position:fixed;inset:0;display:flex;align-items:center;justify-content:center}
+#stage{width:1600px;height:900px;position:relative;transform-origin:center center;flex:none}
+.slide{position:absolute;inset:0;background:var(--paper);display:none;overflow:hidden}
+.slide.active{display:flex}
+.slide::after{content:"";position:absolute;left:0;right:0;bottom:0;height:6px;background:linear-gradient(90deg,var(--green-deep) 0 70%,var(--gold) 70%)}
+
+/* text */
+.eyebrow{font-family:var(--mono);font-size:15px;letter-spacing:.12em;text-transform:uppercase;color:var(--gold);margin-bottom:14px}
+h1,h2{font-family:var(--serif);color:var(--green-deep);font-weight:700;line-height:1.08}
+h1{font-size:84px}
+h2{font-size:48px;margin-bottom:22px}
+ul.b{list-style:none;display:flex;flex-direction:column;gap:14px}
+ul.b li{font-size:21px;line-height:1.45;padding-left:26px;position:relative}
+ul.b li::before{content:"";position:absolute;left:0;top:.62em;width:10px;height:10px;background:var(--gold);transform:rotate(45deg)}
+.mono{font-family:var(--mono)}
+.chip{display:inline-block;font-family:var(--mono);font-size:13px;letter-spacing:.06em;text-transform:uppercase;padding:6px 10px;border:1px solid;margin-top:26px}
+.chip.live{color:var(--green);border-color:var(--green);background:#eff6f1}
+.chip.notlive{color:#7a5a12;border-color:var(--amber-border);background:var(--amber-bg)}
+.note{font-size:15px;color:var(--muted);line-height:1.5;margin-top:14px}
+
+/* split layout: text left, screenshot right */
+.split{padding:64px 64px 56px 72px;gap:48px;align-items:center}
+.split .txt{flex:0 0 470px}
+.split .media{flex:1;display:flex;gap:22px;align-items:center;justify-content:center;height:100%;min-width:0}
+.frame{background:var(--card);border:1px solid var(--line);box-shadow:0 18px 40px rgba(7,53,42,.16);display:flex;flex-direction:column;overflow:hidden;min-width:0}
+.frame .bar{height:26px;background:#ebe6da;display:flex;align-items:center;gap:6px;padding:0 10px;flex:none;font-family:var(--mono);font-size:11px;color:var(--muted)}
+.frame .bar i{width:9px;height:9px;border-radius:50%;background:#cfc7b4;display:block}
+.frame .bar span{margin-left:10px}
+.frame img{display:block;width:100%;height:auto}
+.desk{width:960px;max-width:100%}
+.desk.crop img{height:600px;object-fit:cover;object-position:top}
+.phone{width:250px;border-radius:28px;border:8px solid #1d2b27;box-shadow:0 18px 40px rgba(7,53,42,.22);overflow:hidden;background:#000;flex:none}
+.phone img{display:block;width:100%;height:auto}
+.stack{display:flex;flex-direction:column;gap:18px;width:100%;align-items:center}
+.stack .desk.crop img{height:300px}
+.caption{font-family:var(--mono);font-size:12px;color:var(--muted);text-align:center;margin-top:8px}
+
+/* title & section slides */
+.title{flex-direction:column;justify-content:center;padding:0 120px;background:var(--green-deep);color:var(--paper)}
+.title::after{background:var(--gold)}
+.title h1{color:var(--paper)}
+.title h1 .t{color:var(--gold)}
+.title .tag{font-size:30px;margin-top:22px;color:#e8e2d3}
+.title .tagbn{font-size:26px;margin-top:6px;color:var(--gold)}
+.title .meta{font-family:var(--mono);font-size:15px;margin-top:56px;color:#9fb5ad;letter-spacing:.05em}
+.logo{width:120px;height:120px;margin-bottom:34px}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:22px;margin-top:10px}
+.card{background:var(--card);border:1px solid var(--line);padding:24px 24px 26px}
+.card h3{font-family:var(--serif);font-size:26px;color:var(--green-deep);margin-bottom:10px}
+.card p{font-size:18px;line-height:1.5}
+.plain{flex-direction:column;justify-content:center;padding:72px 90px}
+.tbl{width:100%;border-collapse:collapse;font-size:19px;margin-top:6px}
+.tbl td{padding:11px 14px;border-bottom:1px solid var(--line);vertical-align:top}
+.tbl td:first-child{font-family:var(--mono);font-size:16px;color:var(--green);white-space:nowrap;width:260px}
+
+/* chrome */
+#hud{position:fixed;bottom:14px;right:18px;display:flex;align-items:center;gap:8px;font-family:var(--mono);font-size:13px;color:var(--green-deep);z-index:5;user-select:none;background:rgba(246,243,236,.92);border:1px solid var(--line);padding:4px 6px}
+#hud button{background:var(--green-deep);color:var(--paper);border:0;width:34px;height:30px;cursor:pointer;font-size:15px}
+#hud button:hover{background:var(--green)}
+#hud button:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+#progress{position:fixed;left:0;top:0;height:3px;background:var(--gold);z-index:5;transition:width .2s}
+</style>
+</head>
+<body>
+<div id="progress"></div>
+<div id="viewport"><div id="stage">
+
+<!-- 1 Title -->
+<section class="slide title" aria-label="Title">
+  <svg class="logo" viewBox="0 0 120 120" aria-hidden="true"><polygon points="30,96 16,114 40,100" fill="#07352a" stroke="#b98a2e" stroke-width="3" stroke-linejoin="round"/><circle cx="60" cy="56" r="46" fill="#07352a" stroke="#b98a2e" stroke-width="3"/><circle cx="60" cy="56" r="37" fill="none" stroke="#f6f3ec" stroke-opacity="0.55" stroke-width="1.5"/><text x="60" y="73" text-anchor="middle" font-family="'Noto Sans Bengali', sans-serif" font-weight="700" font-size="52" fill="#f6f3ec">৳</text></svg>
+  <h1>Taka<span class="t">Talks</span></h1>
+  <p class="tag">Everything financial, plainly told. A tour of every feature on the site.</p>
+  <p class="tagbn">সবার টাকার হিসাব, একদম সহজ</p>
+  <p class="meta">Branch experimental · screenshots of a local build, 16 Oct 2026 · ← → or Space to move</p>
+</section>
+
+<!-- 2 What it is -->
+<section class="slide plain" aria-label="What TakaTalks is">
+  <p class="eyebrow">What TakaTalks is</p>
+  <h2>Money tools for Bangladesh, next to the videos that explain them</h2>
+  <p style="font-size:22px;line-height:1.5;max-width:1200px;margin-bottom:30px">Someone watches a TakaTalks video on tax rebates or FDR returns, then runs their own numbers in a tool right beside it. The estimates follow Bangladesh's published rules for income year 2025-26 (assessment year 2026-27).</p>
+  <div class="grid3">
+    <div class="card"><h3>Ask for less</h3><p>No signup to try any calculator. An account appears only at the one moment saving is needed, and the page says why.</p></div>
+    <div class="card"><h3>On your device</h3><p>Calculator inputs stay in the browser. Only the tracker stores entries on the server, and the privacy notice says exactly what.</p></div>
+    <div class="card"><h3>Estimates, not verdicts</h3><p>Every outside number shows its source and date. No "best bank" score or badge; sorting is labelled "not a verdict".</p></div>
+  </div>
+  <p class="note" style="margin-top:28px">15 tools in five groups (Tax, Earn, Save, Zakat, More) · English and Bangla throughout · Next.js 16, React 19, Tailwind 4, Prisma/Postgres, on Vercel.</p>
+</section>
+
+<!-- 3 Home -->
+<section class="slide split" aria-label="Homepage">
+  <div class="txt">
+    <p class="eyebrow">Homepage · /</p>
+    <h2>Pick a tool, or watch first</h2>
+    <ul class="b">
+      <li>Hero with "Estimate my tax" and a demo video that loads YouTube only when you tap play.</li>
+      <li>Tool cards grouped in Tax, Earn, Save, Zakat and More tabs, from one registry shared with the nav.</li>
+      <li>States up front that calculators keep what you type on your device.</li>
+    </ul>
+    <span class="chip live">Live</span>
+  </div>
+  <div class="media"><div class="frame desk"><div class="bar"><i></i><i></i><i></i><span>takatalks.com</span></div><img src="screenshots/home.jpg" alt="TakaTalks homepage in English"></div></div>
+</section>
+
+<!-- 4 Nav -->
+<section class="slide split" aria-label="Navigation">
+  <div class="txt">
+    <p class="eyebrow">Site navigation</p>
+    <h2>Every tool, one menu away</h2>
+    <ul class="b">
+      <li>The Tools menu lists every tool by group; "Demo" goes to the videos page.</li>
+      <li>Side tools that get checked less often sit under "More", and the page says so.</li>
+      <li>Footer on every page: "Estimates, not advice", privacy notice, terms and a Feedback link.</li>
+    </ul>
+    <span class="chip live">Live</span>
+  </div>
+  <div class="media"><div class="frame desk"><div class="bar"><i></i><i></i><i></i><span>Tools menu open</span></div><img src="screenshots/nav-tools.jpg" alt="Tools menu open in the site nav"></div></div>
+</section>
+
+<!-- 5 Bangla -->
+<section class="slide split" aria-label="Bangla and English">
+  <div class="txt">
+    <p class="eyebrow">Bilingual · EN / বাং</p>
+    <h2>Bangla by default, English one tap away</h2>
+    <ul class="b">
+      <li>Every string ships in both languages; the toggle sits in the nav on every page.</li>
+      <li>The choice is remembered in the browser (no account needed).</li>
+      <li>Number fields accept Bangla digits, and the site addresses readers as আপনি.</li>
+    </ul>
+    <span class="chip live">Live</span>
+  </div>
+  <div class="media"><div class="frame desk"><div class="bar"><i></i><i></i><i></i><span>takatalks.com · বাংলা</span></div><img src="screenshots/home-bn.jpg" alt="Homepage in Bangla"></div></div>
+</section>
+
+<!-- 6 Mobile -->
+<section class="slide split" aria-label="Mobile">
+  <div class="txt">
+    <p class="eyebrow">Mobile</p>
+    <h2>Built for the phone in your hand</h2>
+    <ul class="b">
+      <li>Full-screen menu with the same tool groups and the language toggle.</li>
+      <li>Calculators collapse to one column; the step-by-step estimate stays readable.</li>
+    </ul>
+    <span class="chip live">Live</span>
+    <p class="note">Captured at 390 × 844 (iPhone-size viewport).</p>
+  </div>
+  <div class="media">
+    <div class="phone"><img src="screenshots/m-home.jpg" alt="Homepage on a phone"></div>
+    <div class="phone"><img src="screenshots/m-menu.png" alt="Mobile menu open"></div>
+    <div class="phone"><img src="screenshots/m-calc.png" alt="Tax estimate on a phone"></div>
+  </div>
+</section>
+
+<!-- 7 Calculator -->
+<section class="slide split" aria-label="Tax calculator">
+  <div class="txt">
+    <p class="eyebrow">Tax · /calculator</p>
+    <h2>Tax Calculator</h2>
+    <ul class="b">
+      <li>Every income head: salary, business, house rent, interest, freelance/ITES, capital gains.</li>
+      <li>Finance Act 2026 slabs, taxpayer categories, first-return minimum tax, wealth surcharge.</li>
+      <li>A step-by-step estimate updates as you type. Nothing leaves the browser.</li>
+      <li>Signed-in tracker users get their saved tax profile filled in.</li>
+    </ul>
+    <span class="chip live">Live · zero signup</span>
+  </div>
+  <div class="media"><div class="frame desk"><div class="bar"><i></i><i></i><i></i><span>/calculator · ৳12 lakh salary entered</span></div><img src="screenshots/calc-estimate.png" alt="Tax calculator with a salary entered and the estimate"></div></div>
+</section>
+
+<!-- 8 Optimizer -->
+<section class="slide split" aria-label="Rebate optimizer">
+  <div class="txt">
+    <p class="eyebrow">Tax · rebate optimizer</p>
+    <h2>Rebate Optimizer</h2>
+    <ul class="b">
+      <li>Shows how much more to invest, and where, to reach the maximum legal rebate.</li>
+      <li>Rebate is the lowest of 3% of taxable income, 10% of investment, or ৳7.5 lakh.</li>
+      <li>Never promises tax below the minimum-tax floor (covered by a 144-case test).</li>
+    </ul>
+    <span class="chip live">Live</span>
+  </div>
+  <div class="media"><div class="frame desk"><div class="bar"><i></i><i></i><i></i><span>/calculator · "You could save ৳10,400"</span></div><img src="screenshots/calc-optimizer.png" alt="Rebate optimizer suggesting more Sanchayapatra investment"></div></div>
+</section>
+
+<!-- 9 Tax slip -->
+<section class="slide split" aria-label="Tax slip">
+  <div class="txt">
+    <p class="eyebrow">Tax · printable slip</p>
+    <h2>Tax Estimate Slip</h2>
+    <ul class="b">
+      <li>One click builds a clean slip: income summary, slab tax, rebate, final payable.</li>
+      <li>Print or save as PDF, or copy a link that reopens the calculator with the same numbers.</li>
+      <li>A real modal dialog, labelled as an estimate that doesn't replace the NBR acknowledgement.</li>
+    </ul>
+    <span class="chip live">Live</span>
+  </div>
+  <div class="media"><div class="frame desk"><div class="bar"><i></i><i></i><i></i><span>/calculator · slip dialog</span></div><img src="screenshots/calc-slip.png" alt="Tax estimate slip dialog with Copy Link and Print buttons"></div></div>
+</section>
+
+<!-- 10 Quick tax -->
+<section class="slide split" aria-label="Quick basic tax">
+  <div class="txt">
+    <p class="eyebrow">Tax · /tax_basic_calculation</p>
+    <h2>Quick Basic Tax Estimate</h2>
+    <ul class="b">
+      <li>Just yearly income and taxpayer category: the slab tax in seconds.</li>
+      <li>No rebates or deductions, and it says so; links up to the full calculator.</li>
+      <li>Uses the same tax-rules file as the full calculator.</li>
+    </ul>
+    <span class="chip live">Live</span>
+  </div>
+  <div class="media"><div class="frame desk"><div class="bar"><i></i><i></i><i></i><span>/tax_basic_calculation · ৳12 lakh</span></div><img src="screenshots/basic.png" alt="Quick basic tax estimate"></div></div>
+</section>
+
+<!-- 11 Freelance -->
+<section class="slide split" aria-label="Freelance and IT hub">
+  <div class="txt">
+    <p class="eyebrow">Tax · /freelance</p>
+    <h2>Freelance &amp; IT Remittance Hub</h2>
+    <ul class="b">
+      <li>Turns foreign earnings into net in-hand taka at a custom exchange rate.</li>
+      <li>Adds the 2.5% government inward-remittance cash incentive.</li>
+      <li>Checks the 0% ITES exemption by service category, with a "white money" compliance checklist.</li>
+    </ul>
+    <span class="chip live">Live</span>
+  </div>
+  <div class="media"><div class="frame desk"><div class="bar"><i></i><i></i><i></i><span>/freelance</span></div><img src="screenshots/freelance.png" alt="Freelance and IT remittance calculator"></div></div>
+</section>
+
+<!-- 12 Salary -->
+<section class="slide split" aria-label="Salary comparator">
+  <div class="txt">
+    <p class="eyebrow">Earn · /salary</p>
+    <h2>Salary Offer Comparator</h2>
+    <ul class="b">
+      <li>Current job against up to two offers, side by side.</li>
+      <li>Monthly bank credit after 10% PF and Section 86 monthly TDS, from the calculator's own engine.</li>
+      <li>Explains the ⅓-or-৳5 lakh exemption with your taxable salary and effective rate.</li>
+    </ul>
+    <span class="chip live">Live</span>
+  </div>
+  <div class="media">
+    <div class="frame desk" style="width:720px"><div class="bar"><i></i><i></i><i></i><span>/salary</span></div><img src="screenshots/salary.png" alt="Salary offer comparator"></div>
+    <div class="phone" style="width:210px"><img src="screenshots/m-salary.png" alt="Salary comparator on a phone"></div>
+  </div>
+</section>
+
+<!-- 13 Tracker -->
+<section class="slide split" aria-label="Tracker">
+  <div class="txt">
+    <p class="eyebrow">Earn · /tracker</p>
+    <h2>Income &amp; Investment Tracker</h2>
+    <ul class="b">
+      <li>Add income sources and investments; each save is stored right away.</li>
+      <li>A lightweight account is made on the first save: no email or password, just a signed, httpOnly cookie.</li>
+      <li>Profit estimates after source tax, a maturity dashboard with "Confirm payout", and a saved tax profile for the calculator.</li>
+    </ul>
+    <span class="chip live">Live · needs the database</span>
+    <p class="note">Demo entries typed into a throwaway local database.</p>
+  </div>
+  <div class="media"><div class="stack">
+    <div class="frame desk crop"><div class="bar"><i></i><i></i><i></i><span>/tracker · maturity dashboard</span></div><img src="screenshots/tracker.png" alt="Tracker with a matured investment awaiting payout confirmation"></div>
+    <div class="frame desk crop"><div class="bar"><i></i><i></i><i></i><span>/tracker · investments with estimated profit</span></div><img src="screenshots/tracker-investments.png" alt="Tracker income and investments with profit estimates"></div>
+  </div></div>
+</section>
+
+<!-- 14 Reminders / sign-in -->
+<section class="slide split" aria-label="Maturity reminders">
+  <div class="txt">
+    <p class="eyebrow">Earn · sign-in for reminders</p>
+    <h2>Maturity Reminders</h2>
+    <ul class="b">
+      <li>The one place the site asks for contact details, and it says why: "so we can reach you".</li>
+      <li>Email magic link or WhatsApp code; only the hash of a link or code is stored.</li>
+      <li>One reminder per maturity, sent by a daily cron. Only channels that can actually deliver are offered.</li>
+    </ul>
+    <span class="chip notlive">Built · not live in production</span>
+    <p class="note">Production has no email or WhatsApp provider yet, so the prompt is hidden there. This shot used a dummy email config on the local server; no link was sent.</p>
+  </div>
+  <div class="media"><div class="frame desk"><div class="bar"><i></i><i></i><i></i><span>/tracker · "Email me"</span></div><img src="screenshots/tracker-remind.png" alt="Tracker reminder sign-up prompt"></div></div>
+</section>
+
+<!-- 15 Account -->
+<section class="slide split" aria-label="Account and data">
+  <div class="txt">
+    <p class="eyebrow">Privacy · /account</p>
+    <h2>See or Delete Your Data</h2>
+    <ul class="b">
+      <li>Lists exactly what's saved on the server for this browser.</li>
+      <li>"Delete my data" removes every entry, the tax profile and the account, after a confirm step.</li>
+      <li>Linked from the tracker header; kept out of search engines.</li>
+    </ul>
+    <span class="chip live">Live</span>
+  </div>
+  <div class="media"><div class="frame desk"><div class="bar"><i></i><i></i><i></i><span>/account</span></div><img src="screenshots/account.png" alt="Account page listing saved data with a delete button"></div></div>
+</section>
+
+<!-- 16 Reinvest -->
+<section class="slide split" aria-label="Reinvestment suggestion">
+  <div class="txt">
+    <p class="eyebrow">Save · /reinvest</p>
+    <h2>Reinvestment Suggestion</h2>
+    <ul class="b">
+      <li>Ranks categories (Sanchayapatra, Govt Bond/Sukuk, FDR, Mutual Fund), never a named bank or fund.</li>
+      <li>A fixed formula: after-tax real return, rebate room left and your timeline. Every score is shown.</li>
+      <li>Opens from a matured tracker entry with your numbers; a suggestion can be saved.</li>
+    </ul>
+    <span class="chip live">Live · not AI, not advice</span>
+  </div>
+  <div class="media"><div class="frame desk"><div class="bar"><i></i><i></i><i></i><span>/reinvest · with tracked data</span></div><img src="screenshots/reinvest.png" alt="Reinvestment suggestion ranking with consolidated profit"></div></div>
+</section>
+
+<!-- 17 Instruments -->
+<section class="slide split" aria-label="Real yield matrix">
+  <div class="txt">
+    <p class="eyebrow">Save · /instruments</p>
+    <h2>Real Yield Matrix</h2>
+    <ul class="b">
+      <li>Sanchayapatra schemes, Treasury bonds/Sukuk, bank FDR and mutual funds in one table.</li>
+      <li>Net return after 5%, 10% or 15% source tax, then after inflation: real purchasing power.</li>
+      <li>Eligibility and liquidity notes for each instrument; rates are dated.</li>
+    </ul>
+    <span class="chip live">Live</span>
+  </div>
+  <div class="media"><div class="frame desk"><div class="bar"><i></i><i></i><i></i><span>/instruments</span></div><img src="screenshots/instruments.png" alt="Real yield matrix of savings instruments"></div></div>
+</section>
+
+<!-- 18 Rates -->
+<section class="slide split" aria-label="Bank rates">
+  <div class="txt">
+    <p class="eyebrow">Save · /rates</p>
+    <h2>Bank FDR Rate Comparison</h2>
+    <ul class="b">
+      <li>Banks' published FDR rates side by side, with interest after the bank's source tax.</li>
+      <li>Each row shows its source and last-checked date; missing data says "not available".</li>
+      <li>Sortable columns, labelled "not a verdict". Deposit-protection note up top.</li>
+    </ul>
+    <span class="chip notlive">Built · not live in production</span>
+    <p class="note">Production has stored no rates yet, so /rates stays out of the nav. This shot is from a local scrape run on 16 Oct (AB Bank live, three banks from the dated manual seed). The audited bank-health panel (CAR, NPL, ROA) needs admin-approved figures and wasn't captured.</p>
+  </div>
+  <div class="media"><div class="frame desk"><div class="bar"><i></i><i></i><i></i><span>/rates · local scrape</span></div><img src="screenshots/rates.png" alt="Bank FDR rate comparison table"></div></div>
+</section>
+
+<!-- 19 Zakat -->
+<section class="slide split" aria-label="Zakat calculator">
+  <div class="txt">
+    <p class="eyebrow">Zakat · /zakat</p>
+    <h2>Zakat Calculator</h2>
+    <ul class="b">
+      <li>Silver nisab (recommended) or gold nisab, at prices you confirm for today.</li>
+      <li>Cash, bank, FDR, gold and silver by bhori, Sanchayapatra, shares, stock, receivables.</li>
+      <li>Deducts debts due now; bank interest goes into a separate "purify" line, not zakat.</li>
+    </ul>
+    <span class="chip live">Live · Hanafi fiqh</span>
+  </div>
+  <div class="media"><div class="frame desk"><div class="bar"><i></i><i></i><i></i><span>/zakat · ৳45,803 due</span></div><img src="screenshots/zakat.png" alt="Zakat calculator showing zakat due"></div></div>
+</section>
+
+<!-- 20 Goals -->
+<section class="slide split" aria-label="Goal planner">
+  <div class="txt">
+    <p class="eyebrow">More · /goals</p>
+    <h2>Life Goal &amp; Wealth Planner</h2>
+    <ul class="b">
+      <li>Goal templates: emergency fund, car, flat down payment, education, Hajj, retirement, custom.</li>
+      <li>Inflates today's price to the target year, then works out the monthly saving needed.</li>
+      <li>Shows the monthly saving needed at each instrument's return.</li>
+    </ul>
+    <span class="chip live">Live</span>
+  </div>
+  <div class="media"><div class="frame desk"><div class="bar"><i></i><i></i><i></i><span>/goals</span></div><img src="screenshots/goals.png" alt="Life goal planner"></div></div>
+</section>
+
+<!-- 21 Freedom -->
+<section class="slide split" aria-label="Financial freedom">
+  <div class="txt">
+    <p class="eyebrow">More · /freedom</p>
+    <h2>Financial Freedom Calculator</h2>
+    <ul class="b">
+      <li>Starts from the life you want (stop working, move to the village, travel…), not a rule of thumb.</li>
+      <li>Inflation on both sides, and rent or other passive income you already collect is netted off.</li>
+      <li>Splits the corpus by role and draws a year-by-year roadmap with a "coast" marker.</li>
+    </ul>
+    <span class="chip live">Live</span>
+  </div>
+  <div class="media"><div class="frame desk"><div class="bar"><i></i><i></i><i></i><span>/freedom</span></div><img src="screenshots/freedom.png" alt="Financial freedom calculator"></div></div>
+</section>
+
+<!-- 22 Loans -->
+<section class="slide split" aria-label="Loans and EMI">
+  <div class="txt">
+    <p class="eyebrow">More · /loans</p>
+    <h2>Loan &amp; Home EMI Accelerator</h2>
+    <ul class="b">
+      <li>Reducing-balance EMI for home, car, personal and digital loans, from dated presets.</li>
+      <li>Prepayment planner: interest saved and how many years earlier you finish.</li>
+      <li>Full amortization schedule, yearly or monthly.</li>
+    </ul>
+    <span class="chip live">Live</span>
+  </div>
+  <div class="media"><div class="frame desk"><div class="bar"><i></i><i></i><i></i><span>/loans</span></div><img src="screenshots/loans.png" alt="Loan EMI calculator"></div></div>
+</section>
+
+<!-- 23 Cars -->
+<section class="slide split" aria-label="Car tax">
+  <div class="txt">
+    <p class="eyebrow">More · /cars</p>
+    <h2>Car Buying &amp; AIT Engine</h2>
+    <ul class="b">
+      <li>BRTA advance income tax by engine cc (or EV kW), per Income Tax Act s.153 as amended in 2026.</li>
+      <li>Flags the second-car wealth surcharge before you buy.</li>
+      <li>Total-cost-of-ownership and affordability check against your income.</li>
+    </ul>
+    <span class="chip live">Live</span>
+  </div>
+  <div class="media"><div class="frame desk"><div class="bar"><i></i><i></i><i></i><span>/cars</span></div><img src="screenshots/cars.png" alt="Car tax and AIT calculator"></div></div>
+</section>
+
+<!-- 24 Habits -->
+<section class="slide split" aria-label="Money habits">
+  <div class="txt">
+    <p class="eyebrow">More · /habits</p>
+    <h2>Money Habit Tracker</h2>
+    <ul class="b">
+      <li>Subscriptions, data packs, food delivery, rides, daily small spends and card spend: unit cost × frequency.</li>
+      <li>Set a monthly cap on each and compare against an alternative you price yourself.</li>
+      <li>Yearly total, and what the gap becomes if saved. Stored only in this browser.</li>
+    </ul>
+    <span class="chip live">Live</span>
+  </div>
+  <div class="media"><div class="frame desk"><div class="bar"><i></i><i></i><i></i><span>/habits</span></div><img src="screenshots/habits.png" alt="Money habit tracker"></div></div>
+</section>
+
+<!-- 25 Viz hub -->
+<section class="slide split" aria-label="Visualizers">
+  <div class="txt">
+    <p class="eyebrow">More · /viz</p>
+    <h2>Money Visualizers</h2>
+    <ul class="b">
+      <li>Nine shareable posters: Dream Ride loader, Freedom Ludo, Brick by Brick, 64-District Challenge, Matir Bank, Salary in Kacchi, 100-Box, Break the Chain, Shrinking Taka.</li>
+      <li>Each has its own page, link preview and sitemap entry.</li>
+    </ul>
+    <span class="chip live">Live</span>
+  </div>
+  <div class="media"><div class="frame desk"><div class="bar"><i></i><i></i><i></i><span>/viz</span></div><img src="screenshots/viz.png" alt="Visualizer hub with nine posters"></div></div>
+</section>
+
+<!-- 26 Viz studio -->
+<section class="slide split" aria-label="Visualizer studio">
+  <div class="txt">
+    <p class="eyebrow">Visualizers · /viz/&lt;slug&gt;</p>
+    <h2>Make It Yours</h2>
+    <ul class="b">
+      <li>Type your numbers and the poster redraws live.</li>
+      <li>Four styles: Sobuj, Rickshaw Art, Dhaka Night, Nakshi Kantha. Optional name on the poster.</li>
+      <li>Two sizes: Post 4:5 and Story 9:16.</li>
+    </ul>
+    <span class="chip live">Live</span>
+  </div>
+  <div class="media"><div class="stack">
+    <div class="frame desk crop"><div class="bar"><i></i><i></i><i></i><span>/viz/salary_in_kacchi · Sobuj</span></div><img src="screenshots/viz-kacchi.png" alt="Salary in kacchi poster editor"></div>
+    <div style="display:flex;gap:18px;width:960px;max-width:100%">
+      <div class="frame desk crop" style="flex:1"><div class="bar"><i></i><i></i><i></i><span>loading_car · Rickshaw Art</span></div><img src="screenshots/viz-car-rickshaw.png" alt="Dream ride loader in Rickshaw Art style"></div>
+      <div class="frame desk crop" style="flex:1"><div class="bar"><i></i><i></i><i></i><span>taka_shrink · Dhaka Night</span></div><img src="screenshots/viz-shrink-night.png" alt="Shrinking taka in Dhaka Night style"></div>
+    </div>
+  </div></div>
+</section>
+
+<!-- 27 Download/share -->
+<section class="slide split" aria-label="Download and share">
+  <div class="txt">
+    <p class="eyebrow">Visualizers · download &amp; share</p>
+    <h2>Download, Share, Print</h2>
+    <ul class="b">
+      <li>"Download picture" renders a high-resolution PNG (2160 × 2700 for a 4:5 post).</li>
+      <li>"Share" uses the phone's share sheet with the image attached; "Copy link" keeps the numbers in the URL.</li>
+      <li>"Print for wall" prints just the poster, e.g. the 100-box tick sheet for the wall.</li>
+      <li>Downloads and shares are counted anonymously, never the numbers.</li>
+    </ul>
+    <span class="chip live">Live</span>
+  </div>
+  <div class="media">
+    <div><div class="frame" style="width:330px"><div class="bar"><i></i><i></i><i></i><span>downloaded PNG</span></div><img src="screenshots/viz-download-output.png" alt="Actual downloaded poster image"></div><p class="caption">The real file "Download picture" saved</p></div>
+    <div><div class="phone" style="width:260px"><img src="screenshots/m-viz-district.png" alt="District challenge in story size on a phone"></div><p class="caption">64-District, Story 9:16, phone</p></div>
+  </div>
+</section>
+
+<!-- 28 Videos -->
+<section class="slide split" aria-label="Videos">
+  <div class="txt">
+    <p class="eyebrow">Content · /videos</p>
+    <h2>Videos</h2>
+    <ul class="b">
+      <li>Hand-picked shortform and longform videos, each linked to the tool it explains.</li>
+      <li>"Latest on YouTube" syncs from the channel through the YouTube Data API, cached for an hour.</li>
+      <li>The player loads only when someone taps play.</li>
+    </ul>
+    <span class="chip live">Live</span>
+  </div>
+  <div class="media"><div class="frame desk crop"><div class="bar"><i></i><i></i><i></i><span>/videos</span></div><img src="screenshots/videos.jpg" alt="Videos page with shortform and longform sections"></div></div>
+</section>
+
+<!-- 29 Privacy -->
+<section class="slide split" aria-label="Privacy">
+  <div class="txt">
+    <p class="eyebrow">Trust · /privacy and /terms</p>
+    <h2>Privacy, in Plain Words</h2>
+    <ul class="b">
+      <li>Says what stays on the device, what the tracker stores, where it's hosted and how to delete it.</li>
+      <li>Analytics: GoatCounter only (no cookies), plus named events like "tax result shown" or "poster downloaded". Never a typed figure.</li>
+      <li>Rate limits on saves and login links; admin and cron secrets compared in constant time.</li>
+    </ul>
+    <span class="chip live">Live · EN + বাংলা</span>
+  </div>
+  <div class="media"><div class="frame desk"><div class="bar"><i></i><i></i><i></i><span>/privacy</span></div><img src="screenshots/privacy.png" alt="Privacy notice page"></div></div>
+</section>
+
+<!-- 30 Admin -->
+<section class="slide split" aria-label="Admin and operations">
+  <div class="txt">
+    <p class="eyebrow">Behind the scenes · /admin</p>
+    <h2>Admin &amp; Operations</h2>
+    <ul class="b">
+      <li>Admin login, rate dashboard with "Run scrape now", and approval of bank-health figures pulled from annual-report PDFs.</li>
+      <li>Daily crons: rate scrape, bank-health check, maturity reminders.</li>
+      <li><span class="mono">/api/health</span> reports DB status and data age; a smoke test runs on every deploy.</li>
+    </ul>
+    <span class="chip notlive">Built · no admin account in production yet</span>
+    <p class="note">Only the first-admin setup screen was captured. The dashboards need an admin session and extracted figures.</p>
+  </div>
+  <div class="media"><div class="frame desk"><div class="bar"><i></i><i></i><i></i><span>/admin/rates (signed out)</span></div><img src="screenshots/admin.png" alt="Create the first admin account form"></div></div>
+</section>
+
+<!-- 31 Status -->
+<section class="slide plain" aria-label="What's live">
+  <p class="eyebrow">Status, Oct 2026</p>
+  <h2>What's live and what's waiting</h2>
+  <table class="tbl">
+    <tr><td>Live, no signup</td><td>Tax calculator + optimizer + slip, quick tax, freelance, salary, real yields, reinvest, zakat, goals, freedom, loans, cars, habits, visualizers, videos</td></tr>
+    <tr><td>Live, uses the database</td><td>Tracker (anonymous account), account page with data deletion</td></tr>
+    <tr><td>Built, waiting on owner</td><td>Bank rates (needs <span class="mono">CRON_SECRET</span> and a first scrape) · bank-health panel (needs an admin and approvals) · reminders (needs an email or WhatsApp provider)</td></tr>
+    <tr><td>Trust rules</td><td>Tax rules in one dated config file · outside numbers carry source + date · no "best bank" verdicts · every string in EN and বাংলা</td></tr>
+  </table>
+</section>
+
+<!-- 32 Close -->
+<section class="slide title" aria-label="Closing">
+  <svg class="logo" viewBox="0 0 120 120" aria-hidden="true"><polygon points="30,96 16,114 40,100" fill="#07352a" stroke="#b98a2e" stroke-width="3" stroke-linejoin="round"/><circle cx="60" cy="56" r="46" fill="#07352a" stroke="#b98a2e" stroke-width="3"/><circle cx="60" cy="56" r="37" fill="none" stroke="#f6f3ec" stroke-opacity="0.55" stroke-width="1.5"/><text x="60" y="73" text-anchor="middle" font-family="'Noto Sans Bengali', sans-serif" font-weight="700" font-size="52" fill="#f6f3ec">৳</text></svg>
+  <h1>Run your own numbers.</h1>
+  <p class="tag">takatalks.com · Estimates, not advice.</p>
+  <p class="tagbn">সবার টাকার হিসাব, একদম সহজ</p>
+</section>
+
+</div></div>
+
+<div id="hud"><button id="prev" aria-label="Previous slide">‹</button><span id="count" aria-live="polite">1 / 1</span><button id="next" aria-label="Next slide">›</button></div>
+
+<script>
+(function(){
+  var slides=[].slice.call(document.querySelectorAll('.slide')),i=0,stage=document.getElementById('stage');
+  function fit(){var s=Math.min(innerWidth/1600,innerHeight/900);stage.style.transform='scale('+s+')';}
+  function show(n){
+    i=Math.max(0,Math.min(slides.length-1,n));
+    slides.forEach(function(s,k){s.classList.toggle('active',k===i);});
+    document.getElementById('count').textContent=(i+1)+' / '+slides.length;
+    document.getElementById('progress').style.width=((i+1)/slides.length*100)+'%';
+    try{history.replaceState(null,'','#'+(i+1));}catch(e){}
+  }
+  addEventListener('keydown',function(e){
+    var k=e.key;
+    if(k==='ArrowRight'||k==='ArrowDown'||k==='PageDown'||k===' '||k==='Enter'){e.preventDefault();show(i+1);}
+    else if(k==='ArrowLeft'||k==='ArrowUp'||k==='PageUp'||k==='Backspace'){e.preventDefault();show(i-1);}
+    else if(k==='Home'){show(0);}else if(k==='End'){show(slides.length-1);}
+  });
+  document.getElementById('prev').onclick=function(){show(i-1);};
+  document.getElementById('next').onclick=function(){show(i+1);};
+  addEventListener('resize',fit);fit();
+  show((parseInt(location.hash.slice(1),10)||1)-1);
+})();
+</script>
+</body>
+</html>
