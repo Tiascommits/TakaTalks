@@ -1,29 +1,35 @@
 import type { RateAdapter } from "./types";
 import { MANUAL_SEED_ADAPTERS } from "./manual-seed";
-import { abBankAdapter } from "./ab-bank";
-import { nationalBankAdapter } from "./national-bank";
-import { ificBankAdapter } from "./ific-bank";
+import { bbChartAdapter } from "./bb-chart";
 
 /**
  * Every bank in config/banks.ts that has no entry here gets no scrape
  * attempt at all — it shows up on the scorecard as "not available" rather
- * than silently missing or guessed. Add a bank here only after its
- * rate-card page has been manually verified (see
- * prompts/02-rate-monitoring-and-scorecard.md), replacing its manual-seed
- * entry with a real per-bank adapter once one exists.
+ * than silently missing or guessed.
  *
- * AB and National Bank were verified live on 2026-09-11 (see
- * todo/needs-us-both/confirm-new-bank-list.md for what was checked and
- * what wasn't); IFIC Bank followed on 2026-09-16 once its FDR rates were
- * found to live in a PDF (see ific-bank.ts) rather than plain HTML. All
- * three get real adapters here, overriding their manual-seed entries.
- * Everything else in MANUAL_SEED_ADAPTERS stays on manual-seed — their
- * rate-card pages are either JS-rendered, PDF-only but not yet parsed, or
- * too irregularly structured to parse reliably as of that verification pass.
+ * Since 2026-10-16 the source is Bangladesh Bank's monthly announced-rate chart
+ * (config/rate-monitoring.ts BB_DEPOSIT_CHART_URL), which replaced the AB,
+ * National and IFIC per-bank scrapers and the One and City manual seeds.
+ * The chart prints each bank under its own short code; each mapping below was
+ * matched by hand against the chart of September 2026.
+ * Not mapped, on purpose:
+ *   - MIDLAND: the chart's "MDBL" is probably Midland Bank, but no source
+ *     confirmed the code, so it stays on its manual seed until someone does.
+ *   - SCB: the chart gives Standard Chartered 0.05-4.12%, real figures that the
+ *     1% plausibility floor (meant to catch wrong-column parses) would reject
+ *     every day; it stays "not available".
  */
+const BB_CHART_CODES: Record<string, string> = {
+  AB: "AB-BANK",
+  ONE: "ONE BANK",
+  NATIONAL: "NBL",
+  CITY: "THE CITY",
+  IFIC: "IFIC",
+  SONALI: "SONALI",
+  EBL: "EBL",
+};
+
 export const RATE_ADAPTERS = new Map<string, RateAdapter>([
   ...[...MANUAL_SEED_ADAPTERS].map((a): [string, RateAdapter] => [a.bankShortCode, a]),
-  [abBankAdapter.bankShortCode, abBankAdapter],
-  [nationalBankAdapter.bankShortCode, nationalBankAdapter],
-  [ificBankAdapter.bankShortCode, ificBankAdapter],
+  ...Object.entries(BB_CHART_CODES).map(([shortCode, code]): [string, RateAdapter] => [shortCode, bbChartAdapter(shortCode, code)]),
 ]);

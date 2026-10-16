@@ -9,6 +9,14 @@
 // (tools/fdr-comparison/fdr-dps-comparison.html).
 export const FDR_TERMS_MONTHS = [3, 6, 12] as const;
 
+// Bangladesh Bank's monthly "Announced Interest Rate Chart of the Scheduled Banks (Deposit Rate)":
+// one HTML table, every scheduled bank, savings + SND + five fixed-deposit tenors. It replaced the
+// per-bank scrapers (critique 14 Oct, section 15). Checked 2026-10-16: the September 2026 chart, 61 banks.
+export const BB_DEPOSIT_CHART_URL = "https://www.bb.org.bd/en/index.php/financialactivity/interestdeposit";
+// Which of the chart's fixed-deposit tenor columns ("3 months but<6 months", "6 months but<1 year",
+// "1 year but<2 years", "2 years but<3 years", "3 years and above") is each tracked term.
+export const BB_CHART_FDR_COLUMN: Record<(typeof FDR_TERMS_MONTHS)[number], number> = { 3: 0, 6: 1, 12: 2 };
+
 // A scraped FDR rate outside this band is a wrong-column parse (a term, a fee,
 // a year), not a rate: the run logs a failure and keeps the last good value.
 // Bangladesh FDR rates have sat between about 4% and 13% for a decade.
