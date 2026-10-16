@@ -80,7 +80,7 @@ in `src/app/` generate robots.txt, the sitemap and the site-wide share image.
 | Tax calculator + rebate optimizer | `src/lib/tax/` (`calculate.ts`, `optimizer.ts`), rules in `src/config/tax-rules-2025-26.ts` — review every national budget, nothing else should hardcode these numbers | `/calculator`, `/tax_basic_calculation` (fast income-only on-ramp, shares the same rules config) |
 | Income/investment tracker | `src/lib/tracker/` (anonymous session handling, `derive-tax-input.ts`; `projection.ts`: per-investment and portfolio profit estimates, same TDS and compounding rules as `/instruments`) | `/tracker` |
 | Freelance/ITES exemption | `src/lib/freelance/` | `/freelance` |
-| Bank rate scorecard | `src/lib/rates/` (per-bank adapters + manual-seed fallback) | `/rates`, `/admin/rates` |
+| Bank rate scorecard | `src/lib/rates/` (`adapters/bb-chart.ts`: Bangladesh Bank's monthly announced deposit-rate chart, one row per bank, ranges kept as low–high in `ratePctMax`; manual seed only for Midland) | `/rates`, `/admin/rates` |
 | Bank health disclosures | `src/lib/bank-health/` (PDF extraction, confidence scoring) | `/rates` (public panel), `/admin/bank-health` (approval) |
 | Goal planner | `src/lib/goals/` | `/goals` |
 | Salary/offer comparator | `src/lib/salary/` | `/salary` |

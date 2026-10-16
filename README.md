@@ -93,7 +93,7 @@ Hand these to Claude Code **in order**. Each one assumes the previous module exi
 |---|---|---|
 | 1 | Tax calculator + rebate optimizer + printable tax slip | Built in `web/` (`/calculator`), plus a fast income-only on-ramp at `/tax_basic_calculation` that links up to the full calculator |
 | 2 | Income/investment tracker, maturity reminders | Tracker live in `web/` (`/tracker`). Reminders are built but send nothing until email (Resend) or WhatsApp is configured, which production doesn't have yet (Oct 2026) |
-| 3 | Bank rate comparison + scorecard (daily monitoring) | Built in `web/` (`/rates`, daily scrape cron), **not live**: production has stored no rates yet (Oct 2026), most likely because `CRON_SECRET` isn't set. Until a rate exists, `/rates` shows an empty state and stays out of the nav and homepage |
+| 3 | Bank rate comparison + scorecard (daily monitoring) | Built in `web/` (`/rates`, daily scrape cron reading Bangladesh Bank's monthly all-bank rate chart since 16 Oct 2026), **not live**: production has stored no rates yet (Oct 2026), most likely because `CRON_SECRET` isn't set. Until a rate exists, `/rates` shows an empty state and stays out of the nav and homepage |
 | 3 | Audited bank health disclosures (CAR, NPL, ROA, ROE) | Built in `web/` (`/rates` panel, `/admin/bank-health`, daily cron), **not live**: every figure needs an admin's approval and no admin account exists in production yet. The panel stays hidden until one figure is approved |
 | 4 | Life goal planner (car, flat, education, retirement) | Built in `web/` (`/goals`) |
 | 4 | Salary offer analyzer & net take-home benchmark | Built in `web/` (`/salary`) |
