@@ -49,12 +49,11 @@ export async function runScrape(): Promise<RunScrapeSummary> {
 
     try {
       const rates = await adapter.scrape();
-      const implausible = rates.find(
-        (r) => !(r.ratePct >= PLAUSIBLE_FDR_RATE_PCT.min && r.ratePct <= PLAUSIBLE_FDR_RATE_PCT.max)
-      );
+      const plausible = (pct: number) => pct >= PLAUSIBLE_FDR_RATE_PCT.min && pct <= PLAUSIBLE_FDR_RATE_PCT.max;
+      const implausible = rates.find((r) => !plausible(r.ratePct) || (r.ratePctMax !== undefined && !plausible(r.ratePctMax)));
       if (implausible) {
         throw new Error(
-          `Implausible rate ${implausible.ratePct}% for ${implausible.termMonths} months; nothing stored`
+          `Implausible rate ${implausible.ratePct}%${implausible.ratePctMax !== undefined ? `-${implausible.ratePctMax}%` : ""} for ${implausible.termMonths} months; nothing stored`
         );
       }
       // A dated (manual) figure is stored once; re-storing it every day would
@@ -64,7 +63,7 @@ export async function runScrape(): Promise<RunScrapeSummary> {
         const stored =
           r.asOf &&
           (await prisma.rateSnapshot.findFirst({
-            where: { bankId: bank.id, instrument: r.instrument, termMonths: r.termMonths, ratePct: r.ratePct, scrapedAt: r.asOf },
+            where: { bankId: bank.id, instrument: r.instrument, termMonths: r.termMonths, ratePct: r.ratePct, ratePctMax: r.ratePctMax ?? null, scrapedAt: r.asOf },
           }));
         if (!stored) toStore.push(r);
       }
@@ -79,6 +78,7 @@ export async function runScrape(): Promise<RunScrapeSummary> {
               instrument: r.instrument,
               termMonths: r.termMonths,
               ratePct: r.ratePct,
+              ratePctMax: r.ratePctMax ?? null,
               method: r.method,
               source: r.source,
               scrapedAt: r.asOf, // undefined = now, for a live read

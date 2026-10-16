@@ -231,6 +231,8 @@ model RateSnapshot {
   instrument RateInstrument
   termMonths Int
   ratePct    Float
+  // Upper end when the source gives a range (Bangladesh Bank's chart lists e.g. 8.50-8.90); ratePct is then the lower end.
+  ratePctMax Float?
   method     RateSourceMethod
   source     String // URL for a real scrape, or a plain-text note for a manual entry
   scrapedAt  DateTime          @default(now())

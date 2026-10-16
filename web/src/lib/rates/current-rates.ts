@@ -13,6 +13,8 @@ export type CurrentRateRow = {
   statementUrl: string | null;
   termMonths: number;
   ratePct: number | null;
+  /** Upper end when the source gives a range; null for a single figure. */
+  ratePctMax: number | null;
   method: RateSourceMethod | null;
   source: string | null;
   asOf: Date | null;
@@ -66,6 +68,7 @@ export async function getCurrentFdrRates(): Promise<CurrentRateRow[]> {
         statementUrl: bank.statementUrl,
         termMonths,
         ratePct: snapshot?.ratePct ?? null,
+        ratePctMax: snapshot?.ratePctMax ?? null,
         method: snapshot?.method ?? null,
         source: snapshot?.source ?? null,
         asOf: snapshot?.scrapedAt ?? null,

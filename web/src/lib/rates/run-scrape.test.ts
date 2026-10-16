@@ -64,4 +64,29 @@ describe("runScrape", () => {
       data: expect.objectContaining({ bankId: "b1", success: false }),
     });
   });
+
+  it("stores a range's upper end, and refuses a range whose upper end is implausible", async () => {
+    const asOf = new Date("2026-09-01T12:00:00Z");
+    const spy = vi.spyOn(RATE_ADAPTERS, "get").mockReturnValue({
+      bankShortCode: "MIDLAND",
+      scrape: async () => [{ instrument: "FDR", termMonths: 12, ratePct: 8.5, ratePctMax: 8.9, method: "SCRAPED", source: "bb", asOf }],
+    });
+    await runScrape();
+    expect(prisma.rateSnapshot.create.mock.calls.map(([args]) => args.data)).toEqual([
+      expect.objectContaining({ ratePct: 8.5, ratePctMax: 8.9, scrapedAt: asOf }),
+    ]);
+    expect(prisma.rateSnapshot.findFirst).toHaveBeenCalledWith({ where: expect.objectContaining({ ratePctMax: 8.9 }) });
+
+    vi.resetAllMocks();
+    prisma.bank.findMany.mockResolvedValue([{ id: "b1", shortCode: "MIDLAND" }]);
+    spy.mockReturnValue({
+      bankShortCode: "MIDLAND",
+      scrape: async () => [{ instrument: "FDR", termMonths: 12, ratePct: 8.5, ratePctMax: 85, method: "SCRAPED", source: "bb", asOf }],
+    });
+    await runScrape();
+    expect(prisma.rateSnapshot.create).not.toHaveBeenCalled();
+    expect(prisma.scrapeLog.create).toHaveBeenCalledWith({
+      data: expect.objectContaining({ success: false, errorMessage: expect.stringContaining("8.5%-85%") }),
+    });
+  });
 });
