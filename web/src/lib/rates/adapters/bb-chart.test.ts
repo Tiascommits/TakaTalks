@@ -70,7 +70,7 @@ describe("bbChartAdapter", () => {
   });
 
   it("downloads the chart once for every bank in a run, and retries after a failure", async () => {
-    const fetchMock = vi.fn(async (_url: string | URL | Request, _init?: RequestInit) => new Response(CHART, { status: 200 }));
+    const fetchMock = vi.fn<typeof fetch>(async () => new Response(CHART, { status: 200 }));
     vi.stubGlobal("fetch", fetchMock);
     const t = 1_000_000_000;
     await Promise.all([fetchBbChart(t), fetchBbChart(t + 1)]);

@@ -26,6 +26,10 @@ export const PLAUSIBLE_FDR_RATE_PCT = { min: 1, max: 20 } as const;
 // itself has stopped, so every rate is flagged unverified until it runs again.
 export const MAX_HOURS_WITHOUT_SCRAPE = 48;
 
+// Bangladesh Bank's chart is monthly (dated the 1st). Past this many days the
+// next month's chart is overdue, so its rates are flagged unverified.
+export const CHART_STALE_DAYS = 62;
+
 // A day-over-day rate move at or above this many percentage points is
 // flagged in the admin digest as worth a human look.
 export const SIGNIFICANT_CHANGE_THRESHOLD_PCT = 0.25;

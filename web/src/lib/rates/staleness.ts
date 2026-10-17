@@ -1,4 +1,4 @@
-import { MAX_HOURS_WITHOUT_SCRAPE } from "@/config/rate-monitoring";
+import { BB_DEPOSIT_CHART_URL, CHART_STALE_DAYS, MAX_HOURS_WITHOUT_SCRAPE } from "@/config/rate-monitoring";
 
 /**
  * A rate is "unverified" when the most recent scrape *attempt* for its bank
@@ -18,4 +18,13 @@ export function isRateStale(
   const lastChecked = Math.max(latestLogAttemptedAt.getTime(), latestSnapshotAt.getTime());
   if (now.getTime() - lastChecked > MAX_HOURS_WITHOUT_SCRAPE * 3_600_000) return true;
   return !latestLogSuccess && latestLogAttemptedAt.getTime() > latestSnapshotAt.getTime();
+}
+
+/**
+ * The chart is monthly and dated the 1st, and the daily scrape keeps succeeding
+ * while Bangladesh Bank publishes nothing new, so isRateStale never fires for
+ * it. A chart month older than CHART_STALE_DAYS means the next one is overdue.
+ */
+export function isChartOverdue(source: string | null, chartMonth: Date | null, now: Date = new Date()): boolean {
+  return source === BB_DEPOSIT_CHART_URL && chartMonth !== null && now.getTime() - chartMonth.getTime() > CHART_STALE_DAYS * 86_400_000;
 }

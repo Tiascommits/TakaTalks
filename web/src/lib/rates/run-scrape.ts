@@ -60,11 +60,15 @@ export async function runScrape(): Promise<RunScrapeSummary> {
       // pile up identical rows that all count as "latest".
       const toStore: typeof rates = [];
       for (const r of rates) {
-        const stored =
+        // Latest row at this date: a revised chart reuses the date, so only an
+        // identical newest row counts as already stored (A, then B, then A again re-stores A).
+        const last =
           r.asOf &&
           (await prisma.rateSnapshot.findFirst({
-            where: { bankId: bank.id, instrument: r.instrument, termMonths: r.termMonths, ratePct: r.ratePct, ratePctMax: r.ratePctMax ?? null, scrapedAt: r.asOf },
+            where: { bankId: bank.id, instrument: r.instrument, termMonths: r.termMonths, source: r.source, scrapedAt: r.asOf },
+            orderBy: { id: "desc" },
           }));
+        const stored = last && last.ratePct === r.ratePct && last.ratePctMax === (r.ratePctMax ?? null);
         if (!stored) toStore.push(r);
       }
       await prisma.$transaction([

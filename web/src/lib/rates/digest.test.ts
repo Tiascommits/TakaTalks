@@ -82,4 +82,18 @@ describe("computeDigest", () => {
     expect(result.changedRates).toHaveLength(1);
     expect(result.changedRates[0].termMonths).toBe(12);
   });
+
+  it("compares the high end of a range too", () => {
+    const result = computeDigest([
+      bank({
+        snapshots: [
+          { instrument: "FDR", termMonths: 12, ratePct: 9, ratePctMax: 10, scrapedAt: day(3) },
+          { instrument: "FDR", termMonths: 12, ratePct: 9, ratePctMax: 9.5, scrapedAt: day(2) },
+        ],
+      }),
+    ]);
+    expect(result.changedRates).toHaveLength(1);
+    expect(result.changedRates[0].deltaPct).toBeCloseTo(0.5, 6);
+    expect(result.changedRates[0].currentPctMax).toBe(10);
+  });
 });

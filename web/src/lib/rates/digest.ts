@@ -8,6 +8,8 @@ export type DigestSnapshotInput = {
   instrument: RateInstrument;
   termMonths: number;
   ratePct: number;
+  /** Upper end of a range; null or absent for a single figure. */
+  ratePctMax?: number | null;
   scrapedAt: Date;
 };
 export type DigestBankInput = {
@@ -34,6 +36,10 @@ export type ChangedRateEntry = {
   termMonths: number;
   previousPct: number;
   currentPct: number;
+  /** Upper ends, when either snapshot is a range. */
+  previousPctMax: number | null;
+  currentPctMax: number | null;
+  /** The larger move of the low and high ends, signed. */
   deltaPct: number;
 };
 
@@ -81,7 +87,9 @@ export function computeDigest(banks: DigestBankInput[]): DigestResult {
     for (const group of byKey.values()) {
       if (group.length < 2) continue;
       const [current, previous] = group;
-      const deltaPct = current.ratePct - previous.ratePct;
+      const lowDelta = current.ratePct - previous.ratePct;
+      const highDelta = (current.ratePctMax ?? current.ratePct) - (previous.ratePctMax ?? previous.ratePct);
+      const deltaPct = Math.abs(highDelta) > Math.abs(lowDelta) ? highDelta : lowDelta;
       if (Math.abs(deltaPct) >= SIGNIFICANT_CHANGE_THRESHOLD_PCT) {
         changedRates.push({
           shortCode: bank.shortCode,
@@ -90,6 +98,8 @@ export function computeDigest(banks: DigestBankInput[]): DigestResult {
           termMonths: current.termMonths,
           previousPct: previous.ratePct,
           currentPct: current.ratePct,
+          previousPctMax: previous.ratePctMax ?? null,
+          currentPctMax: current.ratePctMax ?? null,
           deltaPct,
         });
       }
@@ -105,7 +115,7 @@ export async function getDigest(): Promise<DigestResult> {
     where: { active: true },
     include: {
       scrapeLogs: { orderBy: { attemptedAt: "desc" }, take: 2 },
-      rateSnapshots: { orderBy: { scrapedAt: "desc" }, take: 40 },
+      rateSnapshots: { orderBy: [{ scrapedAt: "desc" }, { id: "desc" }], take: 40 },
     },
   });
 
@@ -122,6 +132,7 @@ export async function getDigest(): Promise<DigestResult> {
       instrument: s.instrument,
       termMonths: s.termMonths,
       ratePct: s.ratePct,
+      ratePctMax: s.ratePctMax,
       scrapedAt: s.scrapedAt,
     })),
   }));
