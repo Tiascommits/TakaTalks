@@ -10,7 +10,8 @@ permissions:
 
 jobs:
   smoke:
-    if: github.event.deployment_status.state == 'success'
+    # Legacy Pages also builds main and posts a deployment, but it serves the README, not the app.
+    if: github.event.deployment_status.state == 'success' && github.event.deployment_status.environment != 'github-pages'
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:

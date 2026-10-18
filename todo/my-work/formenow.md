@@ -25,7 +25,8 @@ write into the live database. In Vercel, add these with the environment set to *
    `*.vercel.app` deployment URL, so every smoke run fails until you do this. Vercel →
    taka-talks → Settings → Deployment Protection → Protection Bypass for Automation → Add,
    then copy that value into a GitHub repo secret named `VERCEL_AUTOMATION_BYPASS_SECRET`
-   (GitHub → Settings → Secrets and variables → Actions).
+   (GitHub → Settings → Secrets and variables → Actions). Still open on 2026-10-19: the
+   smoke run after the PR #8 merge failed 17/17 for exactly this reason.
 5. **Audit:** check that no production value, especially `DATABASE_URL`, is scoped to
    "All Environments".
 
@@ -107,6 +108,12 @@ redeploy. Everything else also needs a redeploy to be picked up.
 
 ## Also on you
 
+- **Turn off GitHub Pages (needs the repo owner, Tiascommits).** Added 2026-10-19. Legacy
+  Pages publishes all of `main` at <https://tiascommits.github.io/TakaTalks/>: the old tax
+  demos with outdated rules, plus `judge.md` and this file, where search engines can find
+  them. Nothing depends on it (no custom domain; the app is on Vercel). GitHub → Settings →
+  Pages → Source: **None**, or `gh api -X DELETE repos/Tiascommits/TakaTalks/pages` from
+  the owner's account. `the-abraar` has push access but not admin, so it can't do this.
 - **Verify the GoatCounter email.** The link went to nshababa16@gmail.com. Data is
   arriving, but the account is unconfirmed until you click it.
 - **Decide whether TakaTalks counts as commercial use.** GoatCounter's free hosted plan
