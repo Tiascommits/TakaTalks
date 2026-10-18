@@ -10,9 +10,11 @@
 - [ ] Regularly monitor BAJUS gold and silver benchmark prices for `/zakat`.
 
 ## 3. Operations & Infrastructure
-The exact pages and variable-by-variable checklist for this section is in [`formenow.md`](formenow.md).
+The exact pages and variable-by-variable checklist for this section is in [`formenow.md`](../todo/my-work/formenow.md).
 - [ ] **Urgent:** set `CRON_SECRET`, `SESSION_SECRET` and `ADMIN_SECRET` in Vercel (Secret, Production + Preview) and redeploy. Until `CRON_SECRET` exists every cron job refuses every request, and without `SESSION_SECRET` (or `ADMIN_SECRET` as fallback) `/tracker` cannot save in production.
 - [ ] Set `YOUTUBE_API_KEY` in Vercel and redeploy so the `/videos` auto-feed goes live (`YOUTUBE_CHANNEL_ID` is already set), then restrict the key to YouTube Data API v3 in Google Cloud.
+- [ ] Add a Vercel Protection Bypass for Automation secret as the GitHub repo secret `VERCEL_AUTOMATION_BYPASS_SECRET`. Until then every post-deploy smoke run fails: Deployment Protection also guards production's `*.vercel.app` URL (17/17 failed after the PR #8 merge, 2026-10-18).
+- [ ] Turn off GitHub Pages (repo owner only; `the-abraar` isn't an admin). Legacy Pages republishes all of `main` at tiascommits.github.io/TakaTalks, including the outdated tax demos, `judge.md` and `formenow.md`. Nothing depends on it. Until it's off, `.github/workflows/smoke.yml` skips the `github-pages` deployment.
 - [x] GoatCounter analytics live (`NEXT_PUBLIC_GOATCOUNTER_CODE=takatalks`, Production only); verify the account email and decide whether TakaTalks counts as commercial use.
 - [ ] Verify the salary-to-tax figures in `docs/Car.md` and the calculator's 10% multi-car wealth surcharge against the Income Tax Act before publishing car-tax content. The Section 153 AIT amounts are already checked and corrected.
 - [ ] Configure `RESEND_API_KEY`, `EMAIL_FROM`, and `ADMIN_EMAIL` in production environment to enable maturity reminder emails.

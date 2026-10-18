@@ -82,3 +82,43 @@ Baseline: the independent critique of 14 Oct 2026 (`CrtiQue_Oct14.md`, untracked
 
 - **Review (2026-10-16, agent):** checked the whole diff. Fixed: the chart was parsed eagerly, so one odd cell in any of the 61 rows (or in an untracked 2- or 3-year column) failed all 7 banks; each adapter now parses only its own three cells. Ranges with an en or em dash are accepted. A late failed download could clear a newer cached chart. The implausible-rate error now names the whole range. Deleting the AB, National and IFIC adapters breaks no caller or test, and their stored rows stay in the database. The migration matches the schema change (`prisma migrate diff` against the old schema gives the same one `ADD COLUMN`). Proof: `scripts/check.sh` exits 0 (566 tests, build). The parser read today's live chart: September 2026, 61 banks, all 7 mapped codes found.
   - GitHub CI on `ab42cfc` passed, e2e included. Its `prisma migrate reset` applied the new migration to CI's throwaway Postgres. Not verified: the migration against a real database, and e2e locally. Still open: (1) in a database where the old per-bank scrapers stored rows after 1 Sep 2026 (production has none), those rows outrank the chart's rows, which are dated the 1st of the chart's month, until a newer chart arrives. (2) If Bangladesh Bank revises a month's chart, the two versions get the same date, and the scorecard may show either one. (3) A chart Bangladesh Bank stops updating still shows its month but is not flagged stale. (4) The admin digest compares only the low end of a range.
+
+### Update (2026-10-19, review round)
+
+Re-review of `3f8680a` and `b07cec5` on `experimental`, and of production after the owner's PR #8 (`87f0cac`, deployed to Production 2026-10-18 19:59 UTC). Production was checked with GET requests only.
+
+**Verified fixed:**
+- Production now runs **Next 16.4.2**: its client chunk reports `version:"16.4.2"`, and `origin/main:web/package.json` pins `16.4.2`. That closes the RCE (`next/og`) and SSRF advisories that were live on 16.3.4.
+- The cron routes no longer crash while loading. Without a secret, `GET /api/cron/rate-scrape` and `/api/cron/bank-health-check` now return 401, where the QA report saw an empty 500. The route imports `pdf-parse/worker`, which imports `@napi-rs/canvas` at the top of the file, so a 401 means the native canvas loads on Vercel's Linux runtime.
+- robots.txt, sitemap.xml (27 URLs) and canonical tags are live. `node web/scripts/smoke.mjs https://www.takatalks.com` passes 17 of 17 checks. It still warns that no bank has an FDR rate.
+
+**Partly fixed:** the smoke workflow names its failure clearly now ("redirected to https://vercel.com: Vercel Deployment Protection, VERCEL_AUTOMATION_BYPASS_SECRET not set"), but every run still fails, including the Production one (run 39161264612, 17 of 17).
+
+**Still open:** `/api/health` reports `banksWithFdrRates: 0`, `rateSnapshotAgeHours: null` and `bankHealthCheckAgeHours: null`. Until today the scrape route crashed on load, so this does not yet show whether `CRON_SECRET` is set. The first real test is the 02:30 UTC rate-scrape cron on 19 Oct (08:30 in Dhaka). Preview still shares the production database (QA report item 6). Whether the leaked YouTube key was rotated cannot be checked from outside.
+
+**Bugs found:**
+1. Medium: the smoke workflow tests the wrong URL for Production. `smoke.yml` uses `deployment_status.environment_url`, which is the protected per-deploy `taka-talks-<hash>-inovace-growths-projects.vercel.app` address, not www.takatalks.com. So the Production check fails even when the live site is healthy (it passed 17 of 17 by hand on the same day). Fix: when `environment == 'Production'`, run the smoke script against `https://www.takatalks.com`. That needs no secret. Keep the bypass secret for Preview.
+2. Medium: GitHub Pages is still on, built from `main` at `/`, and rebuilt on every merge (run 39161197643). It serves the old `tools/tax-calculator/v1-v4` demos under the TakaTalks name: https://tiascommits.github.io/TakaTalks/tools/tax-calculator/v1-simple-slab-calculator.html returns 200. These demos are no longer maintained: v4 still counts mutual funds inside the ৳5 lakh Sanchayapatra cap, which the app dropped for the Finance Act 2026, and it has no ৳1,000 minimum tax for first-time filers. It also renders `judge.md` and `todo/my-work/formenow.md`, which lists the unset secrets and the shared Preview database, as indexable pages.
+3. Low: the `pdf-parse` fix is proven only at module load. No PDF has been extracted on Vercel, and that cannot happen until `CRON_SECRET` is set. The trace (`@napi-rs/canvas` about 25 MB, pdfjs, Prisma) stays well under Vercel's 250 MB function limit.
+
+**Gaps, ranked:**
+1. High (ops): live data is still empty. Rates, bank health and reminders depend on `CRON_SECRET`, and tracker saves depend on `SESSION_SECRET` or `ADMIN_SECRET`. Neither can be checked from outside.
+2. High (security): Preview shares the production database (`todo/my-work/formenow.md`). Every `experimental` push deploys code that can write to production, and Preview never runs migrations.
+3. High (marketability and profitability): there is no revenue model and no demand evidence, and the 30 Nov filing deadline is six weeks away.
+4. High (ux and legal): no operator is named and there is no private contact. `/privacy` offers only the public GitHub issues page.
+5. Medium (accuracy): 13 `owner-confirm:` markers remain (tax rules 4, instruments 6, loans 2, inflation 1), and no tax practitioner has signed off. The calculator shows no 30 Nov deadline, no late-filing extra tax and no link to etaxnbr.gov.bd (`TrustBanner.tsx:24` is bold text, not a link).
+6. Medium (ops): the post-deploy smoke check is red on every deploy (bug 1), and no uptime monitor reads `/api/health`.
+7. Medium (legal and claims): the stale GitHub Pages demos and the public ops documents (bug 2).
+8. Medium (security): the tracker cookie is a permanent bearer token that cannot be revoked, and the session key falls back to `ADMIN_SECRET` (`web/src/lib/tracker/session.ts:17`).
+9. Medium (usability): functions run in `iad1` (US East) for Bangladeshi users (`x-vercel-id: bom1::iad1`).
+10. Low (ops): CI has no `npm audit`. Today it reports 4 high advisories, all in build-time packages (`prisma` CLI → `deepmerge-ts`, and `source-map-js`) and not reachable at runtime. The Next RCE was found by hand.
+
+**Next, in order:**
+1. Owner, today: in Vercel, set `CRON_SECRET`, `SESSION_SECRET`, `ADMIN_SECRET` and `NEXT_PUBLIC_APP_URL` for Production, and give Preview its own Neon branch for `DATABASE_URL`. Redeploy, then run one scrape. `/api/health` should show `banksWithFdrRates` above 0.
+2. Agent: in `smoke.yml`, smoke `https://www.takatalks.com` on Production deploys. Owner: add `VERCEL_AUTOMATION_BYPASS_SECRET` for Preview.
+3. Owner: turn off GitHub Pages (Settings → Pages → None), or delete `tools/tax-calculator/`. Move `todo/my-work/formenow.md` and the critiques out of the public repo.
+4. Agent, before 30 Nov: add the filing deadline, the late-filing extra tax and a link to etaxnbr.gov.bd to the result. Owner: get a practitioner to clear the `owner-confirm:` markers.
+5. Owner: publish an operator name and a private contact email on `/privacy`, `/terms` and the footer.
+6. Agent: after the first cron run, read `/api/health` (`bankHealthCheckAgeHours`) and the Vercel function log for the first PDF extraction. Add `npm audit --omit=dev --audit-level=critical` to CI.
+
+**Score:** security goes from 5 to 6, because the critical and high Next advisories are fixed in production. Usability 5, UI 6, UX 5, marketability 3 and profitability 2 are unchanged: what users see in production has not changed. Go-to-market stays at 40 (weighted 43.5, capped at 40). The cap holds because the live-data features are still empty in production, the tax figures have no practitioner sign-off ahead of the filing season, and no operator is named.
