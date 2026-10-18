@@ -2,6 +2,7 @@
 
 import { useId, useState } from "react";
 import { useRouter } from "next/navigation";
+import { fmtPctRange } from "@/lib/rates/fmt-range";
 import type { AdminBankDTO, AdminBBAggregateDTO, AdminDigestDTO } from "./types";
 
 function fmtDateTime(iso: string | null): string {
@@ -78,8 +79,8 @@ export function AdminRatesDashboard({
                 <ul className="list-disc pl-5">
                   {digest.changedRates.map((c, i) => (
                     <li key={`${c.shortCode}-${c.instrument}-${c.termMonths}-${i}`}>
-                      {c.name} {c.instrument} {c.termMonths}mo: {c.previousPct.toFixed(2)}% →{" "}
-                      {c.currentPct.toFixed(2)}% ({c.deltaPct > 0 ? "+" : ""}
+                      {c.name} {c.instrument} {c.termMonths}mo: {fmtPctRange(c.previousPct, c.previousPctMax)} →{" "}
+                      {fmtPctRange(c.currentPct, c.currentPctMax)} ({c.deltaPct > 0 ? "+" : ""}
                       {c.deltaPct.toFixed(2)}pp)
                     </li>
                   ))}

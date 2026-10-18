@@ -18,24 +18,12 @@ export const SEED_SOURCE_LABEL =
 // in every time zone.
 export const SEED_AS_OF = new Date("2025-12-31T12:00:00Z");
 
-// AB, NATIONAL, and IFIC removed from here — all three got real, verified
-// adapters (see adapters/ab-bank.ts, adapters/national-bank.ts,
-// adapters/ific-bank.ts) which override any manual-seed entry for the same
-// shortCode in registry.ts.
+// Only MIDLAND is left: every other bank with a seed now reads Bangladesh Bank's
+// chart (adapters/bb-chart.ts, mapped in adapters/registry.ts).
 export const SEED_FDR_RATES: Record<string, { termMonths: number; ratePct: number }[]> = {
   MIDLAND: [
     { termMonths: 3, ratePct: 10.15 },
     { termMonths: 6, ratePct: 10.25 },
     { termMonths: 12, ratePct: 9.9 },
-  ],
-  ONE: [
-    { termMonths: 3, ratePct: 10.0 },
-    { termMonths: 6, ratePct: 10.25 },
-    { termMonths: 12, ratePct: 10.5 },
-  ],
-  CITY: [
-    { termMonths: 3, ratePct: 8.5 },
-    { termMonths: 6, ratePct: 8.75 },
-    { termMonths: 12, ratePct: 9.25 },
   ],
 };

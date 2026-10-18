@@ -115,5 +115,54 @@ describe("calculateOptimizer — minimum tax floor (critique B3)", () => {
       expect(r.taxAfterRebate - after.taxAfterRebate).toBeCloseTo(opt.taxSaving, 6);
     }
   });
+
+  // Follows each suggestion into its own instrument, so a plan that overfills a capped one
+  // (sanchay group, DPS) under-delivers and fails here.
+  function follow(input: TaxCalculatorInput, opt: ReturnType<typeof calculateOptimizer>): TaxCalculatorInput {
+    const next = { ...input };
+    for (const s of opt.suggestions) {
+      if (s.instrumentId === "sanchay_group") next.invSanchayAnnual += s.investMore;
+      else if (s.instrumentId === "dps") next.invDPSMonthly += s.investMore / 12;
+      else next.invStockAnnual += s.investMore;
+    }
+    return next;
+  }
+
+  const incomes = [400001, 450000, 500000, 600000, 750000, 1000000, 2000000, 5000000, 30000000];
+  const existing: [string, Partial<TaxCalculatorInput>][] = [
+    ["nothing invested", {}],
+    ["৳30,000 in stocks", { invStockAnnual: 30000 }],
+    ["sanchay group full", { invSanchayAnnual: TAX_RULES.sharedGroupCap }],
+    ["DPS full", { invDPSMonthly: TAX_RULES.dpsCap / 12 }],
+  ];
+  const cases = incomes.flatMap((income) =>
+    [false, true].flatMap((firstTimeFiler) =>
+      [true, false].flatMap((salaried) =>
+        existing.map(([invLabel, inv]): [string, TaxCalculatorInput] => [
+          `৳${income} ${salaried ? "salary" : "business"}${firstTimeFiler ? ", first return" : ""}, ${invLabel}`,
+          {
+            ...EMPTY_TAX_INPUT,
+            ...(salaried ? { basicMonthly: income / 12 } : { businessAnnual: income }),
+            firstTimeFiler,
+            ...inv,
+          },
+        ])
+      )
+    )
+  );
+
+  it.each(cases)("keeps every promise: %s", (_label, input) => {
+    const r = calculateTax(input);
+    const opt = calculateOptimizer(r);
+    // never promises tax below the minimum
+    expect(opt.taxSaving).toBeLessThanOrEqual(Math.max(0, r.taxAfterRebate - r.minFloor) + 1e-6);
+    // the per-instrument lines add up to the headline
+    const lines = opt.suggestions.reduce((sum, s) => sum + s.taxSavingFromThis, 0);
+    expect(lines).toBeCloseTo(opt.taxSaving, 6);
+    // following the plan delivers exactly the promised saving, and leaves nothing more to gain
+    const after = calculateTax(follow(input, opt));
+    expect(r.taxAfterRebate - after.taxAfterRebate).toBeCloseTo(opt.taxSaving, 6);
+    expect(calculateOptimizer(after).taxSaving).toBeCloseTo(0, 6);
+  });
 });
 

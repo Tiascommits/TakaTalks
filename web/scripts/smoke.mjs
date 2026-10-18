@@ -13,9 +13,10 @@ if (!base || !/^https?:\/\//.test(base)) {
 // Key text is the start of each page's <title> (its `metadata` export) plus the
 // share-card tag, so copy changes in page bodies don't break the check.
 const OG = 'property="og:image"';
+const CANONICAL = 'rel="canonical"';
 const CHECKS = [
   ["/", ["TakaTalks", OG]],
-  ["/calculator", ["আয়কর এস্টিমেটর", OG]],
+  ["/calculator", ["আয়কর এস্টিমেটর", OG, CANONICAL]],
   ["/tax_basic_calculation", ["বেসিক ইনকাম ট্যাক্স হিসাব", OG]],
   ["/salary", ["স্যালারি অফার তুলনাকারী ও ইন-হ্যান্ড পে", OG]],
   ["/freelance", ["ফ্রিল্যান্স ট্যাক্স ও রেমিট্যান্স ক্যালকুলেটর", OG]],
@@ -29,6 +30,8 @@ const CHECKS = [
   ["/terms", ["ব্যবহারের শর্তাবলি", OG]],
   ["/api/health", ['"dbReachable":true']],
   ["/opengraph-image", ["PNG"]], // the PNG file signature
+  ["/robots.txt", ["Sitemap: https://www.takatalks.com/sitemap.xml"]],
+  ["/sitemap.xml", ["https://www.takatalks.com/calculator"]],
 ];
 
 const secret = process.env.VERCEL_AUTOMATION_BYPASS_SECRET;
@@ -41,7 +44,10 @@ for (const [path, needles] of CHECKS) {
     const res = await fetch(base + path, { headers, signal: AbortSignal.timeout(30_000) });
     const body = await res.text();
     const missing = needles.filter((n) => !body.includes(n));
-    if (res.status !== 200) problem = `HTTP ${res.status}`;
+    // Deployment Protection 302s to vercel.com/login, which fetch follows to a 200 login page.
+    if (new URL(res.url).host !== new URL(base).host)
+      problem = `redirected to ${new URL(res.url).origin}: Vercel Deployment Protection, VERCEL_AUTOMATION_BYPASS_SECRET ${secret ? "rejected" : "not set"}`;
+    else if (res.status !== 200) problem = `HTTP ${res.status}`;
     else if (missing.length) problem = `missing ${missing.join(", ")}`;
     if (path === "/api/health" && body.startsWith("{")) {
       console.log(`     health: ${body.slice(0, 300)}`);

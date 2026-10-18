@@ -13,6 +13,8 @@ export type CurrentRateRowDTO = {
   statementUrl: string | null;
   termMonths: number;
   ratePct: number | null;
+  /** Upper end when the source gives a range; null for a single figure. */
+  ratePctMax: number | null;
   method: RateSourceMethodCode | null;
   source: string | null;
   /** Scraped: when we last read it. Manual: the source's own date. */

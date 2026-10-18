@@ -41,6 +41,8 @@ export type AdminDigestDTO = {
     termMonths: number;
     previousPct: number;
     currentPct: number;
+    previousPctMax: number | null;
+    currentPctMax: number | null;
     deltaPct: number;
   }[];
 };

@@ -1,6 +1,6 @@
 # Bank Annual Report Extraction Agent
 
-The **Bank Annual Report Extraction Agent** is a specialized background processing pipeline responsible for extracting audited financial health indicators (Capital Adequacy, Non-Performing Loans, Provisions, ROA) from commercial banks' official annual report PDFs, adhering to [`prompts/03-annual-report-extraction.md`](file:///Users/blackbird/INOVACE/TakaTalks/prompts/03-annual-report-extraction.md).
+The **Bank Annual Report Extraction Agent** is a specialized background processing pipeline responsible for extracting audited financial health indicators (Capital Adequacy, Non-Performing Loans, Provisions, ROA) from commercial banks' official annual report PDFs, adhering to [`prompts/03-annual-report-extraction.md`](../../prompts/03-annual-report-extraction.md).
 
 ---
 

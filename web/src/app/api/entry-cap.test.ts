@@ -11,8 +11,9 @@ vi.mock("@/lib/prisma", () => ({ prisma }));
 vi.mock("@/lib/rate-limit", async (importOriginal) => ({
   ...(await importOriginal<typeof import("@/lib/rate-limit")>()),
   overLimit: vi.fn().mockResolvedValue(false),
+  overWriteLimit: vi.fn().mockResolvedValue(false),
 }));
-vi.mock("@/lib/tracker/session", () => ({ getOrCreateUserId: vi.fn().mockResolvedValue("u1") }));
+vi.mock("@/lib/tracker/session", () => ({ getOrCreateUserId: vi.fn().mockResolvedValue("u1"), signedCookieUserId: vi.fn() }));
 
 import { POST as postIncome } from "./income/route";
 import { POST as postInvestment } from "./investments/route";

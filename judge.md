@@ -50,3 +50,35 @@ Baseline: the independent critique of 14 Oct 2026 (`CrtiQue_Oct14.md`, untracked
 6. In January, read the GoatCounter events and decide whether the tax niche earns more work (critique action 10).
 
 **Score:** not re-scored. Round 1 removes the cause of the 25% cap on this branch, but none of it is in production yet.
+
+### Update 2 (2026-10-15, agent round)
+
+**Done:**
+- Merge: there was nothing left to merge. Round 1 (`7ca7227`), round 2 (`5e3134c`) and the sweep (`b1ad596`) were already on `experimental`, and no branch holds commits that `experimental` lacks. The owner's PR #7 (`d3b29d8`) took `experimental` up to `e294460` into `main`, and production serves it: `/privacy` returns 200, and `/api/health` returns 200 with `banksWithFdrRates: 0`.
+- QA report for the 7 commits still missing from `main`: `docs/qa-report-2026-10-15-experimental.md`. It finds no migrations and recommends the merge from a QA standpoint. The merge itself is the owner's call.
+- SEO (`6981ce8`): `robots.txt` blocks `/admin`, `/api/` and `/account`. `sitemap.xml` lists the public pages and each `/viz/<slug>`, and adds `/rates` once it has data. Every page gets a canonical URL through `alternates.canonical: "./"`. `SITE_URL` now lives in `web/src/config/site.ts`, and the smoke test checks all three.
+- `/privacy` (`cdff5e0`) now lists the visualizer events (download, share, link copy, print) next to the tax events.
+
+**Checks:** `scripts/check.sh` exits 0 (559 unit tests in 42 files, plus the build). GitHub CI on `cdff5e0` passed, including 77 e2e tests. A local `next start` served the right robots, sitemap and canonical tags. Smoke on production passed 14 of 17 checks; the 3 failures are the new checks, which `main` does not have yet.
+
+**Not verified:** e2e did not run locally (no Postgres, and it needs the owner's sign-off), but CI ran it. No one has checked Search Console or the Facebook Sharing Debugger. The per-user rate limits have not been tested under load.
+
+**Still open (owner):**
+- Merge `experimental` into `main`.
+- The Vercel secrets and a Preview database.
+- A `VERCEL_AUTOMATION_BYPASS_SECRET` repo secret: the smoke workflow fails 15 of 15 checks on every preview deploy, which looks like the Deployment Protection page.
+- Submit the sitemap in Search Console after the deploy.
+- The rest of Update 1's owner list.
+- Next for agents: item 5 (Bangladesh Bank's all-bank rate table).
+
+### Update 3 (2026-10-16, agent round): rates from Bangladesh Bank's chart
+
+**Done (Update 1, next item 5):** the rate source is now Bangladesh Bank's monthly "Announced Interest Rate Chart of the Scheduled Banks (Deposit Rate)" (`BB_DEPOSIT_CHART_URL` in `web/src/config/rate-monitoring.ts`): one server-rendered HTML table, 61 banks, five fixed-deposit tenors. `adapters/bb-chart.ts` downloads it once per run and gives each bank its own adapter reading its row, so a missing row fails only that bank.
+- Mapped by hand against the September 2026 chart: AB, One, National (NBL), City, IFIC, Sonali, EBL. The AB, National and IFIC per-bank scrapers and the One and City seeds are deleted. Not mapped: Midland (the chart's "MDBL" is unconfirmed; stays on its seed) and Standard Chartered (its real 0.05% lower bounds fail the 1% wrong-column floor; stays "not available").
+- The chart gives most rates as ranges (City 12 months: 3.60–7.88%). New nullable column `RateSnapshot.ratePctMax` (migration `20261016090000_rate_range`, additive); the scorecard shows rate, interest and after-tax figures as low–high, sorts by the low end, and labels the source "Bangladesh Bank's announced rate chart" with "Chart for September 2026" instead of "Last checked".
+- Proof: `scripts/check.sh` exits 0 (566 unit tests, build). New tests: parser (ranges, blanks, moved columns, missing month), adapter (dating, upper end, missing row), one download per run, `runScrape` storing and checking `ratePctMax`. One live run on 2026-10-16 read all 7 banks from bb.org.bd. e2e not run locally (needs Postgres); `rates.spec.ts` still matches (Midland keeps its "Source dated 31 Dec 2025").
+- **Still blocks going live (owner):** `CRON_SECRET` in Vercel so the daily scrape runs, then one admin "Run scrape now". The migration applies on the next production build (`prisma migrate deploy`).
+- Next for agents: map the other banks in the chart (61) once you decide the scorecard should list them; confirm Midland's code.
+
+- **Review (2026-10-16, agent):** checked the whole diff. Fixed: the chart was parsed eagerly, so one odd cell in any of the 61 rows (or in an untracked 2- or 3-year column) failed all 7 banks; each adapter now parses only its own three cells. Ranges with an en or em dash are accepted. A late failed download could clear a newer cached chart. The implausible-rate error now names the whole range. Deleting the AB, National and IFIC adapters breaks no caller or test, and their stored rows stay in the database. The migration matches the schema change (`prisma migrate diff` against the old schema gives the same one `ADD COLUMN`). Proof: `scripts/check.sh` exits 0 (566 tests, build). The parser read today's live chart: September 2026, 61 banks, all 7 mapped codes found.
+  - GitHub CI on `ab42cfc` passed, e2e included. Its `prisma migrate reset` applied the new migration to CI's throwaway Postgres. Not verified: the migration against a real database, and e2e locally. Still open: (1) in a database where the old per-bank scrapers stored rows after 1 Sep 2026 (production has none), those rows outrank the chart's rows, which are dated the 1st of the chart's month, until a newer chart arrives. (2) If Bangladesh Bank revises a month's chart, the two versions get the same date, and the scorecard may show either one. (3) A chart Bangladesh Bank stops updating still shows its month but is not flagged stale. (4) The admin digest compares only the low end of a range.

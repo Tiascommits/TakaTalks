@@ -46,15 +46,18 @@ export function verifyAndExtractUserId(cookieValue: string): string | null {
   return userId;
 }
 
+/** The user id in a validly signed session cookie, without a database read (rate-limit keys use it). */
+export async function signedCookieUserId(): Promise<string | null> {
+  const raw = (await cookies()).get(COOKIE_NAME)?.value;
+  return raw ? verifyAndExtractUserId(raw) : null;
+}
+
 /**
  * Read-only lookup — never creates a user. Verifies HMAC cookie signature
  * before querying the database, preventing CUID guessing or spoofing.
  */
 export async function getCurrentUserId(): Promise<string | null> {
-  const store = await cookies();
-  const raw = store.get(COOKIE_NAME)?.value;
-  if (!raw) return null;
-  const id = verifyAndExtractUserId(raw);
+  const id = await signedCookieUserId();
   if (!id) return null;
   const user = await prisma.user.findUnique({ where: { id } });
   return user?.id ?? null;

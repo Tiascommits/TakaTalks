@@ -3,7 +3,7 @@
 import { useId, useMemo, useState } from "react";
 import { cleanNumberText, fmtTaka } from "@/lib/format";
 import { calculateAfterTaxReturn } from "@/lib/rates/after-tax";
-import { DEPOSIT_INSURANCE_COVER_BDT, FDR_SOURCE_TAX } from "@/config/rate-monitoring";
+import { BB_DEPOSIT_CHART_URL, DEPOSIT_INSURANCE_COVER_BDT, FDR_SOURCE_TAX } from "@/config/rate-monitoring";
 import type { BankTypeCode, BBAggregateRateDTO, CurrentRateRowDTO } from "./types";
 import { useLanguage } from "@/lib/i18n";
 
@@ -21,6 +21,16 @@ type SortDirection = "asc" | "desc";
 
 function pct(n: number): string {
   return n.toFixed(2) + "%";
+}
+
+// "8.50% – 8.90%" for a range, the single figure otherwise.
+function range(min: number, max: number | null, fmt: (n: number) => string): string {
+  return max !== null && max > min ? `${fmt(min)} – ${fmt(max)}` : fmt(min);
+}
+
+function fmtMonth(iso: string | null): string {
+  if (!iso) return "—";
+  return new Date(iso).toLocaleDateString("en-GB", { month: "long", year: "numeric", timeZone: "UTC" });
 }
 
 const pctOf = (rate: number) => `${Math.round(rate * 100)}%`;
@@ -58,6 +68,9 @@ export function RateScorecard({
           row.ratePct !== null
             ? calculateAfterTaxReturn(amount, row.ratePct, row.termMonths, taxRate)
             : null,
+        // a range (Bangladesh Bank's chart) is worked out at both ends
+        afterTaxMax:
+          row.ratePctMax !== null ? calculateAfterTaxReturn(amount, row.ratePctMax, row.termMonths, taxRate) : null,
       })),
     [visibleRows, amount, taxRate]
   );
@@ -247,21 +260,21 @@ export function RateScorecard({
               </tr>
             </thead>
             <tbody>
-              {sorted.map(({ row, afterTax }) => (
+              {sorted.map(({ row, afterTax, afterTaxMax }) => (
                 <tr key={row.bankShortCode} className="border-b border-line hover:bg-[#FBFAF6]">
                   <td className="py-2 px-2">{row.bankName}</td>
                   <td className="py-2 px-2 text-muted">{t(BANK_TYPE_LABEL[row.bankType].en, BANK_TYPE_LABEL[row.bankType].bn)}</td>
                   <td className="py-2 px-2 text-right">
-                    {row.ratePct !== null ? pct(row.ratePct) : <span className="text-muted">{notAvailable}</span>}
+                    {row.ratePct !== null ? range(row.ratePct, row.ratePctMax, pct) : <span className="text-muted">{notAvailable}</span>}
                   </td>
                   <td className="py-2 px-2 text-right">
-                    {afterTax ? fmtTaka(afterTax.grossInterest) : "—"}
+                    {afterTax ? range(afterTax.grossInterest, afterTaxMax?.grossInterest ?? null, fmtTaka) : "—"}
                   </td>
                   <td className="py-2 px-2 text-right">
-                    {afterTax ? fmtTaka(afterTax.netInterest) : "—"}
+                    {afterTax ? range(afterTax.netInterest, afterTaxMax?.netInterest ?? null, fmtTaka) : "—"}
                   </td>
                   <td className="py-2 px-2 text-right">
-                    {afterTax ? pct(afterTax.effectiveAfterTaxRatePct) : "—"}
+                    {afterTax ? range(afterTax.effectiveAfterTaxRatePct, afterTaxMax?.effectiveAfterTaxRatePct ?? null, pct) : "—"}
                   </td>
                   <td className="py-2 px-2">
                     {row.creditRating ? (
@@ -293,12 +306,25 @@ export function RateScorecard({
                   <td className="py-2 px-2 text-[11px] text-muted min-w-56">
                     {row.source ? (
                       <>
-                        {row.method === "MANUAL" ? t("Manual: ", "হাতে সংগৃহীত: ") : t("From the bank's site: ", "ব্যাংকের সাইট থেকে: ")}
-                        {row.source}
-                        <br />
-                        {row.method === "MANUAL"
-                          ? t(`Source dated ${fmtDate(row.asOf)}`, `সূত্রের তারিখ ${fmtDate(row.asOf)}`)
-                          : t(`Last checked ${fmtDate(row.asOf)}`, `সর্বশেষ যাচাই ${fmtDate(row.asOf)}`)}
+                        {row.source === BB_DEPOSIT_CHART_URL ? (
+                          <>
+                            {t("Bangladesh Bank's announced rate chart: ", "বাংলাদেশ ব্যাংকের ঘোষিত সুদহার তালিকা: ")}
+                            <a href={row.source} target="_blank" rel="noopener noreferrer" className="underline">
+                              bb.org.bd
+                            </a>
+                            <br />
+                            {t(`Chart for ${fmtMonth(row.asOf)}`, `${fmtMonth(row.asOf)} মাসের তালিকা`)}
+                          </>
+                        ) : (
+                          <>
+                            {row.method === "MANUAL" ? t("Manual: ", "হাতে সংগৃহীত: ") : t("From the bank's site: ", "ব্যাংকের সাইট থেকে: ")}
+                            {row.source}
+                            <br />
+                            {row.method === "MANUAL"
+                              ? t(`Source dated ${fmtDate(row.asOf)}`, `সূত্রের তারিখ ${fmtDate(row.asOf)}`)
+                              : t(`Last checked ${fmtDate(row.asOf)}`, `সর্বশেষ যাচাই ${fmtDate(row.asOf)}`)}
+                          </>
+                        )}
                         {row.unverified && (
                           <>
                             {" "}

@@ -1,3 +1,6 @@
+// Must load first: polyfills DOMMatrix from @napi-rs/canvas and loads the pdf.js worker
+// in-process, so the file tracer ships both to Vercel (pdf-parse's serverless setup).
+import "pdf-parse/worker";
 import { PDFParse } from "pdf-parse";
 import type { AnnualReportField } from "@prisma/client";
 

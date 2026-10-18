@@ -1,4 +1,5 @@
 import type { DigestResult } from "./digest";
+import { fmtPctRange } from "./fmt-range";
 import { sendEmail, isEmailConfigured } from "@/lib/notify/email";
 
 function formatDigestText(digest: DigestResult): string {
@@ -22,7 +23,7 @@ function formatDigestText(digest: DigestResult): string {
     lines.push("SIGNIFICANT RATE CHANGES:");
     for (const c of digest.changedRates) {
       lines.push(
-        `- ${c.name} ${c.instrument} ${c.termMonths}mo: ${c.previousPct}% -> ${c.currentPct}% (${c.deltaPct > 0 ? "+" : ""}${c.deltaPct.toFixed(2)}pp)`
+        `- ${c.name} ${c.instrument} ${c.termMonths}mo: ${fmtPctRange(c.previousPct, c.previousPctMax)} -> ${fmtPctRange(c.currentPct, c.currentPctMax)} (${c.deltaPct > 0 ? "+" : ""}${c.deltaPct.toFixed(2)}pp)`
       );
     }
   }

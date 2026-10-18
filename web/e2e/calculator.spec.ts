@@ -94,6 +94,18 @@ test.describe("Calculator — normal cases", () => {
     await expect(page.getByText(/বাঁচাতে পারো/)).toHaveCount(0);
     await noGarbageOnPage(page);
   });
+
+  test("optimizer caps the promised saving at the minimum tax, then stops once it is reached", async ({ page }) => {
+    await page.goto("/calculator");
+    // ৳6 lakh: gross tax 20,000 and the 3% ceiling is 18,000, but tax can only fall to the 5,000 minimum.
+    await page.getByLabel("ব্যবসা / পেশার নেট মুনাফা (annual)").fill("600000");
+    await expect(page.getByText("৳15,000 বাঁচাতে পারো")).toBeVisible();
+    await expect(page.getByText(/সীমিত: ন্যূনতম করের নিচে/)).toBeVisible();
+    await page.getByLabel("DSE listed stock, নতুন বিনিয়োগ (annual)").fill("150000");
+    await expect(page.getByText(/ইতিমধ্যে ন্যূনতম করে আছে/)).toBeVisible();
+    await expect(page.getByText(/বাঁচাতে পারো/)).toHaveCount(0);
+    await noGarbageOnPage(page);
+  });
 });
 
 test.describe("Calculator — weird / adversarial input", () => {

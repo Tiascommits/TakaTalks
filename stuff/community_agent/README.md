@@ -18,7 +18,7 @@ Manually replying to every comment is impossible, but ignoring comments kills so
 
 ## 2. The Golden Rule: The Advice-vs-Math Line
 
-As documented in [`docs/product-notes.md`](file:///Users/blackbird/INOVACE/TakaTalks/docs/product-notes.md):
+As documented in [`docs/product-notes.md`](../../docs/product-notes.md):
 
 > **Rebate and slab calculations are deterministic math (safe, legal, automatable). Telling someone which bank or stock will perform better is advice (risky, regulated by BSEC/BB, and strictly forbidden).**
 
