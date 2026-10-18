@@ -44,7 +44,10 @@ for (const [path, needles] of CHECKS) {
     const res = await fetch(base + path, { headers, signal: AbortSignal.timeout(30_000) });
     const body = await res.text();
     const missing = needles.filter((n) => !body.includes(n));
-    if (res.status !== 200) problem = `HTTP ${res.status}`;
+    // Deployment Protection 302s to vercel.com/login, which fetch follows to a 200 login page.
+    if (new URL(res.url).host !== new URL(base).host)
+      problem = `redirected to ${new URL(res.url).origin}: Vercel Deployment Protection, VERCEL_AUTOMATION_BYPASS_SECRET ${secret ? "rejected" : "not set"}`;
+    else if (res.status !== 200) problem = `HTTP ${res.status}`;
     else if (missing.length) problem = `missing ${missing.join(", ")}`;
     if (path === "/api/health" && body.startsWith("{")) {
       console.log(`     health: ${body.slice(0, 300)}`);

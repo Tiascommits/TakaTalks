@@ -21,8 +21,11 @@ write into the live database. In Vercel, add these with the environment set to *
 3. **Leave unset for Preview:** `NEXT_PUBLIC_APP_URL` (login links would point at
    production), `RESEND_API_KEY`, `EMAIL_FROM` and the `WHATSAPP_*` variables, so the load
    test can't send real messages. Login-link requests then return 503 `not_configured`.
-4. **Smoke workflow:** if Deployment Protection is on, add a `VERCEL_AUTOMATION_BYPASS_SECRET`
-   GitHub repo secret so it can reach preview URLs.
+4. **Smoke workflow:** Deployment Protection is on, and it also guards production's
+   `*.vercel.app` deployment URL, so every smoke run fails until you do this. Vercel →
+   taka-talks → Settings → Deployment Protection → Protection Bypass for Automation → Add,
+   then copy that value into a GitHub repo secret named `VERCEL_AUTOMATION_BYPASS_SECRET`
+   (GitHub → Settings → Secrets and variables → Actions).
 5. **Audit:** check that no production value, especially `DATABASE_URL`, is scoped to
    "All Environments".
 

@@ -15,6 +15,9 @@ const securityHeaders = [
 ];
 
 const nextConfig: NextConfig = {
+  // Bundled, pdf-parse can't load its native @napi-rs/canvas on Vercel and bank-health-check
+  // crashes on import ("DOMMatrix is not defined", an empty 500). Kept external, it is traced.
+  serverExternalPackages: ["pdf-parse"],
   async headers() {
     return [{ source: "/:path*", headers: securityHeaders }];
   },
