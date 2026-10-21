@@ -5,6 +5,15 @@ import { fmtTaka } from "@/lib/format";
 import type { TaxCalculationResult } from "@/lib/tax/types";
 import { useLanguage } from "@/lib/i18n";
 
+const ETAX_URL = "https://etaxnbr.gov.bd";
+const fmtDueDate = (locale: string) =>
+  new Date(`${TAX_RULES.returnNoExtraTaxBy}T00:00:00Z`).toLocaleDateString(locale, {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+    timeZone: "UTC",
+  });
+
 function Line({
   label,
   value,
@@ -146,6 +155,19 @@ export function TaxBreakdown({ r, ait }: { r: TaxCalculationResult; ait: number 
         value={fmtTaka(Math.abs(r.netPayable))}
         variant={r.netPayable < 0 ? "refund" : "payable"}
       />
+      <p className="mt-2 text-[11.5px] text-[#777]">
+        {t(
+          "File at ",
+          `অতিরিক্ত কর এড়াতে ${fmtDueDate("bn-BD")}-এর মধ্যে `
+        )}
+        <a href={ETAX_URL} target="_blank" rel="noopener noreferrer" className="underline text-green-deep">
+          etaxnbr.gov.bd
+        </a>
+        {t(
+          ` by ${fmtDueDate("en-GB")} to avoid additional tax. First-time filers have until 30 June.`,
+          "-তে রিটার্ন দাখিল করুন। প্রথমবারের দাখিলকারীদের সময় ৩০ জুন পর্যন্ত।"
+        )}
+      </p>
     </div>
   );
 }

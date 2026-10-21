@@ -1,4 +1,5 @@
 import { test, expect, type Page } from "@playwright/test";
+import { gotoHydrated } from "./hydrated";
 
 async function noGarbageOnPage(page: Page) {
   const text = await page.locator("body").innerText();
@@ -150,7 +151,7 @@ test.describe("Zakat Calculator (/zakat)", () => {
 
 test.describe("Money Habit Tracker (/habits)", () => {
   test("loads with starter habits, totals them, and reacts to a cap being set", async ({ page }) => {
-    await page.goto("/habits");
+    await gotoHydrated(page, "/habits");
     await expect(page.getByText(/মানি হ্যাবিট ট্র্যাকার|Money Habit Tracker/).first()).toBeVisible();
     await noGarbageOnPage(page);
 
@@ -169,7 +170,7 @@ test.describe("Money Habit Tracker (/habits)", () => {
   });
 
   test("keeps the list across a reload, since a tracker is useless if it forgets", async ({ page }) => {
-    await page.goto("/habits");
+    await gotoHydrated(page, "/habits");
     const removeButtons = page.getByRole("button", { name: /Remove habit|অভ্যাস সরান/ });
     const before = await removeButtons.count();
 

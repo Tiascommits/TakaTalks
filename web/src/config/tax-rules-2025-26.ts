@@ -110,6 +110,13 @@ export const TAX_RULES = {
   minTax: 5000,
   minTaxNewTaxpayer: 1000,
 
+  // Filing windows replace a single due date: 1 Jul-30 Sep earns a credit, 1 Oct-31 Dec has no
+  // credit and no additional tax, and additional tax applies from 1 Jan. First-time filers have
+  // until 30 June. [KPMG26] p45 "File tax returns between..."; [PWC] "Tax administration".
+  // owner-confirm: Big-4 guides only, gazette not read. judge.md had "30 Nov" (the old tax day);
+  // both guides read 2026-10-22 give 31 Dec, and one LinkedIn post still says 30 Nov.
+  returnNoExtraTaxBy: "2026-12-31",
+
   // Freelance / IT-enabled export-service income: confirmed 2026-09-16
   // against the primary source — the Income Tax Act 2023, SIXTH SCHEDULE,
   // PART I ("Exclusion from the computation of total income"), paragraph

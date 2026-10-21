@@ -59,6 +59,10 @@ jobs:
 
       - run: npm ci
 
+      # Runtime dependencies only, critical only: the 4 known highs sit in build-time tooling.
+      - name: Audit runtime dependencies
+        run: npm audit --omit=dev --audit-level=critical
+
       - name: Typecheck
         run: npx tsc --noEmit
 

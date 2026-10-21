@@ -1,4 +1,5 @@
 import { test, expect, type Page } from "@playwright/test";
+import { gotoHydrated } from "./hydrated";
 
 async function noGarbageOnPage(page: Page) {
   const text = await page.locator("body").innerText();
@@ -9,7 +10,7 @@ async function noGarbageOnPage(page: Page) {
 
 test.describe("Calculator — normal cases", () => {
   test("loads with an empty placeholder and no crash", async ({ page }) => {
-    await page.goto("/calculator");
+    await gotoHydrated(page, "/calculator");
     await expect(page.getByText("তথ্য দিলে হিসাব এখানে আসবে")).toBeVisible();
     await noGarbageOnPage(page);
   });
@@ -17,15 +18,18 @@ test.describe("Calculator — normal cases", () => {
   test("typing a simple salary produces a payable/refund figure with no garbage", async ({
     page,
   }) => {
-    await page.goto("/calculator");
+    await gotoHydrated(page, "/calculator");
     await page.getByLabel("মূল বেতন (Basic, monthly)").fill("60000");
     await expect(page.getByText("মোট বেতন (gross salary)")).toBeVisible();
     await expect(page.getByText(/পরিশোধযোগ্য কর|ফেরতযোগ্য/)).toBeVisible();
+    // The result names the no-extra-tax date and links the official filing portal.
+    await expect(page.getByText(/৩১ ডিসেম্বর, ২০২৬-এর মধ্যে/)).toBeVisible();
+    await expect(page.getByRole("link", { name: "etaxnbr.gov.bd" }).last()).toHaveAttribute("href", "https://etaxnbr.gov.bd");
     await noGarbageOnPage(page);
   });
 
   test("switching taxpayer category changes the tax-free line", async ({ page }) => {
-    await page.goto("/calculator");
+    await gotoHydrated(page, "/calculator");
     await page.getByLabel("ব্যবসা / পেশার নেট মুনাফা (annual)").fill("500000");
 
     const taxFreeLine = page.getByText("করমুক্ত সীমা (tax-free)").locator("..");
@@ -39,7 +43,7 @@ test.describe("Calculator — normal cases", () => {
   test("opting into the net-wealth section reveals fields and applies a surcharge", async ({
     page,
   }) => {
-    await page.goto("/calculator");
+    await gotoHydrated(page, "/calculator");
     await page.getByLabel("ব্যবসা / পেশার নেট মুনাফা (annual)").fill("2000000");
     await expect(page.getByLabel("মোট নেট সম্পদ (statement of assets, if known)")).toHaveCount(0);
 
@@ -58,7 +62,7 @@ test.describe("Calculator — normal cases", () => {
   test("rebate optimizer appears with a suggestion once there is taxable income and room to invest", async ({
     page,
   }) => {
-    await page.goto("/calculator");
+    await gotoHydrated(page, "/calculator");
     await page.getByLabel("ব্যবসা / পেশার নেট মুনাফা (annual)").fill("5000000");
     // Heading by role: the phrase also appears in the page header's intro copy.
     await expect(page.getByRole("heading", { name: "রিবেট অপটিমাইজার" })).toBeVisible();
@@ -69,7 +73,7 @@ test.describe("Calculator — normal cases", () => {
   test("optimizer shows the already-at-max message once investment covers the rebate ceiling", async ({
     page,
   }) => {
-    await page.goto("/calculator");
+    await gotoHydrated(page, "/calculator");
     // ৳20 lakh: high enough that the 3%-of-income ceiling binds before the minimum-tax floor.
     await page.getByLabel("ব্যবসা / পেশার নেট মুনাফা (annual)").fill("2000000");
     await page.getByLabel("DSE listed stock, নতুন বিনিয়োগ (annual)").fill("1000000");
@@ -78,7 +82,7 @@ test.describe("Calculator — normal cases", () => {
   });
 
   test("a first return pays the ৳1,000 new-taxpayer minimum instead of ৳5,000", async ({ page }) => {
-    await page.goto("/calculator");
+    await gotoHydrated(page, "/calculator");
     await page.getByLabel("ব্যবসা / পেশার নেট মুনাফা (annual)").fill("405000");
     const payable = page.getByText("পরিশোধযোগ্য কর").locator("..");
     await expect(payable).toContainText("5,000");
@@ -88,7 +92,7 @@ test.describe("Calculator — normal cases", () => {
   });
 
   test("optimizer promises no saving when the minimum tax already applies", async ({ page }) => {
-    await page.goto("/calculator");
+    await gotoHydrated(page, "/calculator");
     await page.getByLabel("ব্যবসা / পেশার নেট মুনাফা (annual)").fill("400001");
     await expect(page.getByText(/ইতিমধ্যে ন্যূনতম করে আছে/)).toBeVisible();
     await expect(page.getByText(/বাঁচাতে পারো/)).toHaveCount(0);
@@ -96,7 +100,7 @@ test.describe("Calculator — normal cases", () => {
   });
 
   test("optimizer caps the promised saving at the minimum tax, then stops once it is reached", async ({ page }) => {
-    await page.goto("/calculator");
+    await gotoHydrated(page, "/calculator");
     // ৳6 lakh: gross tax 20,000 and the 3% ceiling is 18,000, but tax can only fall to the 5,000 minimum.
     await page.getByLabel("ব্যবসা / পেশার নেট মুনাফা (annual)").fill("600000");
     await expect(page.getByText("৳15,000 বাঁচাতে পারো")).toBeVisible();
@@ -112,7 +116,7 @@ test.describe("Calculator — weird / adversarial input", () => {
   test("typing a negative salary does not produce NaN or a negative payable amount", async ({
     page,
   }) => {
-    await page.goto("/calculator");
+    await gotoHydrated(page, "/calculator");
     const basic = page.getByLabel("মূল বেতন (Basic, monthly)");
     await basic.fill("-999999");
     await noGarbageOnPage(page);
@@ -121,7 +125,7 @@ test.describe("Calculator — weird / adversarial input", () => {
   test("typing an extremely large number across every field does not crash the page", async ({
     page,
   }) => {
-    await page.goto("/calculator");
+    await gotoHydrated(page, "/calculator");
     const huge = "999999999999";
     for (const label of [
       /মূল বেতন|Basic, monthly/,
@@ -136,7 +140,7 @@ test.describe("Calculator — weird / adversarial input", () => {
   });
 
   test("clearing a filled field back to empty falls back to zero, not NaN", async ({ page }) => {
-    await page.goto("/calculator");
+    await gotoHydrated(page, "/calculator");
     const basic = page.getByLabel("মূল বেতন (Basic, monthly)");
     await basic.fill("40000");
     await basic.fill("");
@@ -144,7 +148,7 @@ test.describe("Calculator — weird / adversarial input", () => {
   });
 
   test("Bangla digits typed on a Bangla keyboard are read as numbers", async ({ page }) => {
-    await page.goto("/calculator");
+    await gotoHydrated(page, "/calculator");
     await page.getByLabel("ব্যবসা / পেশার নেট মুনাফা (annual)").fill("৫০০০০০");
     const slabBaseLine = page.getByText("মোট স্লাব-ভিত্তিক আয়").locator("..");
     await expect(slabBaseLine).toContainText("5,00,000");
@@ -154,7 +158,7 @@ test.describe("Calculator — weird / adversarial input", () => {
   });
 
   test("decimal/paisa values are accepted without crashing", async ({ page }) => {
-    await page.goto("/calculator");
+    await gotoHydrated(page, "/calculator");
     await page.getByLabel("মূল বেতন (Basic, monthly)").fill("33333.33");
     await page.getByLabel("প্রতিবন্ধী সন্তান সংখ্যা (each +৳50,000 tax-free)").fill("2.7");
     await noGarbageOnPage(page);
@@ -163,7 +167,7 @@ test.describe("Calculator — weird / adversarial input", () => {
   test("checking every net-wealth flag at once still renders cleanly", async ({
     page,
   }) => {
-    await page.goto("/calculator");
+    await gotoHydrated(page, "/calculator");
     await page.getByLabel("ব্যবসা / পেশার নেট মুনাফা (annual)").fill("450000");
     await page.getByRole("checkbox", { name: /উল্লেখযোগ্য সম্পদ|significant assets/ }).click();
     await page.getByLabel(/একাধিক গাড়ি আছে/).check();
