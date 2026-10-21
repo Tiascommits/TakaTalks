@@ -122,3 +122,29 @@ Re-review of `3f8680a` and `b07cec5` on `experimental`, and of production after 
 6. Agent: after the first cron run, read `/api/health` (`bankHealthCheckAgeHours`) and the Vercel function log for the first PDF extraction. Add `npm audit --omit=dev --audit-level=critical` to CI.
 
 **Score:** security goes from 5 to 6, because the critical and high Next advisories are fixed in production. Usability 5, UI 6, UX 5, marketability 3 and profitability 2 are unchanged: what users see in production has not changed. Go-to-market stays at 40 (weighted 43.5, capped at 40). The cap holds because the live-data features are still empty in production, the tax figures have no practitioner sign-off ahead of the filing season, and no operator is named.
+
+### Update (2026-10-22, agent round): Bangladesh Bank chart on a real database
+
+Closes the 2026-10-18 open item: the chart changes had never run against a real database or through e2e. Everything ran locally against a throwaway Postgres 16 (docker, port 56543, data dir in the session scratchpad, removed afterwards). Neither production, Vercel nor `web/.env` was used: every run set its own throwaway `DATABASE_URL`, `TEST_DATABASE_URL` and secrets.
+
+**What ran:**
+- Migrations from scratch: `prisma migrate deploy` applied all 9, including `20261016090000_rate_range` (`ratePctMax` is a nullable `double precision`). `prisma migrate diff` from the migrated database to `schema.prisma` reports no difference.
+- Live ingest: `next start` on the local database, then `GET /api/cron/rate-scrape` with the cron secret. That read today's bb.org.bd chart (still September 2026, 61 banks): 8 of 8 adapters succeeded (the 7 chart banks and Midland's seed), SCB was skipped, 24 snapshot rows were stored, and `/rates` showed every range with "Chart for September 2026". Without the secret the route returns 401.
+- Saved copy (kept in the scratchpad): ingesting it again stored no new rows. A revised same-month copy (AB 12 months 12.00 → 11.50, City 12 months 3.60–7.88 → 3.60–8.50) stored 2 rows with the same date. `/rates` showed the revised figures (tiebreak OK), and the admin digest listed both changes, City's from the high end alone (range digest OK). Re-ingesting the original copy stored A again and `/rates` showed it (the A, B, A case).
+- Older scraper row: an IFIC 12-month 6.00% row dated 20 Sep, from another source. `/rates` still showed the chart's 8.50–9.00% (chart outranks).
+- 62-day flag: Sonali's chart rows were re-dated to 1 Aug, which is 82 days old, and `/rates` showed "Chart for August 2026 — unverified since 01 Aug 2026". EBL's rows at 61.8 days were not flagged.
+- e2e: Playwright passed 75 of 77 on a fresh database, all 3 `rates.spec.ts` tests included (the admin scrape read the live chart). Prisma refuses to let an agent run `migrate reset` from `e2e/global-setup.ts` without the owner's consent. So I ran the suite with a scratch config that drops `globalSetup`, against a newly created, empty database migrated with `migrate deploy`. The 2 failures are flaky tests outside the rates code (the next run failed different tests); see below.
+
+**Bugs found and fixed (with tests):**
+1. Medium (ops): `/api/health` `rateSnapshotAgeHours` read the newest snapshot's date. A chart row carries the chart's month (the 1st) and is stored once, so right after a good scrape it read 1208.9 hours. The planned "over 48 hours" monitor would alarm all the time and could not tell when the cron stops. It now reads the last successful `ScrapeLog` (`web/src/app/api/health/route.ts:24`, test `route.test.ts:39`). Against the real database it reads 0.1 hours after a scrape.
+2. Low: the admin digest compared rows by date only, across sources. With the older IFIC row it reported "8.50–9.00% → 6.00% (-3.00pp)", which contradicts `/rates`. It now ranks chart rows first, as `getCurrentFdrRates` does (`web/src/lib/rates/digest.ts:92`, with `source` passed at `:140`; test `digest.test.ts:101`). On the real database it reads "6.00% → 8.50–9.00% (+3.00pp)". Production has no such rows.
+
+**Checks:** `scripts/check.sh` exits 0 (571 unit tests in 43 files, plus the build).
+
+**Not bugs, noted:**
+- Flaky e2e: `tools.spec.ts:171` (habits reload) counts the remove buttons before the list renders, gets 0 and then expects -1. It failed with 1 worker too. `calculator.spec.ts:27` and `:90` failed once each under full parallel load and passed when rerun. CI retries once, which hides these.
+- Two servers that share one `.next` share `next start`'s on-disk route cache (`.next/server/route-cache/`). After one server's scrape revalidated `/`, a second server on an empty database showed the rates card. This came from my local setup and cannot happen on Vercel, where each deploy has its own cache.
+- The digest flags a month-over-month chart change on every daily run until the next chart arrives. The rows are monthly now, so this is expected, but the label still says "day-over-day" (`SIGNIFICANT_CHANGE_THRESHOLD_PCT` comment).
+- "unverified since 01 Aug 2026" on an overdue chart repeats the chart month. It is accurate, but "next chart overdue" would read better.
+
+**Not verified:** the migration on Neon or production. A real second chart month (October's is not out yet). A real same-month revision from Bangladesh Bank. The e2e `migrate reset` path (the owner must consent to it, or CI must run it).

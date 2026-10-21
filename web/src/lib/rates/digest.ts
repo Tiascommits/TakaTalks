@@ -1,6 +1,6 @@
 import type { RateInstrument } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
-import { SIGNIFICANT_CHANGE_THRESHOLD_PCT } from "@/config/rate-monitoring";
+import { BB_DEPOSIT_CHART_URL, SIGNIFICANT_CHANGE_THRESHOLD_PCT } from "@/config/rate-monitoring";
 import { RATE_ADAPTERS } from "./adapters/registry";
 
 export type DigestLogInput = { success: boolean; attemptedAt: Date; errorMessage: string | null };
@@ -10,6 +10,8 @@ export type DigestSnapshotInput = {
   ratePct: number;
   /** Upper end of a range; null or absent for a single figure. */
   ratePctMax?: number | null;
+  /** Bangladesh Bank's chart outranks other sources, as on /rates; absent = not the chart. */
+  source?: string;
   scrapedAt: Date;
 };
 export type DigestBankInput = {
@@ -86,6 +88,8 @@ export function computeDigest(banks: DigestBankInput[]): DigestResult {
 
     for (const group of byKey.values()) {
       if (group.length < 2) continue;
+      // Same ranking as getCurrentFdrRates: "current" is the row /rates shows, not an old scraper's row dated after the chart.
+      group.sort((a, b) => Number(b.source === BB_DEPOSIT_CHART_URL) - Number(a.source === BB_DEPOSIT_CHART_URL));
       const [current, previous] = group;
       const lowDelta = current.ratePct - previous.ratePct;
       const highDelta = (current.ratePctMax ?? current.ratePct) - (previous.ratePctMax ?? previous.ratePct);
@@ -133,6 +137,7 @@ export async function getDigest(): Promise<DigestResult> {
       termMonths: s.termMonths,
       ratePct: s.ratePct,
       ratePctMax: s.ratePctMax,
+      source: s.source,
       scrapedAt: s.scrapedAt,
     })),
   }));
