@@ -1,4 +1,5 @@
 import { test, expect, type Page } from "@playwright/test";
+import { gotoHydrated } from "./hydrated";
 
 async function noGarbageOnPage(page: Page) {
   const text = await page.locator("body").innerText();
@@ -23,7 +24,7 @@ test.describe("Videos (/videos)", () => {
 
 test.describe("Homepage video reel (/)", () => {
   test("shows the reel with a real embed and links through to the videos page", async ({ page }) => {
-    await page.goto("/");
+    await gotoHydrated(page, "/");
     // The reel shows the video's still; a tap swaps in the real player.
     await page.getByRole("button", { name: /Play video|ভিডিও চালান/ }).first().click();
     await expect(page.locator('iframe[src*="youtube-nocookie.com/embed/"]').first()).toBeVisible();
@@ -34,7 +35,7 @@ test.describe("Homepage video reel (/)", () => {
   });
 
   test("the hero's demo button also reaches the videos page", async ({ page }) => {
-    await page.goto("/");
+    await gotoHydrated(page, "/");
     await page.getByRole("link", { name: /Watch the demo|ডেমো দেখুন/ }).click();
     await expect(page).toHaveURL(/\/videos/);
   });

@@ -1,4 +1,5 @@
 import { createHash, randomBytes } from "node:crypto";
+import { gotoHydrated } from "./hydrated";
 import { test, expect, type APIRequestContext, type Page } from "@playwright/test";
 import { PrismaClient } from "@prisma/client";
 import { TEST_DATABASE_URL } from "./test-db";
@@ -122,7 +123,7 @@ async function seedEmailLink(email: string, requesterId?: string) {
 test.describe("Magic-link confirmation screen", () => {
   test("shows a masked target, and confirming signs in and lands on the tracker", async ({ page }) => {
     const token = await seedEmailLink(`alice.${Date.now()}@example.com`);
-    await page.goto(`/account/verify?token=${token}`);
+    await gotoHydrated(page, `/account/verify?token=${token}`);
 
     const target = page.getByTestId("verify-target");
     await expect(target).toContainText("a•••@example.com");
@@ -155,7 +156,7 @@ test.describe("Magic-link confirmation screen", () => {
   });
 
   test("an unknown token shows no target, and the confirm button is still offered", async ({ page }) => {
-    await page.goto("/account/verify?token=not-a-real-token");
+    await gotoHydrated(page, "/account/verify?token=not-a-real-token");
     await expect(page.getByRole("button", { name: /নিশ্চিত করুন ও ট্র্যাকারে যান/ })).toBeVisible();
     await expect(page.getByTestId("verify-target")).toHaveCount(0);
   });
@@ -183,7 +184,7 @@ test.describe("Magic-link account fixation", () => {
   }) => {
     const attackerContext = await browser.newContext({ baseURL });
     const attacker = await attackerContext.newPage();
-    await Promise.all([attacker.goto("/account/verify"), victim.goto("/account/verify")]);
+    await Promise.all([gotoHydrated(attacker, "/account/verify"), gotoHydrated(victim, "/account/verify")]);
     const email = `victim.${Date.now()}@example.com`;
     const tag = randomBytes(4).toString("hex");
 

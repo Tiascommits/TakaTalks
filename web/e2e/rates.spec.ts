@@ -1,4 +1,5 @@
 import { test, expect, type Page } from "@playwright/test";
+import { gotoHydrated } from "./hydrated";
 
 async function noGarbageOnPage(page: Page) {
   const text = await page.locator("body").innerText();
@@ -20,7 +21,7 @@ test.describe("Bank rate scorecard — before any rates exist", () => {
   });
 
   test("is not advertised in the nav or on the homepage", async ({ page }) => {
-    await page.goto("/");
+    await gotoHydrated(page, "/");
     await page.getByRole("tab", { name: /সঞ্চয়|^Save$/ }).click();
     await expect(page.getByText(/ব্যাংক রেট ও স্বাস্থ্য স্কোরকার্ড|Bank Rates & Health/)).toHaveCount(0);
 
@@ -62,7 +63,7 @@ test.describe("Bank rate scorecard — with seeded rates", () => {
     const scrape = await page.request.post("/api/admin/rates/run-scrape");
     expect(scrape.ok()).toBeTruthy();
 
-    await page.goto("/rates");
+    await gotoHydrated(page, "/rates");
     await expect(page.getByText(/Deposit protection|আমানত সুরক্ষা/)).toBeVisible();
     await expect(page.getByText(/self-reported by banks|ব্যাংক নিজে প্রকাশ করে/)).toBeVisible();
     await expect(page.getByText("AB Bank PLC")).toBeVisible();

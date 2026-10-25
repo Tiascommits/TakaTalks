@@ -329,7 +329,9 @@ export function RateScorecard({
                           <>
                             {" "}
                             <span className="text-red font-semibold">
-                              {t(`— unverified since ${fmtDate(row.asOf)}`, `— অযাচাইকৃত, ${fmtDate(row.asOf)} থেকে`)}
+                              {row.chartOverdue
+                                ? t("— next chart overdue", "— পরবর্তী চার্ট বিলম্বিত")
+                                : t(`— unverified since ${fmtDate(row.asOf)}`, `— অযাচাইকৃত, ${fmtDate(row.asOf)} থেকে`)}
                             </span>
                           </>
                         )}

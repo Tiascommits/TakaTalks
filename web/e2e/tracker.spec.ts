@@ -1,4 +1,5 @@
 import { test, expect, type Page } from "@playwright/test";
+import { gotoHydrated } from "./hydrated";
 
 async function noGarbageOnPage(page: Page) {
   const text = await page.locator("body").innerText();
@@ -9,13 +10,13 @@ async function noGarbageOnPage(page: Page) {
 
 test.describe("Tracker — normal cases", () => {
   test("loads empty for a first-time visitor", async ({ page }) => {
-    await page.goto("/tracker");
+    await gotoHydrated(page, "/tracker");
     await expect(page.getByText("এখনো কোনো আয়ের উৎস যোগ করেননি।")).toBeVisible();
     await expect(page.getByText("এখনো কোনো বিনিয়োগ যোগ করেননি।")).toBeVisible();
   });
 
   test("adding an income entry shows it in the list with formatted amount", async ({ page }) => {
-    await page.goto("/tracker");
+    await gotoHydrated(page, "/tracker");
     await page.getByLabel("লেবেল").first().fill("মূল বেতন");
     await page.getByLabel("পরিমাণ (৳)").fill("50000");
     await page.getByRole("button", { name: "যোগ করুন" }).first().click();
@@ -26,7 +27,7 @@ test.describe("Tracker — normal cases", () => {
   });
 
   test("deleting an income entry removes it from the list", async ({ page }) => {
-    await page.goto("/tracker");
+    await gotoHydrated(page, "/tracker");
     await page.getByLabel("লেবেল").first().fill("ফ্রিল্যান্স ইনকাম");
     await page.getByLabel("পরিমাণ (৳)").fill("15000");
     await page.getByRole("button", { name: "যোগ করুন" }).first().click();
@@ -40,7 +41,7 @@ test.describe("Tracker — normal cases", () => {
   test("adding an investment shows it in the investment list and the maturity dashboard", async ({
     page,
   }) => {
-    await page.goto("/tracker");
+    await gotoHydrated(page, "/tracker");
     const investmentForm = page.locator("section", { hasText: "বিনিয়োগ" }).last();
 
     await investmentForm.getByLabel("লেবেল").fill("সোনালী ব্যাংক FDR");
@@ -59,7 +60,7 @@ test.describe("Tracker — normal cases", () => {
   test("confirming a matured investment's payout moves it to reinvestable cash", async ({
     page,
   }) => {
-    await page.goto("/tracker");
+    await gotoHydrated(page, "/tracker");
     const investmentForm = page.locator("section", { hasText: "বিনিয়োগ" }).last();
 
     // Started years ago with a 1-month term => already matured today.
@@ -87,7 +88,7 @@ test.describe("Tracker — normal cases", () => {
   });
 
   test("saving the tax profile persists across a reload", async ({ page }) => {
-    await page.goto("/tracker");
+    await gotoHydrated(page, "/tracker");
     await page.getByLabel("প্রতিবন্ধী সন্তান সংখ্যা").fill("2");
     await Promise.all([
       page.waitForResponse((res) => res.url().includes("/api/profile") && res.request().method() === "PUT"),
@@ -103,7 +104,7 @@ test.describe("Tracker — weird / adversarial input", () => {
   test("rejects a zero-amount income entry with an inline error, doesn't add it", async ({
     page,
   }) => {
-    await page.goto("/tracker");
+    await gotoHydrated(page, "/tracker");
     await page.getByLabel("লেবেল").first().fill("শূন্য আয়");
     await page.getByLabel("পরিমাণ (৳)").fill("0");
     await page.getByRole("button", { name: "যোগ করুন" }).first().click();
@@ -113,7 +114,7 @@ test.describe("Tracker — weird / adversarial input", () => {
   });
 
   test("rejects a negative-amount income entry with an inline error", async ({ page }) => {
-    await page.goto("/tracker");
+    await gotoHydrated(page, "/tracker");
     await page.getByLabel("লেবেল").first().fill("ঋণাত্মক আয়");
     await page.getByLabel("পরিমাণ (৳)").fill("-5000");
     await page.getByRole("button", { name: "যোগ করুন" }).first().click();
@@ -123,14 +124,14 @@ test.describe("Tracker — weird / adversarial input", () => {
   });
 
   test("rejects an income entry with no label", async ({ page }) => {
-    await page.goto("/tracker");
+    await gotoHydrated(page, "/tracker");
     await page.getByLabel("পরিমাণ (৳)").fill("10000");
     await page.getByRole("button", { name: "যোগ করুন" }).first().click();
     await expect(page.getByRole("alert").first()).toBeVisible();
   });
 
   test("rejects a negative-principal investment with an inline error", async ({ page }) => {
-    await page.goto("/tracker");
+    await gotoHydrated(page, "/tracker");
     const investmentForm = page.locator("section", { hasText: "বিনিয়োগ" }).last();
     await investmentForm.getByLabel("লেবেল").fill("খারাপ বিনিয়োগ");
     await investmentForm.getByLabel("আসল (৳)").fill("-100000");
@@ -141,7 +142,7 @@ test.describe("Tracker — weird / adversarial input", () => {
   });
 
   test("rejects a zero-month term investment", async ({ page }) => {
-    await page.goto("/tracker");
+    await gotoHydrated(page, "/tracker");
     const investmentForm = page.locator("section", { hasText: "বিনিয়োগ" }).last();
     await investmentForm.getByLabel("লেবেল").fill("শূন্য মেয়াদ");
     await investmentForm.getByLabel("আসল (৳)").fill("50000");
@@ -154,7 +155,7 @@ test.describe("Tracker — weird / adversarial input", () => {
 
   // POST /api/investments caps principal at ৳100,000,000,000 (100 billion).
   test("accepts an investment right at the principal cap without crashing", async ({ page }) => {
-    await page.goto("/tracker");
+    await gotoHydrated(page, "/tracker");
     const investmentForm = page.locator("section", { hasText: "বিনিয়োগ" }).last();
     await investmentForm.getByLabel("লেবেল").fill("বিশাল বিনিয়োগ");
     await investmentForm.getByLabel("আসল (৳)").fill("100000000000");
@@ -168,7 +169,7 @@ test.describe("Tracker — weird / adversarial input", () => {
   test("rejects an investment above the principal cap with an error, doesn't add it", async ({
     page,
   }) => {
-    await page.goto("/tracker");
+    await gotoHydrated(page, "/tracker");
     const investmentForm = page.locator("section", { hasText: "বিনিয়োগ" }).last();
     await investmentForm.getByLabel("লেবেল").fill("সীমার বাইরের বিনিয়োগ");
     await investmentForm.getByLabel("আসল (৳)").fill("100000000001");
@@ -185,7 +186,7 @@ test.describe("Tracker — weird / adversarial input", () => {
   test("rejects an income amount above the cap with a specific error, doesn't add it", async ({
     page,
   }) => {
-    await page.goto("/tracker");
+    await gotoHydrated(page, "/tracker");
     await page.getByLabel("লেবেল").first().fill("সীমার বাইরের আয়");
     await page.getByLabel("পরিমাণ (৳)").fill("100000000001");
     await page.getByRole("button", { name: "যোগ করুন" }).first().click();
@@ -199,7 +200,7 @@ test.describe("Tracker — weird / adversarial input", () => {
     page,
     context,
   }) => {
-    await page.goto("/tracker");
+    await gotoHydrated(page, "/tracker");
     const cookies = await context.cookies();
     expect(cookies.find((c) => c.name === "taka_uid")).toBeUndefined();
   });

@@ -162,3 +162,13 @@ Closes the 2026-10-18 open item: the chart changes had never run against a real 
 - The digest threshold comment no longer says "day-over-day".
 
 **Checks:** `scripts/check.sh` exits 0 (571 unit tests, plus the build). `calculator.spec.ts` and `tools.spec.ts` passed 155 of 155 runs (5 repeats). The full e2e suite was not rerun, because it needs a database and `migrate reset` needs the owner's consent.
+
+### Update (2026-10-25, agent round 3): hydration-safe e2e everywhere, overdue-chart label
+
+**Done:**
+- Every e2e spec that acts right after `page.goto` now uses `gotoHydrated`: `tools`, `tracker`, `rates` (2 of 3), `account` (2 of 4), `verification` (all 3, including the attacker/victim contexts), `viz` (the theme-button test) and `videos` (2 of 3). Left on plain `goto` because they only read static content: `viz.spec.ts` list and canvas loops, `videos.spec.ts:12`, `rates.spec.ts:16`, `account.spec.ts` lines 13 and 27.
+- Overdue chart label: `/rates` now says "— next chart overdue" (Bangla: "— পরবর্তী চার্ট বিলম্বিত") when the chart month is past 62 days, instead of repeating the chart month. `CurrentRateRow` and the DTO gained `chartOverdue`; a rate flagged for a failed or stopped scrape keeps "unverified since <date>". Unit test asserts the flag (`current-rates.test.ts`).
+
+**Checks:** `scripts/check.sh` exits 0 (typecheck, lint, unit tests, build).
+
+**Not run:** e2e. The Docker daemon was not running, and e2e's `migrate reset` needs the owner's consent, so the new `gotoHydrated` calls are untested. Risk: `gotoHydrated` waits for at least one input, select or button on the page, so a page with none would time out; run the suite in CI or against a throwaway database before trusting it. The Bangla label is machine-written; a native speaker should check it.

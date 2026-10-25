@@ -1,4 +1,5 @@
 import { test, expect } from "@playwright/test";
+import { gotoHydrated } from "./hydrated";
 import { VIZ_LIST } from "../src/lib/viz/registry";
 
 test.describe("Visualizers (/viz)", () => {
@@ -22,7 +23,7 @@ test.describe("Visualizers (/viz)", () => {
   }
 
   test("download produces a PNG and state survives in the URL", async ({ page }) => {
-    await page.goto("/viz/loading_car?vehicle=bike&saved=1000000&theme=rickshaw");
+    await gotoHydrated(page, "/viz/loading_car?vehicle=bike&saved=1000000&theme=rickshaw");
     await expect(page.getByRole("button", { name: /রিকশা আর্ট|Rickshaw Art/ })).toHaveAttribute("aria-pressed", "true");
     const [download] = await Promise.all([
       page.waitForEvent("download"),

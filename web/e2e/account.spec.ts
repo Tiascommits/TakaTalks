@@ -1,4 +1,5 @@
 import { randomBytes } from "node:crypto";
+import { gotoHydrated } from "./hydrated";
 import { test, expect } from "@playwright/test";
 import { PrismaClient } from "@prisma/client";
 import { TEST_DATABASE_URL } from "./test-db";
@@ -29,7 +30,7 @@ test.describe("Magic-link confirmation (/account/verify)", () => {
   });
 
   test("an invalid token shows a specific failure message, not a crash", async ({ page }) => {
-    await page.goto("/account/verify?token=not-a-real-token");
+    await gotoHydrated(page, "/account/verify?token=not-a-real-token");
     await page.getByRole("button", { name: /নিশ্চিত করুন ও ট্র্যাকারে যান/ }).click();
     await expect(page.getByRole("alert").filter({ hasText: "ভেরিফাই করা যায়নি" })).toBeVisible();
     await expect(page).toHaveURL(/\/account\/verify/);
@@ -38,7 +39,7 @@ test.describe("Magic-link confirmation (/account/verify)", () => {
 
 test.describe("Delete my data (/account)", () => {
   test("after a confirm step, deletes every row the browser's account owns and signs it out", async ({ page, context }) => {
-    await page.goto("/account");
+    await gotoHydrated(page, "/account");
     await expect(page.getByText("এই ব্রাউজারের জন্য কিছু সেভ করা নেই।")).toBeVisible();
 
     // Save through the app from inside the page, so the browser's cookie rules apply.
