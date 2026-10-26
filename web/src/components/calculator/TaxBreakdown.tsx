@@ -2,12 +2,13 @@
 
 import { TAX_RULES } from "@/config/tax-rules-2025-26";
 import { fmtTaka } from "@/lib/format";
+import { lateFilingExtraTax } from "@/lib/tax/late-filing";
 import type { TaxCalculationResult } from "@/lib/tax/types";
 import { useLanguage } from "@/lib/i18n";
 
 const ETAX_URL = "https://etaxnbr.gov.bd";
-const fmtDueDate = (locale: string) =>
-  new Date(`${TAX_RULES.returnNoExtraTaxBy}T00:00:00Z`).toLocaleDateString(locale, {
+const fmtDueDate = (locale: string, iso: string = TAX_RULES.returnNoExtraTaxBy) =>
+  new Date(`${iso}T00:00:00Z`).toLocaleDateString(locale, {
     day: "numeric",
     month: "long",
     year: "numeric",
@@ -168,6 +169,18 @@ export function TaxBreakdown({ r, ait }: { r: TaxCalculationResult; ait: number 
           "-তে রিটার্ন দাখিল করুন। প্রথমবারের দাখিলকারীদের সময় ৩০ জুন পর্যন্ত।"
         )}
       </p>
+      {r.netPayable > 0 && (
+        <p className="mt-1 text-[11.5px] text-[#777]">
+          {t(
+            `Filing later adds tax: ${lateFilingExtraTax(r.netPayable)
+              .map((w) => `${fmtTaka(w.amount)} by ${fmtDueDate("en-GB", w.until)}`)
+              .join(", ")}.`,
+            `দেরিতে দাখিল করলে অতিরিক্ত কর: ${lateFilingExtraTax(r.netPayable)
+              .map((w) => `${fmtDueDate("bn-BD", w.until)}-এর মধ্যে ${fmtTaka(w.amount)}`)
+              .join(", ")}।`
+          )}
+        </p>
+      )}
     </div>
   );
 }

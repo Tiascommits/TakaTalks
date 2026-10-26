@@ -110,12 +110,23 @@ export const TAX_RULES = {
   minTax: 5000,
   minTaxNewTaxpayer: 1000,
 
-  // Filing windows replace a single due date: 1 Jul-30 Sep earns a credit, 1 Oct-31 Dec has no
-  // credit and no additional tax, and additional tax applies from 1 Jan. First-time filers have
-  // until 30 June. [KPMG26] p45 "File tax returns between..."; [PWC] "Tax administration".
-  // owner-confirm: Big-4 guides only, gazette not read. judge.md had "30 Nov" (the old tax day);
-  // both guides read 2026-10-22 give 31 Dec, and one LinkedIn post still says 30 Nov.
+  // Filing windows replace a single due date (Finance Act 2026): 1 Jul-30 Sep earns a 5% credit
+  // (max 25,000), 1 Oct-31 Dec has no credit and no additional tax, then additional tax applies.
+  // NBR "FAQ- e-Return" 2026, Q46(3), https://nbr.gov.bd/uploads/news-scroller/FAQ_e-Return_-_2026.pdf,
+  // and NBR press release 22 Jul 2026, https://nbr.gov.bd/uploads/public-notice/eReturn_Press_Release-2026.pdf
+  // (both read 2026-10-27); [KPMG26] p45 and [PWC] agree. Supersedes the old 30 Nov tax day.
+  // owner-confirm: "first-time filers have until 30 June" (shown in TaxBreakdown) is the old
+  // Act s.2(23)(c) tax day; the 2026 NBR FAQ does not mention first-time filers.
   returnNoExtraTaxBy: "2026-12-31",
+  // Additional tax for filing after returnNoExtraTaxBy, a share of net payable tax with a floor:
+  // same NBR FAQ Q46(3) (ga) 1 Jan-31 Mar 2%, min 3,000; (gha) 1 Apr-30 Jun 5%, min 5,000.
+  // Self-assessed returns are accepted until 30 Jun 2027.
+  // owner-confirm: the FAQ does not say whether "net payable tax" is before or after tax already
+  // deducted (we use after, i.e. netPayable), nor whether the floor applies when nothing is payable.
+  lateFilingExtraTax: [
+    { until: "2027-03-31", rate: 0.02, min: 3000 },
+    { until: "2027-06-30", rate: 0.05, min: 5000 },
+  ],
 
   // Freelance / IT-enabled export-service income: confirmed 2026-09-16
   // against the primary source — the Income Tax Act 2023, SIXTH SCHEDULE,
