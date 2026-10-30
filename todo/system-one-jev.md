@@ -36,20 +36,20 @@ Its three primitives:
 - **Location**: `web/src/lib/bank-health/fetch-reports.ts` and `web/src/lib/bank-health/extract-figures.ts`
 - **Problem**: `pickAnnualReportLink` uses fragile string matching (`STRONG_REPORT`, `REPORT_NOISE`) that broke on 5 of 7 bank websites (AB Bank selected a 2014 credit-rating letter, Standard Chartered picked a reward leaflet, EBL picked a directors' report).
 - **Jev Tasks**:
-  - [ ] **Task 1.1**: Add link candidate classification via `Choice`:
+  - [x] (2026-10-30, shadow mode) **Task 1.1**: Add link candidate classification via `Choice`:
     `["audited_annual_report", "quarterly_financials", "credit_rating_report", "basel_iii_disclosure", "directors_report_only", "agm_notice", "marketing_leaflets"]`.
-  - [ ] **Task 1.2**: Add `Noul` gate on candidate PDF pages before regex parsing: `is_audited_capital_adequacy_table`.
-  - [ ] **Task 1.3**: Shadow-mode comparison against the current heuristic in `fetch-reports.test.ts`.
+  - [x] (2026-10-30, shadow mode) **Task 1.2**: Add `Noul` gate on candidate PDF pages before regex parsing: `is_audited_capital_adequacy_table`.
+  - [x] (2026-10-30, shadow mode) **Task 1.3**: Shadow-mode comparison against the current heuristic in `fetch-reports.test.ts`.
 
 ### Phase 2: Rate Scraper Anomaly Guard & Layout Drift Detection
 - **Location**: `web/src/lib/rates/run-scrape.ts` and `web/src/lib/rates/adapters/`
 - **Problem**: Bank website layout changes can cause HTML/PDF scrapers to parse lending rates as deposit rates, or pull promo numbers.
 - **Jev Tasks**:
-  - [ ] **Task 2.1**: Implement post-scrape sanity check on extracted rate candidates:
+  - [x] (2026-10-30, shadow mode) **Task 2.1**: Implement post-scrape sanity check on extracted rate candidates:
     - `rate_type` (`Choice`): `["retail_fdr", "dps", "loan_lending", "corporate_deposit", "promo_special"]`.
     - `tenure_bracket` (`Choice`): `["3_months", "6_months", "1_year", "multi_year", "other"]`.
     - `is_plausible_fdr_rate` (`Noul`): Validates against current Bangladesh market context (e.g. 7%–13%).
-  - [ ] **Task 2.2**: If confidence < 0.85 or classified as non-deposit, route directly to `src/lib/rates/digest.ts` admin review instead of corrupting the public scorecard.
+  - [x] (2026-10-30, shadow mode) **Task 2.2**: If confidence < 0.85 or classified as non-deposit, route directly to `src/lib/rates/digest.ts` admin review instead of corrupting the public scorecard.
 
 ### Phase 3: Bank SMS & Transaction Stream Parsing (Tracker & KhorochPati Bridge)
 - **Location**: `web/src/lib/tracker/` (integrating with planned SMS ingestion / KhorochPati.ai pipe)

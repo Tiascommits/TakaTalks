@@ -250,6 +250,8 @@ model ScrapeLog {
   success      Boolean
   errorMessage String?
   ratesFound   Int      @default(0)
+  // Jev rate guard: why a successful scrape's rates need a human look (shown in the admin digest).
+  reviewNote   String?
 
   @@index([bankId, attemptedAt])
 }

@@ -1,7 +1,8 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-const { prisma, revalidatePath } = vi.hoisted(() => ({
+const { prisma, revalidatePath, reviewScrapedRates } = vi.hoisted(() => ({
   revalidatePath: vi.fn(),
+  reviewScrapedRates: vi.fn(),
   prisma: {
     bank: { upsert: vi.fn(), findMany: vi.fn() },
     scrapeLog: { create: vi.fn() },
@@ -11,6 +12,7 @@ const { prisma, revalidatePath } = vi.hoisted(() => ({
 }));
 vi.mock("@/lib/prisma", () => ({ prisma }));
 vi.mock("next/cache", () => ({ revalidatePath }));
+vi.mock("./rate-guard", () => ({ reviewScrapedRates }));
 
 import { runScrape } from "./run-scrape";
 import { SEED_AS_OF } from "./seed-rates";
@@ -45,6 +47,15 @@ describe("runScrape", () => {
     expect(prisma.rateSnapshot.create).not.toHaveBeenCalled();
     expect(prisma.scrapeLog.create).toHaveBeenCalledWith({
       data: { bankId: "b1", success: true, ratesFound: 3 },
+    });
+  });
+
+  it("stores a scrape the Jev guard flags (shadow mode) and records its note for the digest", async () => {
+    reviewScrapedRates.mockResolvedValue("FDR 12mo 9%: classed loan_lending");
+    await runScrape();
+    expect(prisma.rateSnapshot.create).toHaveBeenCalled();
+    expect(prisma.scrapeLog.create).toHaveBeenCalledWith({
+      data: expect.objectContaining({ success: true, reviewNote: "FDR 12mo 9%: classed loan_lending" }),
     });
   });
 
