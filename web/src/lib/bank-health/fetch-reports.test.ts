@@ -163,3 +163,101 @@ describe("pickDueBanks", () => {
     expect(pickDueBanks(banks, new Date(now.getTime() + 20 * 86_400_000), 1)).toEqual([]);
   });
 });
+
+/**
+ * Jev Task 1.3: shadow-mode comparison. The same real bank-page links as the
+ * pickAnnualReportLink tests above, each with the label a correct classifier
+ * gives it. Offline, those labels stand in for Jev; with TYPESAFE_API_KEY set,
+ * the live block asks the real API and prints where it and the heuristic differ.
+ */
+const SHADOW_FIXTURES: { bank: string; links: [string, string, ReportDocType][]; expected: string | null }[] = [
+  {
+    bank: "AB Bank",
+    links: [
+      ["Credit Rating", "https://abbl.com/download/edits/2014-annual-report-credit-rating.pdf", "credit_rating_report"],
+      ["Annual Report 2025", "https://abbl.com/wp-content/uploads/2026/05/Annual-Report-2025.pdf", "audited_annual_report"],
+    ],
+    expected: "https://abbl.com/wp-content/uploads/2026/05/Annual-Report-2025.pdf",
+  },
+  {
+    bank: "BRAC Bank",
+    links: [
+      ["", "https://brackweb.s3.amazonaws.com/uploads/all/BRAC_Bank_AR_2025_Final_Version.pdf", "audited_annual_report"],
+      ["Forex Rates", "https://brackweb.s3.amazonaws.com/uploads/all/Daily_Exchange_Rate_as_on_16_Sep_2026.pdf", "marketing_leaflets"],
+    ],
+    expected: "https://brackweb.s3.amazonaws.com/uploads/all/BRAC_Bank_AR_2025_Final_Version.pdf",
+  },
+  {
+    bank: "Islami Bank",
+    links: [
+      ["Annual Report 2024", "https://www.islamibankbd.com/assets/1761203020_Annual_Report_2024.pdf", "audited_annual_report"],
+      ["Annual Report 2025", "https://www.islamibankbd.com/assets/1780917670_Annual_Report_2025.pdf", "audited_annual_report"],
+    ],
+    expected: "https://www.islamibankbd.com/assets/1780917670_Annual_Report_2025.pdf",
+  },
+  {
+    bank: "EBL",
+    links: [
+      ["Directors' Report 2025", "https://www.ebl.com.bd/assets/reports/highlights/Directors_Report_2025.pdf", "directors_report_only"],
+      ["Annual Report 2024", "https://www.ebl.com.bd/assets/reports/annual/EBL-ANNUAL-REPORT-2024.pdf", "audited_annual_report"],
+      ["Annual Report 2025", "https://www.ebl.com.bd/assets/reports/annual/EBL-ANNUAL-REPORT-2025.pdf", "audited_annual_report"],
+    ],
+    expected: "https://www.ebl.com.bd/assets/reports/annual/EBL-ANNUAL-REPORT-2025.pdf",
+  },
+  {
+    bank: "Standard Chartered (financial statements)",
+    links: [
+      ["Financial Statements 2024", "https://av.sc.com/bd/content/docs/bd-financial-statements-twenty-four.pdf", "audited_annual_report"],
+      ["Financial Statements 2025", "https://av.sc.com/bd/content/docs/bd-financial-statements-twenty-five.pdf", "audited_annual_report"],
+    ],
+    expected: "https://av.sc.com/bd/content/docs/bd-financial-statements-twenty-five.pdf",
+  },
+  {
+    bank: "Standard Chartered (Basel III page)",
+    links: [
+      ["2025 – Disclosures on Risk Based Capital (Basel III)", "https://av.sc.com/bd/content/docs/bd-basel-iii-twenty-five.pdf", "basel_iii_disclosure"],
+      ["2024 - Disclosures on Risk Based Capital (Basel III)", "https://av.sc.com/bd/content/docs/bd-basel-III-twenty-four.pdf", "basel_iii_disclosure"],
+    ],
+    expected: null,
+  },
+  {
+    bank: "Standard Chartered (leaflets)",
+    links: [
+      ["Reward Point Redemption", "https://av.sc.com/bd/content/docs/bd-reward-point-redemption.pdf", "marketing_leaflets"],
+      ["Schedule of Charges", "https://example.com/schedule-of-charges.pdf", "marketing_leaflets"],
+    ],
+    expected: null,
+  },
+];
+
+describe("Jev shadow mode vs the heuristic (Jev Task 1.3)", () => {
+  it.each(SHADOW_FIXTURES)("$bank: Jev with correct labels and the heuristic pick the same document", async ({ links, expected }) => {
+    const pdfLinks = links.map(([text, href]) => link(text, href));
+    const labels = new Map(links.map(([, href, label]) => [href, label]));
+    // The stub answers in the order classifyReportLinks asks, which is the heuristic's ranking.
+    const client: JevClient = {
+      systemOne: vi.fn(async ({ questions }: { questions: Record<string, { instructions: { link: PdfLink } }> }) => ({
+        answers: Object.fromEntries(
+          Object.entries(questions).map(([k, q]) => [k, { type: "choice", choice: labels.get(q.instructions.link.href), confidence: 0.9 }])
+        ),
+      })),
+    } as unknown as JevClient;
+    const classified = await classifyReportLinks(pdfLinks, client);
+    expect(pickAnnualReportLink(pdfLinks)?.href ?? null).toBe(expected);
+    expect(pickFromClassified(classified!)?.href ?? null).toBe(expected);
+  });
+
+  describe.skipIf(!process.env.TYPESAFE_API_KEY)("live API (runs only with TYPESAFE_API_KEY)", () => {
+    it("reports agreement with the heuristic on every fixture", { timeout: 60_000 }, async () => {
+      const rows = [];
+      for (const { bank, links, expected } of SHADOW_FIXTURES) {
+        const pdfLinks = links.map(([text, href]) => link(text, href));
+        const classified = await classifyReportLinks(pdfLinks);
+        const jev = classified ? (pickFromClassified(classified)?.href ?? null) : "unavailable";
+        rows.push({ bank, heuristic: pickAnnualReportLink(pdfLinks)?.href ?? null, jev, expected });
+      }
+      console.table(rows);
+      expect(rows.filter((r) => r.jev !== r.expected)).toEqual([]);
+    });
+  });
+});
