@@ -1,5 +1,13 @@
-import { describe, expect, it } from "vitest";
-import { pickAnnualReportLink, pickDueBanks, type PdfLink } from "./fetch-reports";
+import { describe, expect, it, vi } from "vitest";
+import {
+  classifyReportLinks,
+  pickAnnualReportLink,
+  pickDueBanks,
+  pickFromClassified,
+  type PdfLink,
+  type ReportDocType,
+} from "./fetch-reports";
+import type { JevClient } from "@/lib/jev/client";
 
 /**
  * Every fixture below is a real set of PDF links taken from the bank page
@@ -88,6 +96,45 @@ describe("pickAnnualReportLink", () => {
 
   it("returns null for a page with no PDF links", () => {
     expect(pickAnnualReportLink([])).toBeNull();
+  });
+});
+
+/** A Jev stand-in that answers each `linkN` question with the given label. */
+function stubJev(labels: ReportDocType[], confidence = 0.9): JevClient {
+  const answers = Object.fromEntries(labels.map((choice, i) => [`link${i}`, { type: "choice", choice, confidence, probabilities: {} }]));
+  return { systemOne: vi.fn(async () => ({ answers })) } as unknown as JevClient;
+}
+
+describe("classifyReportLinks (Jev Task 1.1)", () => {
+  const links = [
+    link("Credit Rating", "https://abbl.com/download/edits/2014-annual-report-credit-rating.pdf"),
+    link("Annual Report 2025", "https://abbl.com/wp-content/uploads/2026/05/Annual-Report-2025.pdf"),
+  ];
+
+  it("is off without a client, so the heuristic stays in charge", async () => {
+    expect(await classifyReportLinks(links, null)).toBeNull();
+  });
+
+  it("falls back (null) when the API call fails", async () => {
+    const failing = { systemOne: vi.fn(async () => Promise.reject(new Error("503"))) } as unknown as JevClient;
+    vi.spyOn(console, "warn").mockImplementation(() => {});
+    expect(await classifyReportLinks(links, failing)).toBeNull();
+  });
+
+  it("labels every link in one call, heuristic's best first", async () => {
+    const client = stubJev(["audited_annual_report", "credit_rating_report"]);
+    const classified = await classifyReportLinks(links, client);
+    expect(client.systemOne).toHaveBeenCalledTimes(1);
+    expect(classified?.map((c) => [c.link.text, c.docType])).toEqual([
+      ["Annual Report 2025", "audited_annual_report"],
+      ["Credit Rating", "credit_rating_report"],
+    ]);
+  });
+
+  it("picks the newest confident audited report, and nothing below the confidence floor", () => {
+    const c = (text: string, docType: ReportDocType, confidence = 0.9) => ({ link: link(text, `https://x.bd/${text}.pdf`), docType, confidence });
+    expect(pickFromClassified([c("AR 2024", "audited_annual_report"), c("AR 2025", "audited_annual_report"), c("Q3 2026", "quarterly_financials")])?.text).toBe("AR 2025");
+    expect(pickFromClassified([c("AR 2025", "audited_annual_report", 0.3)])).toBeNull();
   });
 });
 

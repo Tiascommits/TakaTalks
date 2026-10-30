@@ -2,6 +2,8 @@ import * as cheerio from "cheerio";
 import { prisma } from "@/lib/prisma";
 import { assertPublicUrl, fetchPublic, readBodyCapped } from "@/lib/net/safe-fetch";
 import { BANK_HEALTH_RECHECK_DAYS } from "@/config/rate-monitoring";
+import { choice } from "@typesafe-ai/sdk";
+import { jevClient, type JevClient } from "@/lib/jev/client";
 
 export type FetchReportResult =
   | { status: "no_source" }
@@ -50,6 +52,12 @@ const BARE_YEAR = /(?<!\d)(20\d{2})(?!\d)/g;
  * half the verified bank pages yield the wrong document.
  */
 export function pickAnnualReportLink(pdfLinks: PdfLink[]): PdfLink | null {
+  const best = rankReportLinks(pdfLinks)[0];
+  return best && best.score > 0 ? best.link : null;
+}
+
+/** Every link with its heuristic score and newest year, best first. */
+function rankReportLinks(pdfLinks: PdfLink[]) {
   const scored = pdfLinks.map((link) => {
     const haystack = `${link.text} ${link.href}`;
     let score = 0;
@@ -62,8 +70,65 @@ export function pickAnnualReportLink(pdfLinks: PdfLink[]): PdfLink | null {
     return { link, score, year: years.length ? Math.max(...years) : 0 };
   });
 
-  const best = scored.sort((a, b) => b.score - a.score || b.year - a.year)[0];
-  return best && best.score > 0 ? best.link : null;
+  return scored.sort((a, b) => b.score - a.score || b.year - a.year);
+}
+
+/** Jev Task 1.1: what each PDF link on a report page is (todo/system-one-jev.md). */
+export const REPORT_DOC_TYPES = {
+  audited_annual_report: "The bank's audited annual report, or its audited annual financial statements for a full year",
+  quarterly_financials: "Quarterly or half-yearly (unaudited) financial statements",
+  credit_rating_report: "A credit rating report or rating letter",
+  basel_iii_disclosure: "Basel III / Pillar 3 risk-based capital disclosures",
+  directors_report_only: "A standalone directors' report, not the full annual report",
+  agm_notice: "An AGM notice, proxy form or price-sensitive notice",
+  marketing_leaflets: "A product brochure, reward leaflet, schedule of charges or other marketing",
+} as const;
+
+export type ReportDocType = keyof typeof REPORT_DOC_TYPES;
+export type ClassifiedLink = { link: PdfLink; docType: ReportDocType; confidence: number };
+
+// shortcut: classifies only the heuristic's top 25 (AB Bank's page links 167 PDFs); raise it if a report ranks lower.
+const MAX_CLASSIFIED_LINKS = 25;
+const MIN_REPORT_CONFIDENCE = 0.5;
+
+/**
+ * Asks Jev what each candidate link is, in one call. Null when Jev is off
+ * (no TYPESAFE_API_KEY) or the call fails: the caller keeps the heuristic.
+ */
+export async function classifyReportLinks(
+  pdfLinks: PdfLink[],
+  client: JevClient | null = jevClient()
+): Promise<ClassifiedLink[] | null> {
+  const links = rankReportLinks(pdfLinks).slice(0, MAX_CLASSIFIED_LINKS).map((s) => s.link);
+  if (!client || links.length === 0) return null;
+  try {
+    const questions = Object.fromEntries(
+      links.map((l, i) => [`link${i}`, choice({ question: "What kind of document does this PDF link point to?", link: l }, REPORT_DOC_TYPES)])
+    );
+    const { answers } = await client.systemOne({
+      state: "PDF links (anchor text and href) found on a Bangladeshi bank's investor-relations or financial-reports page.",
+      questions,
+    });
+    return links.map((link, i) => {
+      const a = answers[`link${i}`];
+      return { link, docType: a.choice as ReportDocType, confidence: a.confidence };
+    });
+  } catch (err) {
+    console.warn("[jev] link classification failed, keeping the heuristic:", err instanceof Error ? err.message : err);
+    return null;
+  }
+}
+
+/** The newest link Jev calls an audited annual report, or null when none is. */
+export function pickFromClassified(classified: ClassifiedLink[]): PdfLink | null {
+  const reports = classified
+    .filter((c) => c.docType === "audited_annual_report" && c.confidence >= MIN_REPORT_CONFIDENCE)
+    .map((c) => {
+      const years = [...`${c.link.text} ${c.link.href}`.matchAll(BARE_YEAR)].map((m) => Number(m[1]));
+      return { ...c, year: years.length ? Math.max(...years) : 0 };
+    })
+    .sort((a, b) => b.year - a.year || b.confidence - a.confidence);
+  return reports[0]?.link ?? null;
 }
 
 /**
@@ -126,6 +191,14 @@ export async function checkBankForNewReport(bank: {
     .filter((l) => l.href);
 
   const best = pickAnnualReportLink(pdfLinks);
+
+  // Shadow mode (Boundary C, todo/needs-us-both/system-one-jev-policy-and-gates.md):
+  // the heuristic still decides; Jev's pick is only logged when it differs.
+  const classified = await classifyReportLinks(pdfLinks);
+  const jevPick = classified && pickFromClassified(classified);
+  if (classified && jevPick?.href !== best?.href) {
+    console.warn(`[jev-shadow] bank ${bank.id}: heuristic picked ${best?.href ?? "nothing"}, Jev picked ${jevPick?.href ?? "nothing"}`);
+  }
 
   if (!best) {
     await prisma.annualReportCheckLog.create({
