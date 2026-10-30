@@ -3,7 +3,13 @@ import { prisma } from "@/lib/prisma";
 import { BB_DEPOSIT_CHART_URL, SIGNIFICANT_CHANGE_THRESHOLD_PCT } from "@/config/rate-monitoring";
 import { RATE_ADAPTERS } from "./adapters/registry";
 
-export type DigestLogInput = { success: boolean; attemptedAt: Date; errorMessage: string | null };
+export type DigestLogInput = {
+  success: boolean;
+  attemptedAt: Date;
+  errorMessage: string | null;
+  /** Jev rate guard's note on a stored scrape (rate-guard.ts); absent or null = nothing flagged. */
+  reviewNote?: string | null;
+};
 export type DigestSnapshotInput = {
   instrument: RateInstrument;
   termMonths: number;
@@ -30,6 +36,7 @@ export type FailedAdapterEntry = {
   errorMessage: string | null;
   attemptedAt: Date;
 };
+export type NeedsReviewEntry = { shortCode: string; name: string; note: string; attemptedAt: Date };
 export type UnconfiguredBankEntry = { shortCode: string; name: string };
 export type ChangedRateEntry = {
   shortCode: string;
@@ -49,6 +56,8 @@ export type DigestResult = {
   failedAdapters: FailedAdapterEntry[];
   unconfiguredBanks: UnconfiguredBankEntry[];
   changedRates: ChangedRateEntry[];
+  /** Jev Task 2.2: rates the guard was not confident about (stored anyway, shadow mode). */
+  needsReview: NeedsReviewEntry[];
 };
 
 /**
@@ -61,6 +70,7 @@ export function computeDigest(banks: DigestBankInput[]): DigestResult {
   const failedAdapters: FailedAdapterEntry[] = [];
   const unconfiguredBanks: UnconfiguredBankEntry[] = [];
   const changedRates: ChangedRateEntry[] = [];
+  const needsReview: NeedsReviewEntry[] = [];
 
   for (const bank of banks) {
     if (!bank.hasAdapter) {
@@ -76,6 +86,9 @@ export function computeDigest(banks: DigestBankInput[]): DigestResult {
         errorMessage: latestLog.errorMessage,
         attemptedAt: latestLog.attemptedAt,
       });
+    }
+    if (latestLog?.success && latestLog.reviewNote) {
+      needsReview.push({ shortCode: bank.shortCode, name: bank.name, note: latestLog.reviewNote, attemptedAt: latestLog.attemptedAt });
     }
 
     const byKey = new Map<string, DigestSnapshotInput[]>();
@@ -110,7 +123,7 @@ export function computeDigest(banks: DigestBankInput[]): DigestResult {
     }
   }
 
-  return { failedAdapters, unconfiguredBanks, changedRates };
+  return { failedAdapters, unconfiguredBanks, changedRates, needsReview };
 }
 
 /** DB-backed wrapper: fetch each bank's recent logs/snapshots, shape them, and run computeDigest. */
@@ -131,6 +144,7 @@ export async function getDigest(): Promise<DigestResult> {
       success: l.success,
       attemptedAt: l.attemptedAt,
       errorMessage: l.errorMessage,
+      reviewNote: l.reviewNote,
     })),
     snapshots: bank.rateSnapshots.map((s) => ({
       instrument: s.instrument,

@@ -31,6 +31,14 @@ describe("computeDigest", () => {
     expect(result.failedAdapters).toHaveLength(0);
   });
 
+  it("lists a stored scrape the Jev guard flagged, and not a failed one twice", () => {
+    const result = computeDigest([
+      bank({ logs: [{ success: true, attemptedAt: day(2), errorMessage: null, reviewNote: "FDR 12mo 9%: tenure other" }] }),
+      bank({ shortCode: "Y", logs: [{ success: false, attemptedAt: day(2), errorMessage: "boom", reviewNote: "x" }] }),
+    ]);
+    expect(result.needsReview).toEqual([{ shortCode: "X", name: "Bank X", note: "FDR 12mo 9%: tenure other", attemptedAt: day(2) }]);
+  });
+
   it("routes banks with no adapter to unconfiguredBanks instead of failedAdapters", () => {
     const result = computeDigest([bank({ hasAdapter: false })]);
     expect(result.unconfiguredBanks).toHaveLength(1);

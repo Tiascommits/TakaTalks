@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { BANKS } from "@/config/banks";
 import { PLAUSIBLE_FDR_RATE_PCT } from "@/config/rate-monitoring";
 import { RATE_ADAPTERS } from "./adapters/registry";
+import { reviewScrapedRates } from "./rate-guard";
 
 export type RunScrapeSummary = {
   banksUpserted: number;
@@ -71,9 +72,11 @@ export async function runScrape(): Promise<RunScrapeSummary> {
         const stored = last && last.ratePct === r.ratePct && last.ratePctMax === (r.ratePctMax ?? null);
         if (!stored) toStore.push(r);
       }
+      // Shadow mode: a flagged scrape is still stored; the note puts it in the admin digest.
+      const reviewNote = await reviewScrapedRates(bank.name, rates);
       await prisma.$transaction([
         prisma.scrapeLog.create({
-          data: { bankId: bank.id, success: true, ratesFound: rates.length },
+          data: { bankId: bank.id, success: true, ratesFound: rates.length, ...(reviewNote ? { reviewNote } : {}) },
         }),
         ...toStore.map((r) =>
           prisma.rateSnapshot.create({
