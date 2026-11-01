@@ -2,7 +2,7 @@
 
 8 weeks, 3 drafts each: a 45-60 second video script, a Facebook post, a 5-slide carousel. 24 drafts. Tia or the owner records and posts; nothing here has been posted. No posts 3-9 Nov (owner away).
 
-Every link points to `https://www.takatalks.com/calculator` with `?src=fb` (Facebook), `?src=yt` (YouTube) or `?src=tt` (TikTok), so GoatCounter shows which channel sent people.
+Every link points to `https://www.takatalks.com/calculator` with `?src=fb` (Facebook), `?src=yt` (YouTube) or `?src=tt` (TikTok), so the channel shows up in GoatCounter (unverified: that GoatCounter reads `src` as the referrer was not confirmed today; if it does not, the query string still appears in the path list).
 
 ## Sources (every number below carries one of these tags)
 
