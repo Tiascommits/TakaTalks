@@ -13,6 +13,12 @@ function formatDigestText(digest: DigestResult): string {
     lines.push("");
   }
 
+  if (digest.needsReview.length > 0) {
+    lines.push("RATES TO CHECK (Jev guard, shadow mode: these were stored and are live on /rates):");
+    for (const r of digest.needsReview) lines.push(`- ${r.name} (${r.shortCode}): ${r.note} at ${r.attemptedAt.toISOString()}`);
+    lines.push("");
+  }
+
   if (digest.unconfiguredBanks.length > 0) {
     lines.push("BANKS WITH NO ADAPTER:");
     for (const b of digest.unconfiguredBanks) lines.push(`- ${b.name} (${b.shortCode})`);
@@ -35,7 +41,8 @@ function isDigestEmpty(digest: DigestResult): boolean {
   return (
     digest.failedAdapters.length === 0 &&
     digest.unconfiguredBanks.length === 0 &&
-    digest.changedRates.length === 0
+    digest.changedRates.length === 0 &&
+    digest.needsReview.length === 0
   );
 }
 

@@ -34,6 +34,7 @@ export type AdminExtractedFigureDTO = {
 export type AdminDigestDTO = {
   failedAdapters: { shortCode: string; name: string; errorMessage: string | null; attemptedAt: string }[];
   unconfiguredBanks: { shortCode: string; name: string }[];
+  needsReview: { shortCode: string; name: string; note: string; attemptedAt: string }[];
   changedRates: {
     shortCode: string;
     name: string;

@@ -3,6 +3,8 @@
 import "pdf-parse/worker";
 import { PDFParse } from "pdf-parse";
 import type { AnnualReportField } from "@prisma/client";
+import { noul } from "@typesafe-ai/sdk";
+import { jevClient, type JevClient } from "@/lib/jev/client";
 
 export type ExtractedFigureCandidate = {
   field: AnnualReportField;
@@ -109,9 +111,11 @@ export async function extractFiguresFromPdf(
 ): Promise<{ fiscalYear: number; candidates: ExtractedFigureCandidate[] }> {
   const parser = new PDFParse({ data: pdfBuffer });
   let text: string;
+  let pages: { num: number; text: string }[];
   try {
     const result = await parser.getText();
     text = result.text;
+    pages = result.pages;
   } finally {
     await parser.destroy();
   }
@@ -126,7 +130,7 @@ export async function extractFiguresFromPdf(
         rawValue: found.raw,
         numericValue: parseFloat(found.value),
         extractionConfidence: found.confidence,
-        sourcePageOrNote: null,
+        sourcePageOrNote: field === "CAR" ? await capitalAdequacyNote(pages, found.re) : null,
       });
     }
   }
@@ -178,12 +182,50 @@ export async function extractFiguresFromPdf(
 function firstMatch(
   text: string,
   patterns: { re: RegExp; confidence: number }[]
-): { raw: string; value: string; confidence: number } | null {
+): { raw: string; value: string; confidence: number; re: RegExp } | null {
   for (const { re, confidence } of patterns) {
     const m = text.match(re);
-    if (m) return { raw: m[0].replace(/\s+/g, " ").trim(), value: m[1], confidence };
+    if (m) return { raw: m[0].replace(/\s+/g, " ").trim(), value: m[1], confidence, re };
   }
   return null;
+}
+
+// shortcut: sends only the first 8,000 characters of the page; enough for one table, raise it if Jev misses tables low on a page.
+const MAX_GATE_CHARS = 8_000;
+
+/**
+ * Jev Task 1.2 (todo/system-one-jev.md): probability that the page the CAR
+ * figure came from is an audited capital-adequacy table, not a ratio quoted in
+ * a chairman's letter or a five-year highlight. Null when Jev is off or fails.
+ */
+export async function isAuditedCapitalAdequacyTable(pageText: string, client: JevClient | null = jevClient()): Promise<number | null> {
+  if (!client) return null;
+  try {
+    const { answers } = await client.systemOne({
+      state: pageText.slice(0, MAX_GATE_CHARS),
+      questions: {
+        is_audited_capital_adequacy_table: noul(
+          "Is this page from a Bangladeshi bank's annual report an audited capital adequacy table: the capital to risk-weighted assets ratio (CRAR) computed under Basel III in the audited financial statements or their notes?"
+        ),
+      },
+    });
+    return answers.is_audited_capital_adequacy_table.noul;
+  } catch (err) {
+    console.warn("[jev] capital-adequacy gate failed:", err instanceof Error ? err.message : err);
+    return null;
+  }
+}
+
+/**
+ * Shadow mode (Boundary C, todo/needs-us-both/system-one-jev-policy-and-gates.md):
+ * the gate never drops the figure. Its answer goes in the note the admin sees
+ * beside the candidate, with the page the match came from.
+ */
+async function capitalAdequacyNote(pages: { num: number; text: string }[], re: RegExp): Promise<string | null> {
+  const page = pages.find((p) => re.test(p.text));
+  if (!page) return null;
+  const p = await isAuditedCapitalAdequacyTable(page.text);
+  return p === null ? `p. ${page.num}` : `p. ${page.num}; Jev audited capital-adequacy table: ${p.toFixed(2)} (shadow)`;
 }
 
 function detectDenominationMultiplier(text: string): { multiplier: number; unitLabel: string } {
