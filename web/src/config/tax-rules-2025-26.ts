@@ -12,6 +12,11 @@
  *   [PWC]     PwC Worldwide Tax Summaries, Bangladesh individual, reviewed 31 Jul 2026.
  *             https://taxsummaries.pwc.com/bangladesh/individual
  *
+ * Reminder (June 2027): AY 2027-28 keeps these bands and thresholds ([KPMG26] p46, table
+ * "AY 2026/27 and AY 2027/28"); move the filing dates, late-tax windows and year labels on one
+ * year. AY 2028-29 is already published there: thresholds 4.5 / 5 / 5.75 / 6 lakh, the 30% band
+ * capped at the next 2,63,50,000 and 35% above; start that config by June 2028.
+ *
  * Review this file every national budget (June/July) before the new fiscal year
  * begins. Do not hardcode any of these numbers into calculation logic — change
  * them here only, and add a worked-example test (src/lib/tax/worked-examples.test.ts).
