@@ -1,8 +1,10 @@
 name: CI
 
 # Same stages as `npm run verify` (web/package.json), run against a throwaway
-# Postgres service container. `main` is protected and `experimental` only merges
-# into it after QA, so this is the automatic gate for both.
+# Postgres service container. `main` has no GitHub branch protection (checked
+# 2026-11-01); the rule is the repo's own (CLAUDE.md, git_instructions.md): work goes
+# to `experimental`, which merges into `main` only after QA. This is the automatic
+# gate for both.
 on:
   pull_request:
     branches: [main, experimental]
