@@ -1,6 +1,6 @@
 # Creator pitches and community script (drafts, 2026-11-01)
 
-Drafts for the owner to send. Nothing here has been sent, posted or commented. Channels are listed in `docs/gtm/creators.csv` and communities in `docs/gtm/groups.csv`, all checked on 2026-11-01. Each row has its own `?src=` link.
+Drafts for the owner to send. Nothing here has been sent, posted or commented. Channels are listed in `docs/gtm/creators.csv` and communities in `docs/gtm/groups.csv`, all checked on 2026-11-01. Each row has its own `?src=` link: 30 channels plus 26 communities, 56 rows.
 
 How to send: use the contact in `creators.csv` (email first, then the Facebook page). Use one message per creator, from your own account, and nothing in the same week as your Nepal trip (3-9 Nov). Log replies in the `status` column.
 
