@@ -74,8 +74,10 @@ export const TAX_RULES = {
   ] satisfies SlabRule[],
 
   // Parent or legal guardian of a person with disability: +50,000 [KPMG26] p46.
-  // owner-confirm: KPMG says "(maximum one)" parent; whether it is per disabled child
-  // or once per parent is not confirmed by a second source. Kept per child.
+  // source: [KPMG26] p46 (fetched 2026-11-01): "Parent/legal guardian (maximum one) of a
+  // physically challenged person will get a further initial exemption of Taka 50,000", in all
+  // three AY tables. The add-on attaches to each person with disability and only one parent
+  // claims it, so it is modelled per disabled child.
   disabledChildTaxFreeAddOn: 50000,
 
   // Lower of 1/3 of salary income or 5 lakh: [KPMG26] p45; [PWC].
@@ -88,8 +90,9 @@ export const TAX_RULES = {
   // Other assets held over 5 years: 15% [KPMG26] p52; [PWC].
   capitalGainsFlatRateAfter5Years: 0.15,
   // Gold, silver, diamonds and coins: 5% [KPMG26] p52.
-  // owner-confirm: Daily Star and Ittefaq (14-15 Jun 2026) reported a 15% budget proposal;
-  // no source confirms what the passed Act says.
+  // source: [KPMG26] p52 (fetched 2026-11-01), written after the Finance Act 2026 passed: "gold,
+  // silver, diamonds and coins are subject at reduced tax rate of 5%". The 15% in the June press
+  // was the budget proposal.
   capitalGainsFlatRateGold: 0.05,
 
   // Rebate = lowest of 3% of taxable income, 10% of eligible investment, 7.5 lakh:
@@ -105,8 +108,8 @@ export const TAX_RULES = {
 
   // Minimum tax for an individual with taxable income: flat 5,000 everywhere, 1,000 for a new
   // taxpayer (AY 2026-27 and 2027-28): [KPMG26] p47; [KPMGFO]; Dhaka Tribune, 5 Jul 2026.
-  // owner-confirm: one Jun 2025 Daily Star snippet tied the 1,000 to income up to 4.5 lakh;
-  // no 2026 source repeats it, so no income condition is applied.
+  // source: [KPMG26] p47 (fetched 2026-11-01): minimum tax "General taxpayer Taka 5,000, New
+  // taxpayer Taka 1,000" with no income condition, so none is applied.
   minTax: 5000,
   minTaxNewTaxpayer: 1000,
 
@@ -114,12 +117,15 @@ export const TAX_RULES = {
   // (max 25,000), 1 Oct-31 Dec has no credit and no additional tax, then additional tax applies.
   // NBR "FAQ- e-Return" 2026, Q46(3), https://nbr.gov.bd/uploads/news-scroller/FAQ_e-Return_-_2026.pdf,
   // and NBR press release 22 Jul 2026, https://nbr.gov.bd/uploads/public-notice/eReturn_Press_Release-2026.pdf
-  // (both read 2026-10-27); [KPMG26] p45 and [PWC] agree. Supersedes the old 30 Nov tax day.
-  // owner-confirm: "first-time filers have until 30 June" (shown in TaxBreakdown) is the old
-  // Act s.2(23)(c) tax day; the 2026 NBR FAQ does not mention first-time filers.
+  // (both read 2026-10-27; FAQ Q46(3) ka-gha re-read 2026-11-01 on PDF pages 11-12); [KPMG26] p45
+  // and [PWC] agree. Supersedes the old 30 Nov tax day.
+  // source: [KPMG26] p45 (fetched 2026-11-01), "For following cases: 30 June following the end of
+  // income year if filing tax returns for the first time", backs "First-time filers have until
+  // 30 June" in TaxBreakdown.
   returnNoExtraTaxBy: "2026-12-31",
   // Additional tax for filing after returnNoExtraTaxBy, a share of net payable tax with a floor:
-  // same NBR FAQ Q46(3) (ga) 1 Jan-31 Mar 2%, min 3,000; (gha) 1 Apr-30 Jun 5%, min 5,000.
+  // same NBR FAQ Q46(3) (ga) 1 Jan-31 Mar 2%, min 3,000; (gha) 1 Apr-30 Jun 5%, min 5,000
+  // ([KPMG26] p45: "Higher of 2% of tax payable or Taka 3,000", "Higher of 5% ... or Taka 5,000").
   // Self-assessed returns are accepted until 30 Jun 2027.
   // owner-confirm: the FAQ does not say whether "net payable tax" is before or after tax already
   // deducted (we use after, i.e. netPayable), nor whether the floor applies when nothing is payable.
