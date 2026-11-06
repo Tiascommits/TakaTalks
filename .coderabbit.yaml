@@ -1,0 +1,9 @@
+reviews:
+  profile: assertive
+  path_instructions:
+    - path: "web/**/*.{ts,tsx}"
+      instructions: |
+        Next.js app. Flag server/client boundary mistakes, unvalidated API input, and exposed env vars. Work lands on the experimental branch, never main.
+
+tone_instructions: |
+  Be concise, direct, and constructive.
