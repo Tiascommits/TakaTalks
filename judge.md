@@ -32,7 +32,7 @@ Baseline: the independent critique of 14 Oct 2026 (`CrtiQue_Oct14.md`, untracked
 - Check whether the 8 Oct preview dropped production's `TaxProfile.firstTimeFiler` column [B4].
 - Run one scrape and create the admin account.
 - Have a tax practitioner confirm the `owner-confirm:` comments in `web/src/config/tax-rules-2025-26.ts`, `web/src/lib/instruments/instruments.ts` and `web/src/lib/loans/loans.ts`, and the zakat prices in `web/src/lib/zakat/zakat.ts`.
-- Publish an operator name and contact.
+- Publish an operator name and contact: set `OPERATOR_NAME` and `PRIVACY_EMAIL` in `web/src/config/site.ts` (the pages show them once set).
 - Get a legal review of `/privacy` and `/terms`.
 - Confirm the Neon database region.
 - Turn off GitHub Pages: it serves the stale `tools/` demos with obsolete tax rules.
@@ -118,7 +118,7 @@ Re-review of `3f8680a` and `b07cec5` on `experimental`, and of production after 
 2. Agent: in `smoke.yml`, smoke `https://www.takatalks.com` on Production deploys. Owner: add `VERCEL_AUTOMATION_BYPASS_SECRET` for Preview.
 3. Owner: turn off GitHub Pages (Settings → Pages → None), or delete `tools/tax-calculator/`. Move `todo/my-work/formenow.md` and the critiques out of the public repo.
 4. Agent, before 30 Nov: add the filing deadline, the late-filing extra tax and a link to etaxnbr.gov.bd to the result. Owner: get a practitioner to clear the `owner-confirm:` markers.
-5. Owner: publish an operator name and a private contact email on `/privacy`, `/terms` and the footer.
+5. Owner: publish an operator name and a private contact email on `/privacy`, `/terms` and the footer. The copy is in place; set `OPERATOR_NAME` and `PRIVACY_EMAIL` in `web/src/config/site.ts`. `/privacy` now states the retention rule, and `/api/cron/prune-anonymous` deletes anonymous accounts unseen for 180 days.
 6. Agent: after the first cron run, read `/api/health` (`bankHealthCheckAgeHours`) and the Vercel function log for the first PDF extraction. Add `npm audit --omit=dev --audit-level=critical` to CI.
 
 **Score:** security goes from 5 to 6, because the critical and high Next advisories are fixed in production. Usability 5, UI 6, UX 5, marketability 3 and profitability 2 are unchanged: what users see in production has not changed. Go-to-market stays at 40 (weighted 43.5, capped at 40). The cap holds because the live-data features are still empty in production, the tax figures have no practitioner sign-off ahead of the filing season, and no operator is named.

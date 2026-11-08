@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 
 const COOKIE_NAME = "taka_uid";
 const COOKIE_MAX_AGE_SECONDS = 60 * 60 * 24 * 365 * 2; // 2 years
+const DAY_MS = 24 * 60 * 60 * 1000;
 
 /**
  * Key for the session-cookie HMAC. Prefers a dedicated SESSION_SECRET; falls
@@ -60,7 +61,13 @@ export async function getCurrentUserId(): Promise<string | null> {
   const id = await signedCookieUserId();
   if (!id) return null;
   const user = await prisma.user.findUnique({ where: { id } });
-  return user?.id ?? null;
+  if (!user) return null;
+  // Keeps the account clear of /api/cron/prune-anonymous; at most one write a day.
+  // Best-effort: a failed write must not break the request.
+  if (Date.now() - user.lastSeenAt.getTime() > DAY_MS) {
+    await prisma.user.updateMany({ where: { id }, data: { lastSeenAt: new Date() } }).catch(() => {});
+  }
+  return user.id;
 }
 
 /**

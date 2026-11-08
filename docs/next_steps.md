@@ -19,4 +19,7 @@ The exact pages and variable-by-variable checklist for this section is in [`form
 - [ ] Verify the salary-to-tax figures in `docs/Car.md` and the calculator's 10% multi-car wealth surcharge against the Income Tax Act before publishing car-tax content. The Section 153 AIT amounts are already checked and corrected.
 - [ ] Configure `RESEND_API_KEY`, `EMAIL_FROM`, and `ADMIN_EMAIL` in production environment to enable maturity reminder emails.
 - [ ] Complete WhatsApp Cloud API verification (Meta Business Suite) to enable WhatsApp OTPs and reminders.
+- [ ] Pick the operator (data controller) name and a private contact email that is actually read, set `OPERATOR_NAME` and `PRIVACY_EMAIL` in `web/src/config/site.ts`, and merge. `/privacy`, `/terms` and the footer show them only once set.
+- [ ] Check the Neon backup / point-in-time-restore window in the Neon console and add it to the "How long we keep it" section of `/privacy` (`web/src/components/legal/LegalPages.tsx`).
+- [ ] Anonymous accounts (no email or phone) unseen for 180 days are deleted daily by `/api/cron/prune-anonymous` (`web/src/config/retention.ts`; `/privacy` quotes the same number). It runs only once `CRON_SECRET` is set.
 - [ ] Run regular security audits on authentication, session tokens, and rate limits.

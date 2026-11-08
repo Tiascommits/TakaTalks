@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useLanguage } from "@/lib/i18n";
+import { OPERATOR_NAME, PRIVACY_EMAIL } from "@/config/site";
 
 export function SiteFooter() {
   const { t } = useLanguage();
@@ -15,6 +16,12 @@ export function SiteFooter() {
         <Link href="/terms" className="underline hover:text-green-deep">
           {t("Terms of use", "ব্যবহারের শর্তাবলি")}
         </Link>
+        {OPERATOR_NAME && <span>{t(`Run by ${OPERATOR_NAME}`, `পরিচালনায় ${OPERATOR_NAME}`)}</span>}
+        {PRIVACY_EMAIL && (
+          <a href={`mailto:${PRIVACY_EMAIL}`} className="underline hover:text-green-deep">
+            {t("Privacy contact", "গোপনীয়তা বিষয়ে যোগাযোগ")}
+          </a>
+        )}
         <a
           href="https://github.com/Tiascommits/TakaTalks/issues"
           target="_blank"
