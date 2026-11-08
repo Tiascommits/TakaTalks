@@ -18,7 +18,7 @@ jobs:
       # deployment_status runs on the deployed commit, which can be any pushed branch.
       # Take smoke.mjs from the default branch so a branch can't swap in its own script.
       # This YAML itself still comes from the deployed commit, so keep the bypass secret
-      # low-value (Preview access only) and keep Vercel Git Fork Protection on.
+      # low-value (it only gets past Deployment Protection) and keep Vercel Git Fork Protection on.
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
         with:
           ref: ${{ github.event.repository.default_branch }}

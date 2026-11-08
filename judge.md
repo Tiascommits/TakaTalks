@@ -197,7 +197,7 @@ All Jev code is off unless `TYPESAFE_API_KEY` is set (`web/src/lib/jev/client.ts
 
 ### Update (2026-11-08, agent): CI workflow hardening
 
-- `smoke.yml` checks out the default branch (`ref: ${{ github.event.repository.default_branch }}`), so `web/scripts/smoke.mjs` comes from `main`, not from the deployed commit. The workflow YAML itself still comes from the deployed commit, so the Vercel bypass secret must stay Preview-only and Vercel Git Fork Protection must stay on. Add `VERCEL_AUTOMATION_BYPASS_SECRET` only after this change is on `main`.
+- `smoke.yml` checks out the default branch (`ref: ${{ github.event.repository.default_branch }}`), so `web/scripts/smoke.mjs` comes from `main`, not from the deployed commit. The workflow YAML itself still comes from the deployed commit, so the Vercel bypass secret must stay low-value (it only gets past Deployment Protection; never give this job other secrets) and Vercel Git Fork Protection must stay on. Add `VERCEL_AUTOMATION_BYPASS_SECRET` only after this change is on `main`.
 - `ci.yml`, `judge.yml`, `smoke.yml`: every action pinned to a commit SHA (`actions/checkout` v4.4.0, `actions/setup-node` v4.4.0, `actions/upload-artifact` v4.6.2), every checkout has `persist-credentials: false`, and the CI Postgres service image is pinned by digest.
 - `judge.yml`: workflow-level permissions are now `{}`; the job gets `contents: write` only (the commit comment). `issues: write` and `pull-requests: write` are gone.
 
