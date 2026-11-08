@@ -194,3 +194,12 @@ All Jev code is off unless `TYPESAFE_API_KEY` is set (`web/src/lib/jev/client.ts
 
 **Checks:** new unit tests in `api/account/verify/route.test.ts`, `api/account/link/route.test.ts` and `api/admin/session/route.test.ts`; all 13 new assertions failed on the old code. `scripts/check.sh` exits 0 (610 unit tests, 1 skipped, plus the build).
 **Not run:** e2e (needs a Postgres and `migrate reset`). `verification.spec.ts` sends about 55 `verify` calls from one IP, under the 100-per-hour `link` limit even with CI's one retry of a single test; watch for a 429 there.
+
+### Update (2026-11-08, agent): CI workflow hardening
+
+- `smoke.yml` checks out the default branch (`ref: ${{ github.event.repository.default_branch }}`), so `web/scripts/smoke.mjs` comes from `main`, not from the deployed commit. The workflow YAML itself still comes from the deployed commit, so the Vercel bypass secret must stay Preview-only and Vercel Git Fork Protection must stay on. Add `VERCEL_AUTOMATION_BYPASS_SECRET` only after this change is on `main`.
+- `ci.yml`, `judge.yml`, `smoke.yml`: every action pinned to a commit SHA (`actions/checkout` v4.4.0, `actions/setup-node` v4.4.0, `actions/upload-artifact` v4.6.2), every checkout has `persist-credentials: false`, and the CI Postgres service image is pinned by digest.
+- `judge.yml`: workflow-level permissions are now `{}`; the job gets `contents: write` only (the commit comment). `issues: write` and `pull-requests: write` are gone.
+
+**Checks:** `zizmor --offline --persona=pedantic .github/workflows` reports no unpinned-uses, unpinned-images, excessive-permissions or artipacked (left: 2 unnamed jobs, smoke.yml has no concurrency group). `actionlint` clean (without shellcheck). No app code changed.
+**Not verified:** none of the three workflows has run on GitHub with these changes. After the next deploy, the smoke log should show a checkout of the default-branch SHA; after the next push to `main`, judge should still post its commit comment.
