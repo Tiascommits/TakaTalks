@@ -9,7 +9,7 @@
 - `/rates` stays out of the nav and homepage until a scrape stores a rate (`hasRateData` in `web/src/lib/rates/current-rates.ts`).
 - Analytics: GoatCounter only, off unless `NEXT_PUBLIC_GOATCOUNTER_CODE` is set (production). Count events with `window.goatcounter?.count?.({ path, event: true })`; never send a figure someone typed.
 - Share cards: `metadataBase` and a title-less `openGraph` in `web/src/app/layout.tsx`, image from `web/src/app/opengraph-image.tsx`. A page that sets its own `openGraph` replaces the whole object and loses the image, so give pages `title` and `description` only.
-- Operations: `GET /api/health` (DB up, banks with FDR rates, age of the newest scrape and bank-health check; 503 when the DB is down). `node web/scripts/smoke.mjs <url>` checks a deploy; `.github/workflows/smoke.yml` runs it on every successful Vercel deploy.
+- Operations: `GET /api/health` (DB up, banks with FDR rates, age of the newest scrape and bank-health check; 503 when the DB is down). `node web/scripts/smoke.mjs <url>` checks a deploy; `.github/workflows/smoke.yml` runs it on every successful Vercel deploy, using the default branch's copy of the script, not the deployed commit's. Workflow `uses:` are pinned to commit SHAs (version in a comment); bump the SHA and the comment together.
 - `tools/` holds frozen HTML demos with obsolete tax rules. Don't edit or link them; `check.sh` skips them.
 - `npm run judge` writes the gitignored `judge-report.md`, which is different from `judge.md`.
 - Status, open gaps and next steps: `judge.md` (newest section last). Review rules: `CODING_STANDARDS.md`. Owner checklist: `todo/my-work/formenow.md`.

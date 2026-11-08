@@ -27,6 +27,9 @@ write into the live database. In Vercel, add these with the environment set to *
    then copy that value into a GitHub repo secret named `VERCEL_AUTOMATION_BYPASS_SECRET`
    (GitHub → Settings → Secrets and variables → Actions). Still open on 2026-10-19: the
    smoke run after the PR #8 merge failed 17/17 for exactly this reason.
+   **Wait** until the `smoke.yml` change that checks out the smoke script from the default
+   branch (branch `agent/sec-takatalks-5`) has reached `main`, then add the secret. Keep
+   Vercel Git Fork Protection on.
 5. **Audit:** check that no production value, especially `DATABASE_URL`, is scoped to
    "All Environments".
 
