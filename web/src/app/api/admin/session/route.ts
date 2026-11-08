@@ -1,7 +1,11 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { clientIp, overLimit, tooManyRequests } from "@/lib/rate-limit";
-import { clearAdminSession, createAdminSession, verifyPassword } from "@/lib/admin/auth";
+import { randomBytes } from "node:crypto";
+import { clearAdminSession, createAdminSession, hashPassword, verifyPassword } from "@/lib/admin/auth";
+
+// An unknown email is checked against this, so it costs the same scrypt time as a known one.
+const DUMMY_HASH = hashPassword(randomBytes(16).toString("hex"));
 
 /** Email+password login, once at least one AdminUser exists. */
 export async function POST(request: Request) {
@@ -11,7 +15,8 @@ export async function POST(request: Request) {
   const password = typeof body?.password === "string" ? body.password : "";
 
   const admin = await prisma.adminUser.findUnique({ where: { email } });
-  if (!admin || !verifyPassword(password, admin.passwordHash)) {
+  const passwordOk = verifyPassword(password, admin?.passwordHash ?? DUMMY_HASH);
+  if (!admin || !passwordOk) {
     return NextResponse.json({ error: "Invalid email or password" }, { status: 401 });
   }
 

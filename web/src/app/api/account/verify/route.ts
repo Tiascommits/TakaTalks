@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { getCurrentUserId, setUserIdCookie } from "@/lib/tracker/session";
 import { consumeVerificationToken } from "@/lib/notify/verification";
+import { clientIp, overLimit, tooManyRequests } from "@/lib/rate-limit";
+import { refuseCrossSite } from "@/lib/same-origin";
 
 /**
  * Direct browser GET navigation — redirects to the confirmation page
@@ -18,6 +20,10 @@ export async function GET(request: Request) {
  * - Email magic-link confirmation (token)
  */
 export async function POST(request: Request) {
+  // A success sets the session cookie, so another site must not be able to submit this for a visitor.
+  const refused = refuseCrossSite(request);
+  if (refused) return refused;
+  if (await overLimit("link", clientIp(request))) return tooManyRequests();
   const body = await request.json().catch(() => null);
   const token = typeof body?.token === "string" ? body.token.trim() : "";
   const code = typeof body?.code === "string" ? body.code.trim() : "";
