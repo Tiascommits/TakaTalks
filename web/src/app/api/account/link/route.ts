@@ -1,7 +1,8 @@
 import { NextResponse } from "next/server";
 import { getOrCreateUserId } from "@/lib/tracker/session";
 import { requestEmailLink, requestPhoneOtp } from "@/lib/notify/verification";
-import { clientIp, overLimit, tooManyRequests } from "@/lib/rate-limit";
+import { canonicalDestination, clientIp, overLimit, tooManyRequests } from "@/lib/rate-limit";
+import { refuseCrossSite } from "@/lib/same-origin";
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const PHONE_RE = /^\+?[1-9]\d{7,14}$/; // loose E.164 check
@@ -17,6 +18,8 @@ function resolveAppUrl(request: Request): string {
  * toggle on an investment, not from any general signup wall.
  */
 export async function POST(request: Request) {
+  const refused = refuseCrossSite(request); // getOrCreateUserId below can set the session cookie
+  if (refused) return refused;
   if (await overLimit("link", clientIp(request))) return tooManyRequests();
   const body = await request.json().catch(() => null);
   const channel = body?.channel;
@@ -31,7 +34,7 @@ export async function POST(request: Request) {
   if (channel === "PHONE" && !PHONE_RE.test(destination)) {
     return NextResponse.json({ error: "Invalid phone number" }, { status: 400 });
   }
-  if (await overLimit("linkTo", destination.toLowerCase())) return tooManyRequests();
+  if (await overLimit("linkTo", canonicalDestination(channel, destination))) return tooManyRequests();
 
   const userId = await getOrCreateUserId();
   const result =
@@ -40,8 +43,10 @@ export async function POST(request: Request) {
       : await requestPhoneOtp(userId, destination);
 
   if (!result.ok) {
-    const status = result.reason === "not_configured" ? 503 : result.reason === "too_soon" ? 429 : 500;
-    return NextResponse.json({ error: result.reason ?? "send_failed" }, { status });
+    // Only fixed codes reach the caller; the provider's own message is logged in lib/notify.
+    if (result.reason === "not_configured") return NextResponse.json({ error: "not_configured" }, { status: 503 });
+    if (result.reason === "too_soon") return NextResponse.json({ error: "too_soon" }, { status: 429 });
+    return NextResponse.json({ error: "send_failed" }, { status: 500 });
   }
   return NextResponse.json({ ok: true });
 }
