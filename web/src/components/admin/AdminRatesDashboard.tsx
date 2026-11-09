@@ -57,7 +57,8 @@ export function AdminRatesDashboard({
 
         {digest.failedAdapters.length === 0 &&
         digest.unconfiguredBanks.length === 0 &&
-        digest.changedRates.length === 0 ? (
+        digest.changedRates.length === 0 &&
+        digest.needsReview.length === 0 ? (
           <p className="text-sm text-muted">Nothing to flag.</p>
         ) : (
           <div className="flex flex-col gap-3 text-sm">
@@ -68,6 +69,18 @@ export function AdminRatesDashboard({
                   {digest.failedAdapters.map((f) => (
                     <li key={f.shortCode}>
                       {f.name} — {f.errorMessage ?? "unknown error"} ({fmtDateTime(f.attemptedAt)})
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+            {digest.needsReview.length > 0 && (
+              <div>
+                <p className="font-semibold text-gold mb-1">Rates to check (Jev guard, shadow mode: stored and live)</p>
+                <ul className="list-disc pl-5">
+                  {digest.needsReview.map((r) => (
+                    <li key={r.shortCode}>
+                      {r.name} — {r.note} ({fmtDateTime(r.attemptedAt)})
                     </li>
                   ))}
                 </ul>

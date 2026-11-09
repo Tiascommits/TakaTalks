@@ -30,8 +30,9 @@ export const MAX_HOURS_WITHOUT_SCRAPE = 48;
 // next month's chart is overdue, so its rates are flagged unverified.
 export const CHART_STALE_DAYS = 62;
 
-// A day-over-day rate move at or above this many percentage points is
-// flagged in the admin digest as worth a human look.
+// A move at or above this many percentage points between a bank's two newest
+// stored rates is flagged in the admin digest. Chart rows are monthly, so a
+// change shows on every daily digest until the next chart arrives.
 export const SIGNIFICANT_CHANGE_THRESHOLD_PCT = 0.25;
 
 // Deposit Protection Ordinance 2025 (replaced the Bank Deposit Insurance Act

@@ -14,6 +14,10 @@ datasource db {
 model User {
   id        String   @id @default(cuid())
   createdAt DateTime @default(now())
+  // Last visit, refreshed at most daily by getCurrentUserId. Anonymous
+  // accounts unseen for ANONYMOUS_RETENTION_DAYS are deleted by
+  // /api/cron/prune-anonymous (src/config/retention.ts).
+  lastSeenAt DateTime @default(now())
 
   // Both optional and both nullable independently — set only once the user
   // opts in at the one point an account is allowed to appear (setting a
@@ -250,6 +254,8 @@ model ScrapeLog {
   success      Boolean
   errorMessage String?
   ratesFound   Int      @default(0)
+  // Jev rate guard: why a successful scrape's rates need a human look (shown in the admin digest).
+  reviewNote   String?
 
   @@index([bankId, attemptedAt])
 }

@@ -74,5 +74,6 @@ describe("getCurrentFdrRates", () => {
     expect(prisma.rateSnapshot.findMany.mock.calls[0][0].orderBy).toEqual({ id: "desc" });
     expect(rows[2].ratePct).toBe(9); // first of the id-desc result
     expect(rows[2].unverified).toBe(true); // January chart, long past 62 days
+    expect(rows[2].chartOverdue).toBe(true);
   });
 });

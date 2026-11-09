@@ -10,19 +10,37 @@ permissions:
 
 jobs:
   smoke:
-    if: github.event.deployment_status.state == 'success'
+    # Legacy Pages also builds main and posts a deployment, but it serves the README, not the app.
+    if: github.event.deployment_status.state == 'success' && github.event.deployment_status.environment != 'github-pages'
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
-      - uses: actions/checkout@v4
+      # deployment_status runs on the deployed commit, which can be any pushed branch.
+      # Take smoke.mjs from the default branch so a branch can't swap in its own script.
+      # This YAML itself still comes from the deployed commit, so keep the bypass secret
+      # low-value (it only gets past Deployment Protection) and keep Vercel Git Fork Protection on.
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          ref: ${{ github.event.repository.default_branch }}
+          persist-credentials: false
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
           node-version: 22
 
       - name: Smoke test (${{ github.event.deployment_status.environment }})
         env:
+          ENVIRONMENT: ${{ github.event.deployment_status.environment }}
           DEPLOY_URL: ${{ github.event.deployment_status.environment_url || github.event.deployment_status.target_url }}
           # Only needed while Vercel Deployment Protection guards preview URLs.
           VERCEL_AUTOMATION_BYPASS_SECRET: ${{ secrets.VERCEL_AUTOMATION_BYPASS_SECRET }}
-        run: node web/scripts/smoke.mjs "$DEPLOY_URL"
+        # Production: the public domain. Its environment_url is the per-deploy *.vercel.app
+        # address, which Deployment Protection guards. Preview: only with the bypass secret.
+        run: |
+          if [ "$ENVIRONMENT" = Production ]; then
+            DEPLOY_URL=https://www.takatalks.com
+          elif [ -z "$VERCEL_AUTOMATION_BYPASS_SECRET" ]; then
+            echo "::notice::Skipped: $ENVIRONMENT URLs need VERCEL_AUTOMATION_BYPASS_SECRET, which is not set."
+            exit 0
+          fi
+          node web/scripts/smoke.mjs "$DEPLOY_URL"

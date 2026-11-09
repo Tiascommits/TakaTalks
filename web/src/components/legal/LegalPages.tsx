@@ -2,11 +2,14 @@
 
 import Link from "next/link";
 import { useLanguage } from "@/lib/i18n";
+import { OPERATOR_NAME, PRIVACY_EMAIL } from "@/config/site";
+import { ANONYMOUS_RETENTION_DAYS } from "@/config/retention";
 
-// The only contact channel the project publishes. Public, so both pages warn
-// people not to post personal or financial details there.
+// Public, so both pages warn people not to post personal or financial details
+// there. Privacy and data requests go to PRIVACY_EMAIL once it is set.
 const ISSUES_URL = "https://github.com/Tiascommits/TakaTalks/issues";
-const LAST_UPDATED = { en: "15 October 2026", bn: "১৫ অক্টোবর ২০২৬" };
+const LAST_UPDATED = { en: "8 November 2026", bn: "৮ নভেম্বর ২০২৬" };
+const bnDigits = (n: number) => String(n).replace(/\d/g, (d) => "০১২৩৪৫৬৭৮৯"[Number(d)]);
 
 const linkClass = "underline text-green-deep";
 
@@ -41,6 +44,43 @@ function IssuesLink() {
   );
 }
 
+function EmailLink({ email }: { email: string }) {
+  return (
+    <a href={`mailto:${email}`} className={linkClass}>
+      {email}
+    </a>
+  );
+}
+
+/** Bug reports go to GitHub issues; privacy and data requests to PRIVACY_EMAIL once it is set. */
+function ContactParagraph({ extra }: { extra?: { en: string; bn: string } }) {
+  const { t } = useLanguage();
+  const warning = t(
+    "It is public, so don't post personal or financial details there.",
+    "পাতাটি সবার জন্য খোলা, তাই সেখানে ব্যক্তিগত বা আর্থিক তথ্য দেবেন না।"
+  );
+  if (!PRIVACY_EMAIL) {
+    return (
+      <p>
+        {t("Ask on", "প্রশ্ন থাকলে")} <IssuesLink />
+        {t(". ", " লিখুন। ")}
+        {warning}
+        {extra && ` ${t(extra.en, extra.bn)}`}
+      </p>
+    );
+  }
+  return (
+    <p>
+      {t("For privacy questions or to use your data rights, email", "গোপনীয়তা নিয়ে প্রশ্ন বা আপনার তথ্য-সংক্রান্ত অনুরোধের জন্য ইমেইল করুন")}{" "}
+      <EmailLink email={PRIVACY_EMAIL} />
+      {t(". Report bugs on", "। বাগ জানাতে লিখুন")} <IssuesLink />
+      {t(". ", "। ")}
+      {warning}
+      {extra && ` ${t(extra.en, extra.bn)}`}
+    </p>
+  );
+}
+
 export function PrivacyNotice() {
   const { t } = useLanguage();
   return (
@@ -51,6 +91,23 @@ export function PrivacyNotice() {
           "TakaTalks বাংলাদেশের মানুষের জন্য কিছু ব্যক্তিগত অর্থ-হিসাবের ক্যালকুলেটর ও একটি ট্র্যাকার। এই সাইট কী তথ্য নেয়, কোথায় রাখে, কতদিন রাখে এবং কীভাবে মুছবেন — এখানে তা বলা আছে।"
         )}
       </p>
+
+      {OPERATOR_NAME && (
+        <Section title={t("Who runs this site", "সাইটটি কে চালায়")}>
+          <p>
+            {t(
+              `TakaTalks is run by ${OPERATOR_NAME}, who decides how the data below is used (the data controller).`,
+              `TakaTalks চালান ${OPERATOR_NAME}; নিচের তথ্য কীভাবে ব্যবহার হবে তা তিনিই ঠিক করেন (ডেটা কন্ট্রোলার)।`
+            )}
+            {PRIVACY_EMAIL && (
+              <>
+                {" "}
+                {t("Contact:", "যোগাযোগ:")} <EmailLink email={PRIVACY_EMAIL} />
+              </>
+            )}
+          </p>
+        </Section>
+      )}
 
       <Section title={t("Calculators: nothing leaves your device", "ক্যালকুলেটর: কিছুই আপনার ডিভাইস ছাড়ে না")}>
         <p>
@@ -119,8 +176,8 @@ export function PrivacyNotice() {
       <Section title={t("How long we keep it", "কতদিন রাখি")}>
         <p>
           {t(
-            "Tracker data and any linked email or phone stay until you delete them. If you clear your cookies without linking an email or phone, you can no longer reach that tracker data, and it is not yet deleted automatically.",
-            "ট্র্যাকারের তথ্য এবং যুক্ত ইমেইল বা ফোন, আপনি না মোছা পর্যন্ত থাকে। ইমেইল বা ফোন যুক্ত না করে কুকি মুছে ফেললে সেই ট্র্যাকারের তথ্যে আর পৌঁছানো যায় না, এবং তা এখনো স্বয়ংক্রিয়ভাবে মোছা হয় না।"
+            `Tracker data and any linked email or phone stay until you delete them. An anonymous account with no linked email or phone is deleted automatically, with all its data, after ${ANONYMOUS_RETENTION_DAYS} days without use. That also covers data you can no longer reach because you cleared your cookies.`,
+            `ট্র্যাকারের তথ্য এবং যুক্ত ইমেইল বা ফোন, আপনি না মোছা পর্যন্ত থাকে। ইমেইল বা ফোন যুক্ত নেই এমন নামহীন অ্যাকাউন্ট ${bnDigits(ANONYMOUS_RETENTION_DAYS)} দিন ব্যবহার না হলে তার সব তথ্যসহ স্বয়ংক্রিয়ভাবে মুছে যায়। কুকি মুছে ফেলার কারণে যে তথ্যে আর পৌঁছানো যায় না, সেটিও এভাবে মুছে যায়।`
           )}
         </p>
       </Section>
@@ -161,13 +218,12 @@ export function PrivacyNotice() {
       </Section>
 
       <Section title={t("Questions", "প্রশ্ন")}>
-        <p>
-          {t("Ask on", "প্রশ্ন থাকলে")} <IssuesLink />
-          {t(
-            ". It is public, so don't post personal or financial details there. We will update this page, and the date above, when what we collect changes.",
-            " লিখুন। পাতাটি সবার জন্য খোলা, তাই সেখানে ব্যক্তিগত বা আর্থিক তথ্য দেবেন না। আমরা কী তথ্য নিই তা বদলালে এই পাতা ও উপরের তারিখ হালনাগাদ করব।"
-          )}
-        </p>
+        <ContactParagraph
+          extra={{
+            en: "We will update this page, and the date above, when what we collect changes.",
+            bn: "আমরা কী তথ্য নিই তা বদলালে এই পাতা ও উপরের তারিখ হালনাগাদ করব।",
+          }}
+        />
       </Section>
     </LegalShell>
   );
@@ -183,6 +239,7 @@ export function TermsOfUse() {
             "TakaTalks offers free personal-finance calculators and a tracker for people in Bangladesh, alongside the TakaTalks videos. By using the site you accept these terms.",
             "TakaTalks বাংলাদেশের মানুষের জন্য বিনামূল্যে ব্যক্তিগত অর্থ-হিসাবের ক্যালকুলেটর ও একটি ট্র্যাকার দেয়, TakaTalks ভিডিওর পাশাপাশি। সাইটটি ব্যবহার করলে আপনি এই শর্তগুলো মেনে নেন।"
           )}
+          {OPERATOR_NAME && ` ${t(`The site is run by ${OPERATOR_NAME}.`, `সাইটটি চালান ${OPERATOR_NAME}।`)}`}
         </p>
       </Section>
 
@@ -233,13 +290,7 @@ export function TermsOfUse() {
       </Section>
 
       <Section title={t("Questions", "প্রশ্ন")}>
-        <p>
-          {t("Ask on", "প্রশ্ন থাকলে")} <IssuesLink />
-          {t(
-            ". It is public, so don't post personal or financial details there.",
-            " লিখুন। পাতাটি সবার জন্য খোলা, তাই সেখানে ব্যক্তিগত বা আর্থিক তথ্য দেবেন না।"
-          )}
-        </p>
+        <ContactParagraph />
       </Section>
     </LegalShell>
   );

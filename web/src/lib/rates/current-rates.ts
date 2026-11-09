@@ -19,6 +19,8 @@ export type CurrentRateRow = {
   source: string | null;
   asOf: Date | null;
   unverified: boolean;
+  /** The chart month is old enough that the next chart is overdue (a cause of `unverified`). */
+  chartOverdue: boolean;
 };
 
 const FDR_SNAPSHOTS = {
@@ -75,6 +77,7 @@ export async function getCurrentFdrRates(): Promise<CurrentRateRow[]> {
     const latestLog = bank.scrapeLogs[0] ?? null;
     for (const termMonths of FDR_TERMS_MONTHS) {
       const snapshot = snapshots.find((s) => s.bankId === bank.id && s.termMonths === termMonths) ?? null;
+      const chartOverdue = isChartOverdue(snapshot?.source ?? null, snapshot?.scrapedAt ?? null);
       rows.push({
         bankShortCode: bank.shortCode,
         bankName: bank.name,
@@ -90,8 +93,8 @@ export async function getCurrentFdrRates(): Promise<CurrentRateRow[]> {
         source: snapshot?.source ?? null,
         asOf: snapshot?.scrapedAt ?? null,
         unverified:
-          isRateStale(snapshot?.scrapedAt ?? null, latestLog?.attemptedAt ?? null, latestLog?.success ?? null) ||
-          isChartOverdue(snapshot?.source ?? null, snapshot?.scrapedAt ?? null),
+          isRateStale(snapshot?.scrapedAt ?? null, latestLog?.attemptedAt ?? null, latestLog?.success ?? null) || chartOverdue,
+        chartOverdue,
       });
     }
   }

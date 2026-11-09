@@ -27,7 +27,7 @@ The Judge Agent evaluates changes across **6 Core Pillars**:
 Triggered automatically on every push to `main`:
 - Executes the full verification suite.
 - Publishes a rich Markdown score table and report directly to GitHub Job Summaries (`$GITHUB_STEP_SUMMARY`).
-- Leaves an automated audit comment on the commit via GitHub REST API.
+- Leaves an automated audit comment on the commit via GitHub REST API (the job's only token scope is `contents: write`).
 - Stores `judge-report.md` as an actionable build artifact.
 
 ### 2. Locally Before Pushing

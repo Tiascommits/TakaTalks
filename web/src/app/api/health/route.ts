@@ -20,14 +20,15 @@ export async function GET() {
           rateSnapshots: { some: { instrument: "FDR", termMonths: { in: [...FDR_TERMS_MONTHS] } } },
         },
       }),
-      prisma.rateSnapshot.aggregate({ _max: { scrapedAt: true } }),
+      // Last successful scrape run, not the newest row's date: chart rows carry the chart's month (the 1st) and are stored once.
+      prisma.scrapeLog.aggregate({ where: { success: true }, _max: { attemptedAt: true } }),
       prisma.annualReportCheckLog.aggregate({ _max: { checkedAt: true } }),
     ]);
     const now = Date.now();
     return NextResponse.json({
       dbReachable: true,
       banksWithFdrRates,
-      rateSnapshotAgeHours: ageHours(rate._max.scrapedAt, now),
+      rateSnapshotAgeHours: ageHours(rate._max.attemptedAt, now),
       bankHealthCheckAgeHours: ageHours(check._max.checkedAt, now),
     });
   } catch (err) {

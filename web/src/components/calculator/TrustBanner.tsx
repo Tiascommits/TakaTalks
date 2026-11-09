@@ -21,7 +21,9 @@ export function TrustBanner() {
           "This is an estimate tool, not an official filing. Rules change every budget, so some caps are simplified. For an actual return filing, use ",
           "এটি একটি প্রাথমিক হিসাবের টুল, অফিশিয়াল ট্যাক্স রিটার্ন নয়। প্রতি বাজেটে নিয়ম পরিবর্তিত হওয়ায় কিছু সীমা এখানে সরলীকৃত করা হয়েছে। চূড়ান্ত রিটার্ন দাখিলের জন্য "
         )}
-        <strong>etaxnbr.gov.bd</strong>
+        <a href="https://etaxnbr.gov.bd" target="_blank" rel="noopener noreferrer" className="underline font-semibold">
+          etaxnbr.gov.bd
+        </a>
         {t(" or consult a tax practitioner.", " ব্যবহার করুন অথবা একজন ট্যাক্স আইনজীবীর পরামর্শ নিন।")}
       </div>
     </div>

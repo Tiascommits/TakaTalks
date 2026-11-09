@@ -1,4 +1,5 @@
 import { test, expect, type Page } from "@playwright/test";
+import { gotoHydrated } from "./hydrated";
 
 async function noGarbageOnPage(page: Page) {
   const text = await page.locator("body").innerText();
@@ -9,7 +10,7 @@ async function noGarbageOnPage(page: Page) {
 
 test.describe("Life Goals Planner (/goals)", () => {
   test("loads cleanly, switches presets, and computes inflation-adjusted corpus", async ({ page }) => {
-    await page.goto("/goals");
+    await gotoHydrated(page, "/goals");
     await expect(page.getByText(/ভবিষ্যৎ লক্ষ্য ও সম্পদ পরিকল্পনাকারী|Life Goal & Wealth Planner/)).toBeVisible();
     await noGarbageOnPage(page);
 
@@ -29,7 +30,7 @@ test.describe("Life Goals Planner (/goals)", () => {
 
 test.describe("Salary Offer Comparator (/salary)", () => {
   test("loads cleanly, calculates net in-hand bank deposit and compares offers", async ({ page }) => {
-    await page.goto("/salary");
+    await gotoHydrated(page, "/salary");
     await expect(page.getByText(/স্যালারি অফার তুলনাকারী|Salary Offer Comparator/)).toBeVisible();
     await noGarbageOnPage(page);
 
@@ -49,7 +50,7 @@ test.describe("Salary Offer Comparator (/salary)", () => {
 
 test.describe("Real Yield Instrument Matrix (/instruments)", () => {
   test("loads cleanly, ranks instruments, and toggles PSR tax rates", async ({ page }) => {
-    await page.goto("/instruments");
+    await gotoHydrated(page, "/instruments");
     await expect(page.getByText(/প্রকৃত মুনাফা ম্যাট্রিক্স|Real Yield Matrix/)).toBeVisible();
     await noGarbageOnPage(page);
 
@@ -72,7 +73,7 @@ test.describe("Real Yield Instrument Matrix (/instruments)", () => {
 
 test.describe("Freelance & IT Remittance Hub (/freelance)", () => {
   test("loads cleanly, calculates 0% ITES tax exemption and cash incentive, and switches currencies", async ({ page }) => {
-    await page.goto("/freelance");
+    await gotoHydrated(page, "/freelance");
     await expect(page.getByText(/ফ্রিল্যান্স ট্যাক্স ও রেমিট্যান্স ক্যালকুলেটর|Freelance Tax & Remittance Calculator/)).toBeVisible();
     await noGarbageOnPage(page);
 
@@ -97,7 +98,7 @@ test.describe("Freelance & IT Remittance Hub (/freelance)", () => {
 
 test.describe("Loan & Home EMI Accelerator (/loans)", () => {
   test("loads cleanly, calculates EMI, toggles presets, and computes prepayment savings", async ({ page }) => {
-    await page.goto("/loans");
+    await gotoHydrated(page, "/loans");
     await expect(page.getByText(/লোন ও গৃহঋণ ইএমআই ক্যালকুলেটর|Loan & Home EMI Calculator/)).toBeVisible();
     // Preset rates are labelled as examples next to a dated Bangladesh Bank benchmark
     await expect(page.getByText(/11\.83%/).first()).toBeVisible();
@@ -125,7 +126,7 @@ test.describe("Loan & Home EMI Accelerator (/loans)", () => {
 
 test.describe("Zakat Calculator (/zakat)", () => {
   test("loads cleanly, switches Nisab between Silver and Gold, and shows purification guidance", async ({ page }) => {
-    await page.goto("/zakat");
+    await gotoHydrated(page, "/zakat");
     await expect(page.getByText(/যাকাত ক্যালকুলেটর বাংলাদেশ|Zakat Calculator for Bangladesh/)).toBeVisible();
     await noGarbageOnPage(page);
 
@@ -150,7 +151,7 @@ test.describe("Zakat Calculator (/zakat)", () => {
 
 test.describe("Money Habit Tracker (/habits)", () => {
   test("loads with starter habits, totals them, and reacts to a cap being set", async ({ page }) => {
-    await page.goto("/habits");
+    await gotoHydrated(page, "/habits");
     await expect(page.getByText(/মানি হ্যাবিট ট্র্যাকার|Money Habit Tracker/).first()).toBeVisible();
     await noGarbageOnPage(page);
 
@@ -169,7 +170,7 @@ test.describe("Money Habit Tracker (/habits)", () => {
   });
 
   test("keeps the list across a reload, since a tracker is useless if it forgets", async ({ page }) => {
-    await page.goto("/habits");
+    await gotoHydrated(page, "/habits");
     const removeButtons = page.getByRole("button", { name: /Remove habit|অভ্যাস সরান/ });
     const before = await removeButtons.count();
 
@@ -184,7 +185,7 @@ test.describe("Money Habit Tracker (/habits)", () => {
 
 test.describe("Financial Freedom Calculator (/freedom)", () => {
   test("loads cleanly, switches lifestyle, and re-prices the freedom number", async ({ page }) => {
-    await page.goto("/freedom");
+    await gotoHydrated(page, "/freedom");
     await expect(
       page.getByText(/আর্থিক স্বাধীনতা ক্যালকুলেটর|Financial Freedom Calculator/).first()
     ).toBeVisible();
@@ -203,7 +204,7 @@ test.describe("Financial Freedom Calculator (/freedom)", () => {
   });
 
   test("subtracts a passive income source and shows the corpus allocation and roadmap", async ({ page }) => {
-    await page.goto("/freedom");
+    await gotoHydrated(page, "/freedom");
 
     await page.getByRole("button", { name: /উৎস যোগ করুন|Add source/ }).click();
     await expect(page.getByText(/বাদ প্যাসিভ আয়|Less passive income/)).toBeVisible();
@@ -224,7 +225,7 @@ test.describe("Homepage tool picker (/)", () => {
   // phone. These assertions therefore check the tabs reveal the right tools,
   // not that every tool is on screen simultaneously.
   test("opens on the Tax category and only shows that category's tools", async ({ page }) => {
-    await page.goto("/");
+    await gotoHydrated(page, "/");
     await expect(page.getByRole("tab", { name: /কর|^Tax$/ })).toHaveAttribute("aria-selected", "true");
 
     await expect(page.getByText(/আয়কর ও রিবেট অপটিমাইজার|Tax Calculator & Rebate Optimizer/)).toBeVisible();
@@ -235,7 +236,7 @@ test.describe("Homepage tool picker (/)", () => {
   });
 
   test("each tab reveals its own tools", async ({ page }) => {
-    await page.goto("/");
+    await gotoHydrated(page, "/");
 
     await page.getByRole("tab", { name: /আয়|^Earn$/ }).click();
     await expect(page.getByText(/স্যালারি অফার ও ইন-হ্যান্ড পে|Salary Offer/)).toBeVisible();
@@ -264,7 +265,7 @@ test.describe("Homepage tool picker (/)", () => {
   });
 
   test("a tool card navigates to its tool", async ({ page }) => {
-    await page.goto("/");
+    await gotoHydrated(page, "/");
     await page.getByRole("tab", { name: /আরও|^More$/ }).click();
     await page.getByText(/ভবিষ্যৎ লক্ষ্য ও অবসর প্ল্যানার|Life Goal & Wealth Planner/).first().click();
     await expect(page).toHaveURL(/\/goals/);
@@ -273,7 +274,7 @@ test.describe("Homepage tool picker (/)", () => {
 
 test.describe("Site nav", () => {
   test("shows only the brand, Tools and Demo — not every tool", async ({ page }) => {
-    await page.goto("/");
+    await gotoHydrated(page, "/");
     const nav = page.getByRole("navigation");
 
     await expect(nav.getByRole("link", { name: "TakaTalks" })).toBeVisible();
@@ -286,7 +287,7 @@ test.describe("Site nav", () => {
   });
 
   test("keeps the side tools folded under More in the Tools menu", async ({ page }) => {
-    await page.goto("/");
+    await gotoHydrated(page, "/");
     const nav = page.getByRole("navigation");
 
     await nav.getByRole("button", { name: /টুলস|^Tools$/ }).click();
@@ -299,7 +300,7 @@ test.describe("Site nav", () => {
   });
 
   test("the Tools menu opens, navigates, and closes again", async ({ page }) => {
-    await page.goto("/");
+    await gotoHydrated(page, "/");
     const nav = page.getByRole("navigation");
 
     await nav.getByRole("button", { name: /টুলস|^Tools$/ }).click();

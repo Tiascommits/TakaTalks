@@ -14,6 +14,22 @@ const LIMITS = {
   adminLogin: { limit: 10, windowMs: 15 * MINUTE }, // admin sign-in and setup, per IP
 } as const;
 
+/**
+ * The per-address (linkTo) key: every spelling that reaches one inbox or phone gives one value, so
+ * "+tag", case and Gmail dots can't multiply the limit. The message still goes to the address as typed.
+ */
+export function canonicalDestination(channel: "EMAIL" | "PHONE", destination: string): string {
+  if (channel === "PHONE") return destination.replace(/\D/g, "");
+  const at = destination.lastIndexOf("@");
+  let local = destination.slice(0, at).toLowerCase();
+  let domain = destination.slice(at + 1).toLowerCase();
+  const plus = local.indexOf("+", 1);
+  if (plus > 0) local = local.slice(0, plus);
+  if (domain === "googlemail.com") domain = "gmail.com";
+  if (domain === "gmail.com") local = local.replace(/\./g, "");
+  return `${local}@${domain}`;
+}
+
 /** On Vercel these headers are set by the edge, not the client, so they can't be spoofed there. */
 export function clientIp(request: Request): string {
   return (

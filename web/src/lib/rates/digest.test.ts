@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { BB_DEPOSIT_CHART_URL } from "@/config/rate-monitoring";
 import { computeDigest, type DigestBankInput } from "./digest";
 
 const day = (n: number) => new Date(2026, 0, n);
@@ -28,6 +29,14 @@ describe("computeDigest", () => {
   it("does not flag a bank whose most recent attempt succeeded", () => {
     const result = computeDigest([bank({ logs: [{ success: true, attemptedAt: day(2), errorMessage: null }] })]);
     expect(result.failedAdapters).toHaveLength(0);
+  });
+
+  it("lists a stored scrape the Jev guard flagged, and not a failed one twice", () => {
+    const result = computeDigest([
+      bank({ logs: [{ success: true, attemptedAt: day(2), errorMessage: null, reviewNote: "FDR 12mo 9%: tenure other" }] }),
+      bank({ shortCode: "Y", logs: [{ success: false, attemptedAt: day(2), errorMessage: "boom", reviewNote: "x" }] }),
+    ]);
+    expect(result.needsReview).toEqual([{ shortCode: "X", name: "Bank X", note: "FDR 12mo 9%: tenure other", attemptedAt: day(2) }]);
   });
 
   it("routes banks with no adapter to unconfiguredBanks instead of failedAdapters", () => {
@@ -95,5 +104,18 @@ describe("computeDigest", () => {
     expect(result.changedRates).toHaveLength(1);
     expect(result.changedRates[0].deltaPct).toBeCloseTo(0.5, 6);
     expect(result.changedRates[0].currentPctMax).toBe(10);
+  });
+
+  it("takes the chart row as current over an older scraper's row dated after it, as /rates does", () => {
+    const result = computeDigest([
+      bank({
+        snapshots: [
+          { instrument: "FDR", termMonths: 12, ratePct: 6, source: "https://bank.example/old-scraper", scrapedAt: day(20) },
+          { instrument: "FDR", termMonths: 12, ratePct: 8.5, ratePctMax: 9, source: BB_DEPOSIT_CHART_URL, scrapedAt: day(1) },
+        ],
+      }),
+    ]);
+    expect(result.changedRates).toHaveLength(1);
+    expect(result.changedRates[0]).toMatchObject({ previousPct: 6, currentPct: 8.5, currentPctMax: 9, deltaPct: 3 });
   });
 });

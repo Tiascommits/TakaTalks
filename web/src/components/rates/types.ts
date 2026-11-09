@@ -20,6 +20,7 @@ export type CurrentRateRowDTO = {
   /** Scraped: when we last read it. Manual: the source's own date. */
   asOf: string | null;
   unverified: boolean;
+  chartOverdue: boolean;
 };
 
 export type BBAggregateRateDTO = {
