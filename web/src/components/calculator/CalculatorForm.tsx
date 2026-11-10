@@ -13,6 +13,7 @@ import { RebateOptimizer } from "./RebateOptimizer";
 import { TaxSlipModal } from "./TaxSlipModal";
 import { useLanguage } from "@/lib/i18n";
 import { fmtTaka, toAsciiDigits } from "@/lib/format";
+import { SHARE_URL, shareText } from "@/lib/share";
 
 function field<K extends keyof TaxCalculatorInput>(
   input: TaxCalculatorInput,
@@ -74,6 +75,11 @@ export function CalculatorForm() {
 function CalculatorFormFromUrl() {
   const searchParams = useSearchParams();
   const patch = useMemo(() => parseSharedLinkPatch(searchParams), [searchParams]);
+  // Someone arrived from the privacy-safe share button (shortcut: lost if GoatCounter has not loaded yet, like tax-calculate).
+  const fromShare = searchParams.get("src") === "share";
+  useEffect(() => {
+    if (fromShare) window.goatcounter?.count?.({ path: "share-landing", event: true });
+  }, [fromShare]);
   return <CalculatorFormInner patch={patch} loadTracker />;
 }
 
@@ -140,6 +146,14 @@ function CalculatorFormInner({
   }, [calculated]);
 
   const n = (key: keyof TaxCalculatorInput) => field(input, setInput, key);
+
+  // Shares a fixed message and link, never the figures on screen.
+  function shareFiling() {
+    window.goatcounter?.count?.({ path: "share-click", event: true });
+    const text = t(shareText("en"), shareText("bn"));
+    if (navigator.share) navigator.share({ text, url: SHARE_URL }).catch(() => {}); // cancelled: nothing to do
+    else window.open(`https://wa.me/?text=${encodeURIComponent(`${text} ${SHARE_URL}`)}`, "_blank", "noopener");
+  }
 
   return (
     <div className="max-w-[1160px] mx-auto px-5 mt-6 mb-16 grid grid-cols-1 md:grid-cols-[1.35fr_1fr] gap-5 items-start">
@@ -376,6 +390,14 @@ function CalculatorFormInner({
             className="w-full mt-3.5 py-2.5 px-3 bg-green-deep text-paper text-xs font-semibold rounded-xs hover:bg-green-deep/90 transition-colors flex items-center justify-center gap-1.5 shadow-xs"
           >
             <span>📄</span> {t("Generate & Print Tax Slip", "আয়কর স্লিপ তৈরি ও প্রিন্ট")}
+          </button>
+
+          <button
+            type="button"
+            onClick={shareFiling}
+            className="w-full mt-2 py-2.5 px-3 border border-green-deep text-green-deep text-xs font-semibold rounded-xs hover:bg-green-deep/5 transition-colors"
+          >
+            {t("Tell friends you're filing (shares no numbers)", "বন্ধুদের জানান আপনি রিটার্ন দিচ্ছেন (কোনো অঙ্ক শেয়ার হয় না)")}
           </button>
 
           <p className="text-[11px] text-muted mt-3.5 pt-2.5 border-t border-line">
