@@ -1,3 +1,5 @@
+In the November bet (filing season; default A since 2026-11-02, `~/Everything/dev/products/decision.md`): not frozen, but no revenue feature and no HR/payroll outreach until the owner decides who owns TakaTalks.
+
 # Agent notes
 
 - Branch rule (`CLAUDE.md`, `git_instructions.md`): never commit or push to `main`. Work goes to `experimental`, which merges into `main` only after a written QA report, and only when the owner decides.
