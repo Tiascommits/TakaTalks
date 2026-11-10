@@ -1,3 +1,14 @@
+import { TAX_RULES } from "@/config/tax-rules-2025-26";
+
+// The no-extra-tax filing date, from TAX_RULES, written out for video copy.
+const noExtraTaxBy = (locale: string) =>
+  new Date(`${TAX_RULES.returnNoExtraTaxBy}T00:00:00Z`).toLocaleDateString(locale, {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+    timeZone: "UTC",
+  });
+
 export type VideoFormat = "short" | "long";
 export type VideoPlatform = "facebook" | "youtube";
 
@@ -41,13 +52,14 @@ export const VIDEOS: VideoEntry[] = [
     id: "save-25k-income-tax",
     format: "long",
     platform: "youtube",
+    // The early-filing credit this video explains closed on 30 Sep 2026, so the card no longer sells it.
     title: {
-      en: "Save Up To 25,000 Tk on Income Tax!",
-      bn: "Income Tax থেকে ২৫,০০০ টাকা বাঁচান!",
+      en: "How NBR's early-filing credit worked",
+      bn: "আগাম রিটার্ন জমার ছাড় কীভাবে কাজ করত",
     },
     description: {
-      en: "Learn how to get a 5% incentive on your payable tax by filing your NBR return early.",
-      bn: "আপনার ইনকাম ট্যাক্স থেকে ২৫,০০০ টাকা পর্যন্ত বাঁচিয়ে ফেলার সুযোগ দিচ্ছে NBR!",
+      en: `The early-filing credit has ended. File by ${noExtraTaxBy("en-GB")} and no extra tax is added; after that, additional tax applies.`,
+      bn: `আগাম রিটার্ন জমার ছাড়ের সময় শেষ। ${noExtraTaxBy("bn-BD")}-এর মধ্যে রিটার্ন দিলে কোনো অতিরিক্ত কর লাগবে না; এরপর অতিরিক্ত কর যোগ হবে।`,
     },
     url: "https://www.youtube.com/watch?v=RI7ECp8hTw4",
     width: 1920,
