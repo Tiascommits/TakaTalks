@@ -128,6 +128,8 @@ export const TAX_RULES = {
   // income year if filing tax returns for the first time", backs "First-time filers have until
   // 30 June" in TaxBreakdown.
   returnNoExtraTaxBy: "2026-12-31",
+  // First return: due by 30 June after the income year ends ([KPMG26] p45, quoted above).
+  firstTimeFilerDueBy: "2027-06-30",
   // Additional tax for filing after returnNoExtraTaxBy, a share of net payable tax with a floor:
   // same NBR FAQ Q46(3) (ga) 1 Jan-31 Mar 2%, min 3,000; (gha) 1 Apr-30 Jun 5%, min 5,000
   // ([KPMG26] p45: "Higher of 2% of tax payable or Taka 3,000", "Higher of 5% ... or Taka 5,000").
