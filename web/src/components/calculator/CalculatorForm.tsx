@@ -63,17 +63,20 @@ function parseSharedLinkPatch(params: URLSearchParams): Partial<TaxCalculatorInp
  * the server sends the empty form as the Suspense fallback, and the browser swaps in
  * the form with the link's values (and the tracker prefill) applied.
  */
-export function CalculatorForm() {
+export function CalculatorForm({ initial = NO_PREFILL }: { initial?: Partial<TaxCalculatorInput> }) {
   return (
-    <Suspense fallback={<CalculatorFormInner patch={{}} loadTracker={false} />}>
-      <CalculatorFormFromUrl />
+    <Suspense fallback={<CalculatorFormInner patch={initial} loadTracker={false} />}>
+      <CalculatorFormFromUrl initial={initial} />
     </Suspense>
   );
 }
 
-function CalculatorFormFromUrl() {
+const NO_PREFILL: Partial<TaxCalculatorInput> = {};
+
+/** `initial` = a page's preset fields (e.g. the first-time-filer page); a shared link's values win over it. */
+function CalculatorFormFromUrl({ initial }: { initial: Partial<TaxCalculatorInput> }) {
   const searchParams = useSearchParams();
-  const patch = useMemo(() => parseSharedLinkPatch(searchParams), [searchParams]);
+  const patch = useMemo(() => ({ ...initial, ...parseSharedLinkPatch(searchParams) }), [initial, searchParams]);
   return <CalculatorFormInner patch={patch} loadTracker />;
 }
 
